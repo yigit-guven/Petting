@@ -1,0 +1,156 @@
+{
+  "mod_elements": [
+    {
+      "name": "Petting",
+      "type": "tab",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "petting",
+      "metadata": {
+        "files": []
+      },
+      "path": "~/CreativeTab"
+    },
+    {
+      "name": "GoldenWheat",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "golden_wheat",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ryukazan/petting/item/GoldenWheatItem.java",
+          "src/main/resources/assets/petting/models/item/golden_wheat.json",
+          "src/main/resources/assets/petting/items/golden_wheat.json"
+        ]
+      },
+      "path": "~/Items/GoldenWheatItem"
+    },
+    {
+      "name": "PetConfigurationGUI",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "pet_configuration_gui",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ryukazan/petting/world/inventory/PetConfigurationGUIMenu.java",
+          "src/main/java/net/ryukazan/petting/client/gui/PetConfigurationGUIScreen.java"
+        ]
+      },
+      "path": "~/GUIs"
+    },
+    {
+      "name": "GoldenWheatItemInHandTick",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "golden_wheat_item_in_hand_tick",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/GoldenWheatItemInHandTickProcedure.java"
+        ]
+      },
+      "path": "~/Items/GoldenWheatItem"
+    },
+    {
+      "name": "PlayerTickUpdate",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "player_tick_update",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/PlayerTickUpdateProcedure.java"
+        ]
+      },
+      "path": "~/TickProcedures"
+    }
+  ],
+  "variable_elements": [],
+  "sound_elements": [],
+  "tag_elements": {},
+  "tab_element_order": {},
+  "language_map": {
+    "en_us": {
+      "item_group.petting.petting": "Petting",
+      "item.petting.golden_wheat": "Golden Wheat"
+    }
+  },
+  "metadata": {
+    "files": [
+      "src/main/java/net/ryukazan/petting/init/PettingModMenus.java",
+      "src/main/java/net/ryukazan/petting/network/MenuStateUpdateMessage.java",
+      "src/main/java/net/ryukazan/petting/init/PettingModScreens.java",
+      "src/main/java/net/ryukazan/petting/init/PettingModItems.java",
+      "src/main/java/net/ryukazan/petting/init/PettingModTabs.java",
+      "src/main/resources/META-INF/neoforge.mods.toml",
+      "src/main/resources/pack.mcmeta",
+      "src/main/java/net/ryukazan/petting/PettingMod.java"
+    ]
+  },
+  "foldersRoot": {
+    "name": "~",
+    "children": [
+      {
+        "name": "CreativeTab",
+        "children": []
+      },
+      {
+        "name": "Items",
+        "children": [
+          {
+            "name": "GoldenWheatItem",
+            "children": []
+          }
+        ]
+      },
+      {
+        "name": "GUIs",
+        "children": []
+      },
+      {
+        "name": "TickProcedures",
+        "children": []
+      }
+    ]
+  },
+  "workspaceSettings": {
+    "modid": "petting",
+    "modName": "Petting",
+    "version": "25.1.0",
+    "description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
+    "author": "Vuserr0",
+    "websiteURL": "https://github.com/yigit-guven/Petting",
+    "license": "GNU Lesser General Public License version 3 (LGPLv3)",
+    "serverSideOnly": false,
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "mcreatorDependencies": [],
+    "currentGenerator": "neoforge-1.21.8",
+    "credits": "Special thanks to Anchor Studios \u0026 Ryukazan for their contributions.",
+    "modElementsPackage": "net.ryukazan.petting"
+  },
+  "mcreatorVersion": 202500345720
+}
