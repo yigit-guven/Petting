@@ -12,12 +12,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.FlyingAnimal; // Generic interface, safe to keep
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation; // Generic navigation, safe to keep
+import net.minecraft.world.entity.animal.FlyingAnimal; 
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation; 
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.Vec3; // Added for velocity math
 
 import java.util.UUID;
 
@@ -59,13 +60,39 @@ public class FollowOwnerOrTeleport {
                 return;
             }
 
-            // Check if sitting
+            // --- SITTING LOGIC START ---
             if (data.contains("sitstill") && data.getBoolean("sitstill").orElse(false)) {
+                
+                // A. Stop Pathfinding (Brains)
                 mob.getNavigation().stop();
-                // Force stop for flyers who might drift
+                
+                // B. Stop Movement Control (The Engine)
+                // We tell the mob: "Your target is exactly where you are standing right now."
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
+
+                // C. Physics Stabilization (The Body)
+                if (isUniversalFlyingMob(mob, data)) {
+                    // 1. Get current velocity (might be from a player push or explosion)
+                    Vec3 currentVel = mob.getDeltaMovement();
+
+                    // 2. Handle Gravity / Falling
+                    // If velocity Y is negative (falling), set it to 0 so they float.
+                    // If velocity Y is positive (pushed up), let them rise but slow down.
+                    double newY = (currentVel.y < 0) ? 0.0 : currentVel.y * 0.8;
+
+                    // 3. Apply Air Friction
+                    // We multiply X and Z by 0.8. This allows the pet to be pushed, 
+                    // but it will slow down and stop shortly after, instead of drifting forever.
+                    mob.setDeltaMovement(currentVel.x * 0.8, newY, currentVel.z * 0.8);
+                } 
+                else {
+                    // Ground mobs just need to stop moving; friction handles the rest naturally.
+                    mob.setDeltaMovement(0, mob.getDeltaMovement().y, 0); 
+                }
+                
                 return;
             }
+            // --- SITTING LOGIC END ---
 
             // 3. Get Owner
             if (!data.contains("ownerUUID")) {
@@ -114,7 +141,6 @@ public class FollowOwnerOrTeleport {
                     mob.getLookControl().setLookAt(owner, 10.0F, (float)mob.getMaxHeadXRot());
                     
                     // 2. Direct Velocity Control
-                    // Pathfinding often fails for flyers in open air. We use MoveControl to "push" them.
                     // Target: 1 block above owner's feet (approx head height)
                     double targetX = owner.getX();
                     double targetY = owner.getY() + 1.0D; 
@@ -137,25 +163,23 @@ public class FollowOwnerOrTeleport {
 
         /**
          * A Universal check to see if a mob should be treated as a flying entity.
-         * Works for Vanilla and Modded mobs without hardcoding imports.
          */
         private static boolean isUniversalFlyingMob(Mob mob, CompoundTag data) {
-            // 1. NBT Override: You can set "force_flying: true" on any entity to force this logic
+            // 1. NBT Override
             if (data.contains("force_flying") && data.getBoolean("force_flying").orElse(false)) {
                 return true;
             }
 
-            // 2. Standard Flying Interfaces (e.g., Parrots, Bees, Modded Birds)
+            // 2. Standard Flying Interfaces
             if (mob instanceof FlyingAnimal) return true;
             if (mob.getNavigation() instanceof FlyingPathNavigation) return true;
 
-            // 3. Physics Check: If gravity is disabled, it's likely a flyer or hoverer
+            // 3. Physics Check
             if (mob.isNoGravity()) return true;
 
-            // 4. String/ID Check (The "Catch-All" for Blazes, Ghasts, and Modded variants)
-            // We check the registry name string. This catches "minecraft:ghast", "some_mod:fire_ghast", "some_mod:blaze_knight"
+            // 4. String/ID Check
             String registryName = mob.getEncodeId(); 
-            if (registryName == null) registryName = mob.getType().getDescriptionId(); // Fallback
+            if (registryName == null) registryName = mob.getType().getDescriptionId(); 
             
             if (registryName != null) {
                 String lowerName = registryName.toLowerCase();
@@ -179,7 +203,6 @@ public class FollowOwnerOrTeleport {
             BlockPos ownerPos = owner.blockPosition();
             Level level = pet.level();
             
-            // Try 10 times to find a valid spot
             for (int i = 0; i < 10; ++i) {
                 int randomX = getRandomNumber(-3, 3);
                 int randomY = getRandomNumber(-2, 2); 
@@ -199,23 +222,15 @@ public class FollowOwnerOrTeleport {
          * Checks if a block position is safe.
          */
         private static boolean canTeleportTo(BlockPos pos, Level level, boolean isFlyer) {
-            // 1. The block we are teleporting INTO must be non-collidable (air)
             if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
                 return false;
             }
-            
-            // 2. The block ABOVE must also be non-collidable (head space)
             if (!level.getBlockState(pos.above()).getCollisionShape(level, pos.above()).isEmpty()) {
                 return false;
             }
-
-            // 3. SPECIAL LOGIC FOR FLYING:
-            // If the mob is a flyer, we ignore the ground check.
             if (isFlyer) {
                 return true;
             }
-
-            // 4. Standard Logic (Ground pets need a solid block below)
             BlockState blockBelow = level.getBlockState(pos.below());
             return !blockBelow.getCollisionShape(level, pos.below()).isEmpty(); 
         }
