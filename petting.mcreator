@@ -181,6 +181,19 @@
         ]
       },
       "path": "~/PetEntity/Interactions"
+    },
+    {
+      "name": "PetAttackLogic",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "pet_attack_logic",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ryukazan/petting/PetAttackLogic.java"
+        ]
+      },
+      "path": "~/PetEntity/Attack"
     }
   ],
   "variable_elements": [],
@@ -246,6 +259,10 @@
           },
           {
             "name": "Tracker",
+            "children": []
+          },
+          {
+            "name": "Attack",
             "children": []
           }
         ]

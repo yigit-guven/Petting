@@ -83,6 +83,7 @@ public class GoldenWheatRightclickedProcedure {
                 data.putBoolean("attackifselfattacked", true);
                 data.putBoolean("attackifownersetasattacktarget", false);
                 data.putBoolean("attackifselfsetasattacktarget", false);
+                data.putBoolean("damageOwner", false);
                 data.putInt("followdistance", 10);
                 data.putInt("teleportdistance", 20);
                 data.putBoolean("sitstill", false);
