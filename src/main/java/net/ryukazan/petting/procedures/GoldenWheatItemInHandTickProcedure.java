@@ -2,12 +2,12 @@ package net.ryukazan.petting.procedures;
 
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
-// import net.minecraft.world.item.Items; // Vanilla items not needed anymore
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 
@@ -42,7 +42,11 @@ public class GoldenWheatItemInHandTickProcedure {
                 Animal.class, 
                 player.getBoundingBox().inflate(searchRadius, 4.0, searchRadius), 
                 mob -> {
-                    // Filter: Ignore tamed animals (cats/wolves) and tamed horses
+                    // FIX: The compiler error confirmed that getBoolean returns Optional<Boolean> here.
+                    // We use .orElse(false) to unwrap it safely.
+                    boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed").orElse(false);
+                    
+                    if (isAlreadyCustomTamed) return false;
                     if (mob instanceof TamableAnimal tamable && tamable.isTame()) return false;
                     if (mob instanceof AbstractHorse horse && horse.isTamed()) return false;
                     return true;

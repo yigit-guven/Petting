@@ -85,6 +85,66 @@
         ]
       },
       "path": "~/TickProcedures"
+    },
+    {
+      "name": "GoldenWheatRightclicked",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "golden_wheat_rightclicked",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "sourceentity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/GoldenWheatRightclickedProcedure.java"
+        ]
+      },
+      "path": "~/Items/GoldenWheatItem"
+    },
+    {
+      "name": "PlayerRightclicksEntitz",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "player_rightclicks_entitz",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "sourceentity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/PlayerRightclicksEntitzProcedure.java"
+        ]
+      },
+      "path": "~/ActionProcedures"
+    },
+    {
+      "name": "PetDeathHandler",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "pet_death_handler",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/PetDeathHandlerProcedure.java"
+        ]
+      },
+      "path": "~/PetEntity/Listeners"
     }
   ],
   "variable_elements": [],
@@ -132,6 +192,19 @@
       {
         "name": "TickProcedures",
         "children": []
+      },
+      {
+        "name": "ActionProcedures",
+        "children": []
+      },
+      {
+        "name": "PetEntity",
+        "children": [
+          {
+            "name": "Listeners",
+            "children": []
+          }
+        ]
       }
     ]
   },
