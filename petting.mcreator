@@ -145,6 +145,42 @@
         ]
       },
       "path": "~/PetEntity/Listeners"
+    },
+    {
+      "name": "FollowOwnerOrTeleport",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "follow_owner_or_teleport",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ryukazan/petting/FollowOwnerOrTeleport.java"
+        ]
+      },
+      "path": "~/PetEntity/Tracker"
+    },
+    {
+      "name": "OwnerRightclicksPet",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "owner_rightclicks_pet",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "sourceentity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/OwnerRightclicksPetProcedure.java"
+        ]
+      },
+      "path": "~/PetEntity/Interactions"
     }
   ],
   "variable_elements": [],
@@ -203,8 +239,20 @@
           {
             "name": "Listeners",
             "children": []
+          },
+          {
+            "name": "Interactions",
+            "children": []
+          },
+          {
+            "name": "Tracker",
+            "children": []
           }
         ]
+      },
+      {
+        "name": "Gamerules",
+        "children": []
       }
     ]
   },
