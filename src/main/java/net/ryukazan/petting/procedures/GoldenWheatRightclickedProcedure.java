@@ -110,6 +110,9 @@ public class GoldenWheatRightclickedProcedure {
                     newData.putBoolean("attackifselfattacked", true);
                     newData.putBoolean("damageOwner", false);
                     newData.putBoolean("sitstill", false);
+                    newData.putBoolean("pettingtamed", true);
+                    newData.putInt("followdistance", 10);
+                    newData.putInt("teleportdistance", 20);
 
                     // 5. Ensure NO TARGET
                     newMob.setTarget(null);

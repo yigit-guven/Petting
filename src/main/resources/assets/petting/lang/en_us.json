@@ -1,4 +1,14 @@
 {
   "item_group.petting.petting": "Petting",
-  "item.petting.golden_wheat": "Golden Wheat"
+  "item.petting.golden_wheat": "Golden Wheat",
+  "gui.petting.pet_configuration_gui.label_petnames_settings": "petname\u0027s Settings",
+  "gui.petting.pet_configuration_gui.walkvalue_prefix": "",
+  "gui.petting.pet_configuration_gui.walkvalue_suffix": "",
+  "gui.petting.pet_configuration_gui.button_save_settings": "Save Settings",
+  "gui.petting.pet_configuration_gui.label_teleport_distance": "Teleport Distance",
+  "gui.petting.pet_configuration_gui.tpvalue_prefix": "",
+  "gui.petting.pet_configuration_gui.label_follow_distance": "Follow Distance",
+  "gui.petting.pet_configuration_gui.tpvalue_suffix": "",
+  "gui.petting.pet_configuration_gui.s_prefix": "",
+  "gui.petting.pet_configuration_gui.s_suffix": ""
 }
