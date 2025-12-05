@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "aaa",
+    "aba",
+    "aaa"
+  ],
+  "key": {
+    "a": "minecraft:gold_block",
+    "b": "minecraft:wheat"
+  },
+  "result": {
+    "id": "petting:golden_wheat",
+    "count": 1
+  }
+}

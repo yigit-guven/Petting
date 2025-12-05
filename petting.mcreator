@@ -194,6 +194,20 @@
         ]
       },
       "path": "~/PetEntity/Attack"
+    },
+    {
+      "name": "GoldenWheatRecipe",
+      "type": "recipe",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "golden_wheat_recipe",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/petting/advancement/recipes/golden_wheat_recipe.json",
+          "src/main/resources/data/petting/recipe/golden_wheat.json"
+        ]
+      },
+      "path": "~/Recipes"
     }
   ],
   "variable_elements": [],
@@ -280,18 +294,23 @@
       {
         "name": "Gamerules",
         "children": []
+      },
+      {
+        "name": "Recipes",
+        "children": []
       }
     ]
   },
   "workspaceSettings": {
     "modid": "petting",
     "modName": "Petting",
-    "version": "25.1.0",
+    "version": "4.0.0-pre1",
     "description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
     "author": "Vuserr0",
     "websiteURL": "https://github.com/yigit-guven/Petting",
     "license": "GNU Lesser General Public License version 3 (LGPLv3)",
     "serverSideOnly": false,
+    "modPicture": "goldenpaw228",
     "requiredMods": [],
     "dependencies": [],
     "dependants": [],

@@ -4,9 +4,10 @@ license="GNU Lesser General Public License version 3 (LGPLv3)"
 
 [[mods]]
 modId="petting"
-version="25.1.0"
+version="4.0.01"
 displayName="Petting"
 displayURL="https://github.com/yigit-guven/Petting"
+logoFile="logo.png"
 credits="Special thanks to Anchor Studios & Ryukazan for their contributions."
 authors="Vuserr0"
 description="Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures."
