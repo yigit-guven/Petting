@@ -3,6 +3,7 @@ package net.ryukazan.petting.client.gui;
 import org.checkerframework.checker.units.qual.s;
 
 import net.ryukazan.petting.world.inventory.PetConfigurationGUIMenu;
+import net.ryukazan.petting.procedures.PetEntityReturnProcedure;
 import net.ryukazan.petting.init.PettingModScreens;
 
 import net.neoforged.neoforge.client.gui.widget.ExtendedSlider;
@@ -10,9 +11,11 @@ import net.neoforged.neoforge.client.gui.widget.ExtendedSlider;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -52,6 +55,10 @@ public class PetConfigurationGUIScreen extends AbstractContainerScreen<PetConfig
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
 		super.render(guiGraphics, mouseX, mouseY, partialTicks);
+		if (PetEntityReturnProcedure.execute() instanceof LivingEntity livingEntity) {
+			InventoryScreen.renderEntityInInventoryFollowsAngle(guiGraphics, this.leftPos + -760, this.topPos + -816, this.leftPos + 1240, this.topPos + 1184, 30, -livingEntity.getBbHeight() / (2.0f * livingEntity.getScale()),
+					0f + (float) Math.atan((this.leftPos + 240 - mouseX) / 40.0), (float) Math.atan((this.topPos + 135 - mouseY) / 40.0), livingEntity);
+		}
 		this.renderTooltip(guiGraphics, mouseX, mouseY);
 	}
 

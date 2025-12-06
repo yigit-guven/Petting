@@ -208,6 +208,60 @@
         ]
       },
       "path": "~/Recipes"
+    },
+    {
+      "name": "PetEntityReturn",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "pet_entity_return",
+      "metadata": {
+        "dependencies": [],
+        "return_type": "entity",
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/PetEntityReturnProcedure.java"
+        ]
+      },
+      "path": "~/GUIs"
+    },
+    {
+      "name": "OwnerShiftRightclicksPet",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "owner_shift_rightclicks_pet",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "sourceentity",
+            "type": "entity"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/OwnerShiftRightclicksPetProcedure.java"
+        ]
+      },
+      "path": "~/PetEntity/Interactions"
     }
   ],
   "variable_elements": [],
@@ -304,7 +358,7 @@
   "workspaceSettings": {
     "modid": "petting",
     "modName": "Petting",
-    "version": "4.0.0-pre1",
+    "version": "4.0.0-pre2",
     "description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
     "author": "Vuserr0",
     "websiteURL": "https://github.com/yigit-guven/Petting",
