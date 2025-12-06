@@ -1,4 +1,4 @@
-# ![logo](https://github.com/yigit-guven/Petting/tree/1.21.8-neoforge/.github/pettinggithublogo.png) Petting [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1083170?style=flat-square\&logo=curseforge\&label=CurseForge\&color=orange\&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Fpetting)](https://www.curseforge.com/minecraft/mc-mods/petting) [![Modrinth Downloads](https://img.shields.io/modrinth/dt/petting?style=flat-square\&logo=modrinth\&label=Modrinth\&link=https%3A%2F%2Fmodrinth.com%2Fmod%2Fpetting)](https://modrinth.com/mod/petting) [![Discord](https://img.shields.io/discord/1440563800930652235?style=flat-square\&logo=discord\&label=Discord)](https://discord.gg/aPk7Qs5d4H)
+# ![logo](.github/pettinggithublogo.png) Petting [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1083170?style=flat-square\&logo=curseforge\&label=CurseForge\&color=orange\&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Fpetting)](https://www.curseforge.com/minecraft/mc-mods/petting) [![Modrinth Downloads](https://img.shields.io/modrinth/dt/petting?style=flat-square\&logo=modrinth\&label=Modrinth\&link=https%3A%2F%2Fmodrinth.com%2Fmod%2Fpetting)](https://modrinth.com/mod/petting) [![Discord](https://img.shields.io/discord/1440563800930652235?style=flat-square\&logo=discord\&label=Discord)](https://discord.gg/aPk7Qs5d4H)
 
 
 
@@ -42,7 +42,7 @@ The core design principle of Petting is to empower the player to transform any s
 
 
 
-![petting.gif](https://github.com/yigit-guven/Petting/tree/1.21.8-neoforge/.github/petting.gif)
+![petting.gif](.github/petting.gif)
 
 
 
