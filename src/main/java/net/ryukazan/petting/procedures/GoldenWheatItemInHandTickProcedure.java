@@ -26,7 +26,6 @@ public class GoldenWheatItemInHandTickProcedure {
         if (entity instanceof Player player) {
 
             // 1. CHECK HANDS FOR CUSTOM GOLDEN WHEAT
-            // We use PettingModItems.GOLDEN_WHEAT.get() to get the actual Item instance
             boolean isHoldingWheat = player.getMainHandItem().getItem() == PettingModItems.GOLDEN_WHEAT.get() 
                                   || player.getOffhandItem().getItem() == PettingModItems.GOLDEN_WHEAT.get();
 
@@ -42,9 +41,8 @@ public class GoldenWheatItemInHandTickProcedure {
                 Animal.class, 
                 player.getBoundingBox().inflate(searchRadius, 4.0, searchRadius), 
                 mob -> {
-                    // FIX: The compiler error confirmed that getBoolean returns Optional<Boolean> here.
-                    // We use .orElse(false) to unwrap it safely.
-                    boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed").orElse(false);
+                    // FIXED: Removed .orElse(false)
+                    boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed");
                     
                     if (isAlreadyCustomTamed) return false;
                     if (mob instanceof TamableAnimal tamable && tamable.isTame()) return false;
@@ -70,7 +68,6 @@ public class GoldenWheatItemInHandTickProcedure {
                         boolean success = mob.getNavigation().moveTo(player, 1.25);
 
                         // 3. TAG THE ANIMAL
-                        // We add a simple string tag so we know *we* are the ones controlling it.
                         mob.addTag("TemptedByGoldenWheat");
 
                         // 4. Particles (Visual feedback)

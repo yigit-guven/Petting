@@ -19,9 +19,8 @@
       "registry_name": "golden_wheat",
       "metadata": {
         "files": [
-          "src/main/java/net/ryukazan/petting/item/GoldenWheatItem.java",
           "src/main/resources/assets/petting/models/item/golden_wheat.json",
-          "src/main/resources/assets/petting/items/golden_wheat.json"
+          "src/main/java/net/ryukazan/petting/item/GoldenWheatItem.java"
         ]
       },
       "path": "~/Items/GoldenWheatItem"
@@ -34,8 +33,8 @@
       "registry_name": "pet_configuration_gui",
       "metadata": {
         "files": [
-          "src/main/java/net/ryukazan/petting/world/inventory/PetConfigurationGUIMenu.java",
-          "src/main/java/net/ryukazan/petting/client/gui/PetConfigurationGUIScreen.java"
+          "src/main/java/net/ryukazan/petting/client/gui/PetConfigurationGUIScreen.java",
+          "src/main/java/net/ryukazan/petting/world/inventory/PetConfigurationGUIMenu.java"
         ]
       },
       "path": "~/GUIs"
@@ -232,14 +231,14 @@
   },
   "metadata": {
     "files": [
-      "src/main/java/net/ryukazan/petting/init/PettingModMenus.java",
       "src/main/java/net/ryukazan/petting/network/MenuStateUpdateMessage.java",
+      "src/main/java/net/ryukazan/petting/init/PettingModMenus.java",
       "src/main/java/net/ryukazan/petting/init/PettingModScreens.java",
       "src/main/java/net/ryukazan/petting/init/PettingModItems.java",
-      "src/main/java/net/ryukazan/petting/init/PettingModTabs.java",
+      "src/main/java/net/ryukazan/petting/PettingMod.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
       "src/main/resources/pack.mcmeta",
-      "src/main/java/net/ryukazan/petting/PettingMod.java"
+      "src/main/java/net/ryukazan/petting/init/PettingModTabs.java"
     ]
   },
   "foldersRoot": {
@@ -315,7 +314,7 @@
     "dependencies": [],
     "dependants": [],
     "mcreatorDependencies": [],
-    "currentGenerator": "neoforge-1.21.8",
+    "currentGenerator": "neoforge-1.21.1",
     "credits": "Special thanks to Anchor Studios \u0026 Ryukazan for their contributions.",
     "modElementsPackage": "net.ryukazan.petting"
   },

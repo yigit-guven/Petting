@@ -27,10 +27,10 @@ public class OwnerRightclicksPetProcedure {
 	private static void execute(@Nullable Event event, Entity entity, Entity sourceentity) {
 		if (entity == null || sourceentity == null)
 			return;
-		if ((entity.getPersistentData().getStringOr("ownerUUID", "")).equals(sourceentity.getStringUUID())) {
+		if ((entity.getPersistentData().getString("ownerUUID")).equals(sourceentity.getStringUUID())) {
 			if (sourceentity instanceof LivingEntity _entity)
 				_entity.swing(InteractionHand.MAIN_HAND, true);
-			if (entity.getPersistentData().getBooleanOr("sitstill", false)) {
+			if (entity.getPersistentData().getBoolean("sitstill")) {
 				entity.setShiftKeyDown(false);
 				entity.getPersistentData().putBoolean("sitstill", false);
 			} else {

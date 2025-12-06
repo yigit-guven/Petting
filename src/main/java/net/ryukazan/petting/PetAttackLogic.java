@@ -47,10 +47,6 @@ public class PetAttackLogic {
         public static void serverLoad(ServerStartingEvent event) {
         }
 
-        /**
-         * EVENT 0: TICK LOGIC (The "Blindfold" Fix)
-         * Manipulates Follow Range to physically prevent the AI from finding targets.
-         */
         @SubscribeEvent
         public static void onEntityTick(EntityTickEvent.Post event) {
             Entity entity = event.getEntity();
@@ -118,9 +114,6 @@ public class PetAttackLogic {
             }
         }
 
-        /**
-         * EVENT 3: PROJECTILE INTERCEPTION (The "Bullet Catcher")
-         */
         @SubscribeEvent
         public static void onProjectileSpawn(EntityJoinLevelEvent event) {
             if (event.getLevel().isClientSide()) return;
@@ -150,9 +143,6 @@ public class PetAttackLogic {
             }
         }
 
-        /**
-         * EVENT 1: INCOMING DAMAGE (Friendly Fire Prevention)
-         */
         @SubscribeEvent
         public static void onIncomingDamage(LivingIncomingDamageEvent event) {
             Entity victim = event.getEntity();
@@ -163,7 +153,8 @@ public class PetAttackLogic {
             // A. Prevent Pet from hurting Owner
             if (victim instanceof Player owner && isCustomPet(source)) {
                 if (isOwnerOf(source, owner)) {
-                    boolean allowDamage = source.getPersistentData().getBoolean("damageOwner").orElse(false);
+                    // FIXED: Removed .orElse(false)
+                    boolean allowDamage = source.getPersistentData().getBoolean("damageOwner");
                     if (!allowDamage) {
                         event.setCanceled(true); 
                     }
@@ -174,14 +165,10 @@ public class PetAttackLogic {
             if (isCustomPet(victim) && source instanceof Player owner) {
                 if (isOwnerOf(victim, owner)) {
                    ((Mob) victim).setLastHurtByMob(null);
-                   // REMOVED: setLastHurtByPlayer causes crashes in 1.21 if null is passed
                 }
             }
         }
 
-        /**
-         * EVENT 2: POST-DAMAGE (Aggro Logic)
-         */
         @SubscribeEvent
         public static void onLivingDamagePost(LivingDamageEvent.Post event) {
             LivingEntity victim = event.getEntity();
@@ -199,21 +186,24 @@ public class PetAttackLogic {
                     return; 
                 }
 
-                boolean attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked").orElse(true);
+                // FIXED: Removed .orElse(true)
+                boolean attackSelf = true; // Default behavior
+                if (petMob.getPersistentData().contains("attackifselfattacked")) {
+                    attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked");
+                }
+                
                 if (attackSelf) {
                     petMob.setTarget(attacker);
                 }
             }
-
-            // SCENARIO: Defend Owner / Assist Owner
-            // (Handled implicitly by the Tick Monitor reading LastHurt variables)
         }
 
         // --- Helper Methods ---
 
         private static boolean isCustomPet(Entity entity) {
             if (!(entity instanceof Mob)) return false;
-            return entity.getPersistentData().getBoolean("pettingtamed").orElse(false);
+            // FIXED: Removed .orElse(false)
+            return entity.getPersistentData().getBoolean("pettingtamed");
         }
 
         private static boolean isValidCombatTarget(Mob pet, Player owner, LivingEntity potentialTarget) {
@@ -231,11 +221,11 @@ public class PetAttackLogic {
         private static void forceStopAttack(Mob pet) {
             pet.setTarget(null);
             pet.setLastHurtByMob(null);
-            // CRITICAL FIX: Removed setLastHurtByPlayer(null) to prevent crashes
         }
 
         private static Player getOwner(Mob pet) {
-            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID").orElse("");
+            // FIXED: Removed .orElse("")
+            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID");
             if (ownerUUIDStr.isEmpty()) return null;
             try {
                 UUID storedId = UUID.fromString(ownerUUIDStr);
@@ -247,7 +237,8 @@ public class PetAttackLogic {
 
         private static boolean isOwnerOf(Entity pet, Entity potentialOwner) {
             if (!(potentialOwner instanceof Player)) return false;
-            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID").orElse("");
+            // FIXED: Removed .orElse("")
+            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID");
             if (ownerUUIDStr.isEmpty()) return false;
 
             try {

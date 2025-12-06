@@ -7,8 +7,12 @@
     "aaa"
   ],
   "key": {
-    "a": "minecraft:gold_block",
-    "b": "minecraft:wheat"
+    "a": {
+      "item": "minecraft:gold_block"
+    },
+    "b": {
+      "item": "minecraft:wheat"
+    }
   },
   "result": {
     "id": "petting:golden_wheat",

@@ -7,7 +7,7 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
@@ -51,7 +51,7 @@ public class GoldenWheatRightclickedProcedure {
         // 4. Handle Custom Taming
         else if (entity instanceof Mob oldMob) { 
             CompoundTag data = oldMob.getPersistentData();
-            boolean isAlreadyCustomTamed = data.getBoolean("pettingtamed").orElse(false);
+            boolean isAlreadyCustomTamed = data.getBoolean("pettingtamed");
 
             if (!isAlreadyCustomTamed) {
                 actionSuccessful = true;
@@ -81,13 +81,14 @@ public class GoldenWheatRightclickedProcedure {
             // C. THE RESPAWN TRICK (AI RESET)
             if (needsRespawn && world instanceof ServerLevel serverLevel) {
                 // 1. Create fresh entity
-                Entity newEntity = entity.getType().create(world, EntitySpawnReason.CONVERSION);
+                // FIXED: .create() only takes 'world' as an argument. 
+                // We removed 'MobSpawnType.CONVERSION' because the create method doesn't support it.
+                Entity newEntity = entity.getType().create(world);
                 
                 if (newEntity instanceof Mob newMob) {
                     // 2. Set Position & Rotation (Using Public Methods)
                     newMob.setPos(entity.getX(), entity.getY(), entity.getZ());
                     
-                    // FIXED: setRot is protected, so we set Y and X separately
                     newMob.setYRot(entity.getYRot());
                     newMob.setXRot(entity.getXRot());
                     

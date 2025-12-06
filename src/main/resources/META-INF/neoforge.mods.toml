@@ -22,14 +22,14 @@ description="Pet mobs and have them become protective companions that follow you
 [[dependencies.petting]]
     modId="neoforge"
     type="required"
-    versionRange="[21.8.31,)"
+    versionRange="[21.1.190,)"
     ordering="AFTER"
     side="BOTH"
 
 [[dependencies.petting]]
     modId="minecraft"
     type="required"
-    versionRange="[1.21.8]"
+    versionRange="[1.21.1]"
     ordering="AFTER"
     side="BOTH"
 
