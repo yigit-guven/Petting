@@ -3,29 +3,27 @@ package net.ryukazan.petting.client.gui;
 import org.checkerframework.checker.units.qual.s;
 
 import net.ryukazan.petting.world.inventory.PetConfigurationGUIMenu;
-import net.ryukazan.petting.procedures.PetEntityReturnProcedure;
 import net.ryukazan.petting.init.PettingModScreens;
 
-import net.neoforged.neoforge.client.gui.widget.ExtendedSlider;
+import net.minecraftforge.client.gui.widget.ForgeSlider;
 
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.GuiGraphics;
+
+import com.mojang.blaze3d.systems.RenderSystem;
 
 public class PetConfigurationGUIScreen extends AbstractContainerScreen<PetConfigurationGUIMenu> implements PettingModScreens.ScreenAccessor {
 	private final Level world;
 	private final int x, y, z;
 	private final Player entity;
 	private boolean menuStateUpdateActive = false;
-	private ExtendedSlider s;
-	private ExtendedSlider walkvalue;
+	private ForgeSlider s;
+	private ForgeSlider walkvalue;
 
 	public PetConfigurationGUIScreen(PetConfigurationGUIMenu container, Inventory inventory, Component text) {
 		super(container, inventory, text);
@@ -54,46 +52,47 @@ public class PetConfigurationGUIScreen extends AbstractContainerScreen<PetConfig
 
 	@Override
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground(guiGraphics);
 		super.render(guiGraphics, mouseX, mouseY, partialTicks);
-		if (PetEntityReturnProcedure.execute() instanceof LivingEntity livingEntity) {
-			InventoryScreen.renderEntityInInventoryFollowsAngle(guiGraphics, this.leftPos + -760, this.topPos + -816, this.leftPos + 1240, this.topPos + 1184, 30, -livingEntity.getBbHeight() / (2.0f * livingEntity.getScale()),
-					0f + (float) Math.atan((this.leftPos + 240 - mouseX) / 40.0), (float) Math.atan((this.topPos + 135 - mouseY) / 40.0), livingEntity);
-		}
 		this.renderTooltip(guiGraphics, mouseX, mouseY);
 	}
 
 	@Override
 	protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/entity_background.png"), this.leftPos + 162, this.topPos + 7, 0, 0, 151, 186, 151, 186);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 7, this.topPos + 21, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 34, this.topPos + 21, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 61, this.topPos + 21, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 88, this.topPos + 21, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 115, this.topPos + 21, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 7, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 34, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 61, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 88, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 115, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 7, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 34, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 61, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 88, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 115, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 115, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 88, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 61, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 34, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 7, this.topPos + 84, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 115, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 88, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 61, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 34, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 7, this.topPos + 52, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 115, this.topPos + 21, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 88, this.topPos + 21, 0, 0, 26, 26, 26, 26);
-		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 61, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		RenderSystem.setShaderColor(1, 1, 1, 1);
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		guiGraphics.blit(texture, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/entity_background.png"), this.leftPos + 162, this.topPos + 7, 0, 0, 151, 186, 151, 186);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 7, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 34, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 61, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 88, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 115, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 7, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 34, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 61, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 88, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 115, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 7, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 34, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 61, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 88, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/slot.png"), this.leftPos + 115, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 115, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 88, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 61, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 34, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 7, this.topPos + 84, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 115, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 88, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 61, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 34, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 7, this.topPos + 52, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 115, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 88, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		guiGraphics.blit(ResourceLocation.parse("petting:textures/screens/forbidden.png"), this.leftPos + 61, this.topPos + 21, 0, 0, 26, 26, 26, 26);
+		RenderSystem.disableBlend();
 	}
 
 	@Override
@@ -120,7 +119,7 @@ public class PetConfigurationGUIScreen extends AbstractContainerScreen<PetConfig
 	@Override
 	public void init() {
 		super.init();
-		s = new ExtendedSlider(this.leftPos + 7, this.topPos + 169, 140, 20, Component.translatable("gui.petting.pet_configuration_gui.s_prefix"), Component.translatable("gui.petting.pet_configuration_gui.s_suffix"), 0, 200, 20, 1, 0, true) {
+		s = new ForgeSlider(this.leftPos + 7, this.topPos + 169, 140, 20, Component.translatable("gui.petting.pet_configuration_gui.s_prefix"), Component.translatable("gui.petting.pet_configuration_gui.s_suffix"), 0, 200, 20, 1, 0, true) {
 			@Override
 			protected void applyValue() {
 				if (!menuStateUpdateActive)
@@ -130,8 +129,8 @@ public class PetConfigurationGUIScreen extends AbstractContainerScreen<PetConfig
 		this.addRenderableWidget(s);
 		if (!menuStateUpdateActive)
 			menu.sendMenuStateUpdate(entity, 2, "s", s.getValue(), false);
-		walkvalue = new ExtendedSlider(this.leftPos + 7, this.topPos + 133, 140, 20, Component.translatable("gui.petting.pet_configuration_gui.walkvalue_prefix"), Component.translatable("gui.petting.pet_configuration_gui.walkvalue_suffix"), 0, 200,
-				10, 1, 0, true) {
+		walkvalue = new ForgeSlider(this.leftPos + 7, this.topPos + 133, 140, 20, Component.translatable("gui.petting.pet_configuration_gui.walkvalue_prefix"), Component.translatable("gui.petting.pet_configuration_gui.walkvalue_suffix"), 0, 200, 10,
+				1, 0, true) {
 			@Override
 			protected void applyValue() {
 				if (!menuStateUpdateActive)

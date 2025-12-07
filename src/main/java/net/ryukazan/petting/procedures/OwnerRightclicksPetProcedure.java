@@ -1,9 +1,9 @@
 package net.ryukazan.petting.procedures;
 
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.bus.api.Event;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
@@ -11,7 +11,7 @@ import net.minecraft.world.InteractionHand;
 
 import javax.annotation.Nullable;
 
-@EventBusSubscriber
+@Mod.EventBusSubscriber
 public class OwnerRightclicksPetProcedure {
 	@SubscribeEvent
 	public static void onRightClickEntity(PlayerInteractEvent.EntityInteract event) {
@@ -27,10 +27,10 @@ public class OwnerRightclicksPetProcedure {
 	private static void execute(@Nullable Event event, Entity entity, Entity sourceentity) {
 		if (entity == null || sourceentity == null)
 			return;
-		if ((entity.getPersistentData().getStringOr("ownerUUID", "")).equals(sourceentity.getStringUUID())) {
+		if ((entity.getPersistentData().getString("ownerUUID")).equals(sourceentity.getStringUUID())) {
 			if (sourceentity instanceof LivingEntity _entity)
 				_entity.swing(InteractionHand.MAIN_HAND, true);
-			if (entity.getPersistentData().getBooleanOr("sitstill", false)) {
+			if (entity.getPersistentData().getBoolean("sitstill")) {
 				entity.setShiftKeyDown(false);
 				entity.getPersistentData().putBoolean("sitstill", false);
 			} else {

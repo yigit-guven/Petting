@@ -2,8 +2,8 @@ package net.ryukazan.petting.world.inventory;
 
 import net.ryukazan.petting.init.PettingModMenus;
 
-import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.IItemHandler;
 
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.Level;
@@ -26,7 +26,7 @@ public class PetConfigurationGUIMenu extends AbstractContainerMenu implements Pe
 	public final Map<String, Object> menuState = new HashMap<>() {
 		@Override
 		public Object put(String key, Object value) {
-			if (!this.containsKey(key) && this.size() >= 35)
+			if (!this.containsKey(key) && this.size() >= 34)
 				return null;
 			return super.put(key, value);
 		}

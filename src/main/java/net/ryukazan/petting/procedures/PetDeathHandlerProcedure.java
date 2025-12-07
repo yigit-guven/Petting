@@ -1,12 +1,10 @@
 package net.ryukazan.petting.procedures;
 
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.common.EventBusSubscriber; // NEW IMPORT
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
@@ -14,15 +12,14 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
 
-// CHANGED: Removed "Mod." prefix. It is now a standalone annotation.
-@EventBusSubscriber
+// We specify Bus.FORGE because LivingDeathEvent is a gameplay event
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PetDeathHandlerProcedure {
 
     @SubscribeEvent
     public static void onEntityDeath(LivingDeathEvent event) {
         if (event == null || event.getEntity() == null) return;
 
-        // Use LivingEntity to access getCombatTracker()
         LivingEntity entity = event.getEntity();
 
         // 1. Check if the entity is on the Server
@@ -31,16 +28,14 @@ public class PetDeathHandlerProcedure {
         // 2. Check if this entity has our custom "pettingtamed" tag
         CompoundTag data = entity.getPersistentData();
         
-        // Handling Optional<Boolean> as required by your environment
-        boolean isTamed = data.getBoolean("pettingtamed").orElse(false);
+        boolean isTamed = data.getBoolean("pettingtamed");
 
         if (!isTamed) {
             return;
         }
 
         // 3. Get the Owner's UUID stored in the entity
-        // Handling Optional<String> as required by your environment
-        String ownerUUIDString = data.getString("ownerUUID").orElse("");
+        String ownerUUIDString = data.getString("ownerUUID");
 
         if (ownerUUIDString.isEmpty()) return;
 

@@ -19,9 +19,8 @@
       "registry_name": "golden_wheat",
       "metadata": {
         "files": [
-          "src/main/java/net/ryukazan/petting/item/GoldenWheatItem.java",
           "src/main/resources/assets/petting/models/item/golden_wheat.json",
-          "src/main/resources/assets/petting/items/golden_wheat.json"
+          "src/main/java/net/ryukazan/petting/item/GoldenWheatItem.java"
         ]
       },
       "path": "~/Items/GoldenWheatItem"
@@ -203,65 +202,11 @@
       "registry_name": "golden_wheat_recipe",
       "metadata": {
         "files": [
-          "src/main/resources/data/petting/advancement/recipes/golden_wheat_recipe.json",
-          "src/main/resources/data/petting/recipe/golden_wheat.json"
+          "src/main/resources/data/petting/advancements/recipes/golden_wheat_recipe.json",
+          "src/main/resources/data/petting/recipes/golden_wheat.json"
         ]
       },
       "path": "~/Recipes"
-    },
-    {
-      "name": "PetEntityReturn",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "pet_entity_return",
-      "metadata": {
-        "dependencies": [],
-        "return_type": "entity",
-        "files": [
-          "src/main/java/net/ryukazan/petting/procedures/PetEntityReturnProcedure.java"
-        ]
-      },
-      "path": "~/GUIs"
-    },
-    {
-      "name": "OwnerShiftRightclicksPet",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "owner_shift_rightclicks_pet",
-      "metadata": {
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          },
-          {
-            "name": "sourceentity",
-            "type": "entity"
-          },
-          {
-            "name": "x",
-            "type": "number"
-          },
-          {
-            "name": "y",
-            "type": "number"
-          },
-          {
-            "name": "z",
-            "type": "number"
-          },
-          {
-            "name": "world",
-            "type": "world"
-          }
-        ],
-        "files": [
-          "src/main/java/net/ryukazan/petting/procedures/OwnerShiftRightclicksPetProcedure.java"
-        ]
-      },
-      "path": "~/PetEntity/Interactions"
     }
   ],
   "variable_elements": [],
@@ -286,14 +231,14 @@
   },
   "metadata": {
     "files": [
-      "src/main/java/net/ryukazan/petting/init/PettingModMenus.java",
       "src/main/java/net/ryukazan/petting/network/MenuStateUpdateMessage.java",
       "src/main/java/net/ryukazan/petting/init/PettingModScreens.java",
+      "src/main/java/net/ryukazan/petting/init/PettingModMenus.java",
       "src/main/java/net/ryukazan/petting/init/PettingModItems.java",
+      "src/main/java/net/ryukazan/petting/PettingMod.java",
       "src/main/java/net/ryukazan/petting/init/PettingModTabs.java",
-      "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/resources/pack.mcmeta",
-      "src/main/java/net/ryukazan/petting/PettingMod.java"
+      "src/main/resources/META-INF/mods.toml",
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
@@ -358,7 +303,7 @@
   "workspaceSettings": {
     "modid": "petting",
     "modName": "Petting",
-    "version": "4.0.0-pre2",
+    "version": "4.0.0-pre1",
     "description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
     "author": "Vuserr0",
     "websiteURL": "https://github.com/yigit-guven/Petting",
@@ -369,7 +314,7 @@
     "dependencies": [],
     "dependants": [],
     "mcreatorDependencies": [],
-    "currentGenerator": "neoforge-1.21.8",
+    "currentGenerator": "forge-1.20.1",
     "credits": "Special thanks to Anchor Studios \u0026 Ryukazan for their contributions.",
     "modElementsPackage": "net.ryukazan.petting"
   },

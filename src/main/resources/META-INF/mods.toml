@@ -1,10 +1,10 @@
 modLoader="javafml"
-loaderVersion="[4,)"
+loaderVersion="[47,)"
 license="GNU Lesser General Public License version 3 (LGPLv3)"
 
 [[mods]]
 modId="petting"
-version="4.0.02"
+version="4.0.01"
 displayName="Petting"
 displayURL="https://github.com/yigit-guven/Petting"
 logoFile="logo.png"
@@ -15,21 +15,10 @@ description="Pet mobs and have them become protective companions that follow you
 # Start of user code block mod configuration
 # End of user code block mod configuration
 
-
-# Start of user code block custom mixins
-# End of user code block custom mixins
-
-[[dependencies.petting]]
-    modId="neoforge"
-    type="required"
-    versionRange="[21.8.31,)"
-    ordering="AFTER"
-    side="BOTH"
-
 [[dependencies.petting]]
     modId="minecraft"
-    type="required"
-    versionRange="[1.21.8]"
+    mandatory=true
+    versionRange="[1.20.1]"
     ordering="AFTER"
     side="BOTH"
 

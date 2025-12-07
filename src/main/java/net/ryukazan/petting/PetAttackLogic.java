@@ -1,14 +1,14 @@
 package net.ryukazan.petting;
 
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.entity.living.LivingEvent; // <-- NEW/FIXED IMPORT
 
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.Level;
@@ -24,9 +24,8 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.Optional;
 
-@EventBusSubscriber
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class PetAttackLogic {
     public PetAttackLogic() {
     }
@@ -40,19 +39,19 @@ public class PetAttackLogic {
     public static void clientLoad(FMLClientSetupEvent event) {
     }
 
-    @EventBusSubscriber
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
     private static class PetAttackLogicForgeBusEvents {
         
         @SubscribeEvent
         public static void serverLoad(ServerStartingEvent event) {
         }
 
-        /**
-         * EVENT 0: TICK LOGIC (The "Blindfold" Fix)
-         * Manipulates Follow Range to physically prevent the AI from finding targets.
-         */
         @SubscribeEvent
-        public static void onEntityTick(EntityTickEvent.Post event) {
+        // FIX: Use LivingTickEvent for all living entity tick logic
+        public static void onEntityTick(LivingEvent.LivingTickEvent event) {
+            // Note: This event fires once per tick per Living entity. 
+            // In a simple conversion from NeoForge's EntityTickEvent.Post, this is generally sufficient.
+
             Entity entity = event.getEntity();
 
             if (entity.level().isClientSide() || !(entity instanceof Mob pet)) {
@@ -118,9 +117,6 @@ public class PetAttackLogic {
             }
         }
 
-        /**
-         * EVENT 3: PROJECTILE INTERCEPTION (The "Bullet Catcher")
-         */
         @SubscribeEvent
         public static void onProjectileSpawn(EntityJoinLevelEvent event) {
             if (event.getLevel().isClientSide()) return;
@@ -150,11 +146,8 @@ public class PetAttackLogic {
             }
         }
 
-        /**
-         * EVENT 1: INCOMING DAMAGE (Friendly Fire Prevention)
-         */
         @SubscribeEvent
-        public static void onIncomingDamage(LivingIncomingDamageEvent event) {
+        public static void onIncomingDamage(LivingAttackEvent event) {
             Entity victim = event.getEntity();
             Entity source = event.getSource().getEntity(); 
 
@@ -163,7 +156,7 @@ public class PetAttackLogic {
             // A. Prevent Pet from hurting Owner
             if (victim instanceof Player owner && isCustomPet(source)) {
                 if (isOwnerOf(source, owner)) {
-                    boolean allowDamage = source.getPersistentData().getBoolean("damageOwner").orElse(false);
+                    boolean allowDamage = source.getPersistentData().getBoolean("damageOwner");
                     if (!allowDamage) {
                         event.setCanceled(true); 
                     }
@@ -174,16 +167,12 @@ public class PetAttackLogic {
             if (isCustomPet(victim) && source instanceof Player owner) {
                 if (isOwnerOf(victim, owner)) {
                    ((Mob) victim).setLastHurtByMob(null);
-                   // REMOVED: setLastHurtByPlayer causes crashes in 1.21 if null is passed
                 }
             }
         }
 
-        /**
-         * EVENT 2: POST-DAMAGE (Aggro Logic)
-         */
         @SubscribeEvent
-        public static void onLivingDamagePost(LivingDamageEvent.Post event) {
+        public static void onLivingDamagePost(LivingDamageEvent event) {
             LivingEntity victim = event.getEntity();
             Entity sourceEntity = event.getSource().getEntity();
 
@@ -199,21 +188,22 @@ public class PetAttackLogic {
                     return; 
                 }
 
-                boolean attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked").orElse(true);
+                boolean attackSelf = true; // Default behavior
+                if (petMob.getPersistentData().contains("attackifselfattacked")) {
+                    attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked");
+                }
+                
                 if (attackSelf) {
                     petMob.setTarget(attacker);
                 }
             }
-
-            // SCENARIO: Defend Owner / Assist Owner
-            // (Handled implicitly by the Tick Monitor reading LastHurt variables)
         }
 
         // --- Helper Methods ---
 
         private static boolean isCustomPet(Entity entity) {
             if (!(entity instanceof Mob)) return false;
-            return entity.getPersistentData().getBoolean("pettingtamed").orElse(false);
+            return entity.getPersistentData().getBoolean("pettingtamed");
         }
 
         private static boolean isValidCombatTarget(Mob pet, Player owner, LivingEntity potentialTarget) {
@@ -231,11 +221,10 @@ public class PetAttackLogic {
         private static void forceStopAttack(Mob pet) {
             pet.setTarget(null);
             pet.setLastHurtByMob(null);
-            // CRITICAL FIX: Removed setLastHurtByPlayer(null) to prevent crashes
         }
 
         private static Player getOwner(Mob pet) {
-            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID").orElse("");
+            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID");
             if (ownerUUIDStr.isEmpty()) return null;
             try {
                 UUID storedId = UUID.fromString(ownerUUIDStr);
@@ -247,7 +236,7 @@ public class PetAttackLogic {
 
         private static boolean isOwnerOf(Entity pet, Entity potentialOwner) {
             if (!(potentialOwner instanceof Player)) return false;
-            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID").orElse("");
+            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID");
             if (ownerUUIDStr.isEmpty()) return false;
 
             try {

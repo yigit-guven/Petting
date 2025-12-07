@@ -381,20 +381,6 @@
           "y": 152,
           "locked": false
         }
-      },
-      {
-        "type": "entitymodel",
-        "data": {
-          "entityModel": {
-            "name": "PetEntityReturn"
-          },
-          "scale": 30,
-          "rotationX": 0,
-          "followMouseMovement": true,
-          "x": 283,
-          "y": 183,
-          "locked": false
-        }
       }
     ],
     "gridSettings": {
