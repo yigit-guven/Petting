@@ -314,7 +314,7 @@
     "dependencies": [],
     "dependants": [],
     "mcreatorDependencies": [],
-    "currentGenerator": "forge-1.20.1",
+    "currentGenerator": "forge-1.19.4",
     "credits": "Special thanks to Anchor Studios \u0026 Ryukazan for their contributions.",
     "modElementsPackage": "net.ryukazan.petting"
   },

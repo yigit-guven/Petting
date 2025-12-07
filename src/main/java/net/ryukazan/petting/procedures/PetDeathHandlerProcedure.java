@@ -12,7 +12,6 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
 
-// We specify Bus.FORGE because LivingDeathEvent is a gameplay event
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PetDeathHandlerProcedure {
 
@@ -22,8 +21,8 @@ public class PetDeathHandlerProcedure {
 
         LivingEntity entity = event.getEntity();
 
-        // 1. Check if the entity is on the Server
-        if (entity.level().isClientSide()) return;
+        // FIX 1.19.4: Use .level field instead of .level()
+        if (entity.level.isClientSide) return;
 
         // 2. Check if this entity has our custom "pettingtamed" tag
         CompoundTag data = entity.getPersistentData();
@@ -46,7 +45,8 @@ public class PetDeathHandlerProcedure {
             Component deathMessage = entity.getCombatTracker().getDeathMessage();
 
             // 5. Find the owner and send the message
-            if (entity.level() instanceof ServerLevel serverLevel) {
+            // FIX 1.19.4: Use .level field
+            if (entity.level instanceof ServerLevel serverLevel) {
                 ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(ownerUUID);
 
                 if (owner != null) {

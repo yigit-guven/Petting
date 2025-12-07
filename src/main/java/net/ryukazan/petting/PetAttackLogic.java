@@ -8,7 +8,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.event.entity.living.LivingEvent; // <-- NEW/FIXED IMPORT
+import net.minecraftforge.event.entity.living.LivingEvent;
 
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.level.Level;
@@ -47,14 +47,11 @@ public class PetAttackLogic {
         }
 
         @SubscribeEvent
-        // FIX: Use LivingTickEvent for all living entity tick logic
         public static void onEntityTick(LivingEvent.LivingTickEvent event) {
-            // Note: This event fires once per tick per Living entity. 
-            // In a simple conversion from NeoForge's EntityTickEvent.Post, this is generally sufficient.
-
             Entity entity = event.getEntity();
 
-            if (entity.level().isClientSide() || !(entity instanceof Mob pet)) {
+            // FIX 1.19.4: Use .level field instead of .level()
+            if (entity.level.isClientSide || !(entity instanceof Mob pet)) {
                 return;
             }
 
@@ -151,7 +148,8 @@ public class PetAttackLogic {
             Entity victim = event.getEntity();
             Entity source = event.getSource().getEntity(); 
 
-            if (victim == null || source == null || victim.level().isClientSide()) return;
+            // FIX 1.19.4: Use .level field
+            if (victim == null || source == null || victim.level.isClientSide) return;
 
             // A. Prevent Pet from hurting Owner
             if (victim instanceof Player owner && isCustomPet(source)) {
@@ -176,7 +174,8 @@ public class PetAttackLogic {
             LivingEntity victim = event.getEntity();
             Entity sourceEntity = event.getSource().getEntity();
 
-            if (victim == null || sourceEntity == null || victim.level().isClientSide()) return;
+            // FIX 1.19.4: Use .level field
+            if (victim == null || sourceEntity == null || victim.level.isClientSide) return;
             if (!(sourceEntity instanceof LivingEntity attacker)) return;
 
             // SCENARIO: Self Defense
@@ -228,7 +227,8 @@ public class PetAttackLogic {
             if (ownerUUIDStr.isEmpty()) return null;
             try {
                 UUID storedId = UUID.fromString(ownerUUIDStr);
-                return pet.level().getPlayerByUUID(storedId);
+                // FIX 1.19.4: Use .level field
+                return pet.level.getPlayerByUUID(storedId);
             } catch (Exception e) {
                 return null;
             }

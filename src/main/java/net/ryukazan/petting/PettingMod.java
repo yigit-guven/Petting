@@ -3,7 +3,6 @@ package net.ryukazan.petting;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
-import net.ryukazan.petting.init.PettingModTabs;
 import net.ryukazan.petting.init.PettingModMenus;
 import net.ryukazan.petting.init.PettingModItems;
 
@@ -41,7 +40,6 @@ public class PettingMod {
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus bus = context.getModEventBus();
 		PettingModItems.REGISTRY.register(bus);
-		PettingModTabs.REGISTRY.register(bus);
 		PettingModMenus.REGISTRY.register(bus);
 		// Start of user code block mod init
 		// End of user code block mod init
@@ -50,7 +48,7 @@ public class PettingMod {
 	// Start of user code block mod methods
 	// End of user code block mod methods
 	private static final String PROTOCOL_VERSION = "1";
-	public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(ResourceLocation.fromNamespaceAndPath(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
+	public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
 	private static int messageID = 0;
 
 	public static <T> void addNetworkMessage(Class<T> messageType, BiConsumer<T, FriendlyByteBuf> encoder, Function<FriendlyByteBuf, T> decoder, BiConsumer<T, Supplier<NetworkEvent.Context>> messageConsumer) {

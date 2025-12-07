@@ -5,7 +5,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.event.entity.living.LivingEvent; // <-- NEW/FIXED IMPORT
+import net.minecraftforge.event.entity.living.LivingEvent;
 
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.Level;
@@ -43,16 +43,14 @@ public class FollowOwnerOrTeleport {
         }
 
         @SubscribeEvent
-        // FIX: Use LivingTickEvent for simpler logic, removed phase check
         public static void onEntityTick(LivingEvent.LivingTickEvent event) {
-            // Note: Since we are now using LivingTickEvent, we no longer need the phase check (Phase.START).
-            // This event fires every tick for Living entities.
-
             Entity entity = event.getEntity();
-            Level world = entity.level();
+            
+            // FIX 1.19.4: Use .level field
+            Level world = entity.level;
 
             // 1. Logic only runs on Server Side and only for Mobs
-            if (world.isClientSide() || !(entity instanceof Mob mob)) {
+            if (world.isClientSide || !(entity instanceof Mob mob)) {
                 return;
             }
 
@@ -65,14 +63,9 @@ public class FollowOwnerOrTeleport {
 
             // --- SITTING LOGIC START ---
             if (data.contains("sitstill") && data.getBoolean("sitstill")) {
-                
-                // A. Stop Pathfinding (Brains)
                 mob.getNavigation().stop();
-                
-                // B. Stop Movement Control (The Engine)
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
 
-                // C. Physics Stabilization (The Body)
                 if (isUniversalFlyingMob(mob, data)) {
                     Vec3 currentVel = mob.getDeltaMovement();
                     double newY = (currentVel.y < 0) ? 0.0 : currentVel.y * 0.8;
@@ -81,7 +74,6 @@ public class FollowOwnerOrTeleport {
                 else {
                     mob.setDeltaMovement(0, mob.getDeltaMovement().y, 0); 
                 }
-                
                 return;
             }
             // --- SITTING LOGIC END ---
@@ -113,7 +105,6 @@ public class FollowOwnerOrTeleport {
             int followDist = data.contains("followdistance") ? data.getInt("followdistance") : 10;
             int teleportDist = data.contains("teleportdistance") ? data.getInt("teleportdistance") : 20;
 
-            // Determine if this specific mob should behave like a flyer
             boolean isFlyer = isUniversalFlyingMob(mob, data);
 
             // 5. Teleport Logic (Priority)
@@ -124,9 +115,7 @@ public class FollowOwnerOrTeleport {
             } 
             // 6. Follow Logic
             else if (distanceToOwner > followDist) {
-                
                 if (isFlyer) {
-                    // --- FLYING LOGIC ---
                     mob.getLookControl().setLookAt(owner, 10.0F, (float)mob.getMaxHeadXRot());
                     
                     double targetX = owner.getX();
@@ -140,7 +129,6 @@ public class FollowOwnerOrTeleport {
                     }
 
                 } else {
-                    // --- GROUND LOGIC ---
                     mob.getNavigation().moveTo(owner, 1.2D);
                 }
             }
@@ -151,14 +139,10 @@ public class FollowOwnerOrTeleport {
                 return true;
             }
 
-            // 2. Standard Flying Interfaces
             if (mob instanceof FlyingAnimal) return true;
             if (mob.getNavigation() instanceof FlyingPathNavigation) return true;
-
-            // 3. Physics Check
             if (mob.isNoGravity()) return true;
 
-            // 4. String/ID Check
             String registryName = mob.getEncodeId(); 
             if (registryName == null) registryName = mob.getType().getDescriptionId(); 
             
@@ -173,13 +157,13 @@ public class FollowOwnerOrTeleport {
                     return true;
                 }
             }
-
             return false;
         }
 
         private static void teleportToOwner(Mob pet, Player owner, boolean isFlyer) {
             BlockPos ownerPos = owner.blockPosition();
-            Level level = pet.level();
+            // FIX 1.19.4: Use .level field
+            Level level = pet.level;
             
             for (int i = 0; i < 10; ++i) {
                 int randomX = getRandomNumber(-3, 3);

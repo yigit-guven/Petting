@@ -34,7 +34,7 @@ public class PettingModMenus {
 			getMenuState().put(elementType + ":" + name, elementState);
 			if (player instanceof ServerPlayer serverPlayer) {
 				PettingMod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new MenuStateUpdateMessage(elementType, name, elementState));
-			} else if (player.level().isClientSide) {
+			} else if (player.level.isClientSide) {
 				if (Minecraft.getInstance().screen instanceof PettingModScreens.ScreenAccessor accessor && needClientUpdate)
 					accessor.updateMenuState(elementType, name, elementState);
 				PettingMod.PACKET_HANDLER.sendToServer(new MenuStateUpdateMessage(elementType, name, elementState));

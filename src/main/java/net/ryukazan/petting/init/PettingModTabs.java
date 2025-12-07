@@ -3,20 +3,21 @@
  */
 package net.ryukazan.petting.init;
 
-import net.ryukazan.petting.PettingMod;
-
-import net.minecraftforge.registries.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.event.CreativeModeTabEvent;
 
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraft.core.registries.Registries;
 
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class PettingModTabs {
-	public static final DeferredRegister<CreativeModeTab> REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, PettingMod.MODID);
-	public static final RegistryObject<CreativeModeTab> PETTING = REGISTRY.register("petting",
-			() -> CreativeModeTab.builder().title(Component.translatable("item_group.petting.petting")).icon(() -> new ItemStack(PettingModItems.GOLDEN_WHEAT.get())).displayItems((parameters, tabData) -> {
-				tabData.accept(PettingModItems.GOLDEN_WHEAT.get());
-			}).withSearchBar().build());
+	@SubscribeEvent
+	public static void buildTabContentsModded(CreativeModeTabEvent.Register event) {
+		event.registerCreativeModeTab(new ResourceLocation("petting", "petting"),
+				builder -> builder.title(Component.translatable("item_group.petting.petting")).icon(() -> new ItemStack(PettingModItems.GOLDEN_WHEAT.get())).displayItems((parameters, tabData) -> {
+					tabData.accept(PettingModItems.GOLDEN_WHEAT.get());
+				}).withSearchBar());
+	}
 }

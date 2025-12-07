@@ -6,8 +6,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
@@ -27,7 +25,10 @@ public class GoldenWheatRightclickedProcedure {
     public static void execute(Entity entity, Entity sourceentity) {
         // 1. Safety Checks
         if (entity == null || sourceentity == null) return;
-        if (entity.level().isClientSide()) return;
+        
+        // FIX 1.19.4: Use .level field instead of .level() method
+        if (entity.level.isClientSide) return;
+        
         if (!(sourceentity instanceof Player player)) return;
 
         // 2. Check Item
@@ -61,7 +62,8 @@ public class GoldenWheatRightclickedProcedure {
 
         // 5. Success Logic & Respawn
         if (actionSuccessful) {
-            Level world = entity.level();
+            // FIX 1.19.4: Use .level field
+            Level world = entity.level;
 
             // A. VISUALS
             if (world instanceof ServerLevel _level) {
@@ -81,8 +83,6 @@ public class GoldenWheatRightclickedProcedure {
             // C. THE RESPAWN TRICK (AI RESET)
             if (needsRespawn && world instanceof ServerLevel serverLevel) {
                 // 1. Create fresh entity
-                // FIXED: .create() only takes 'world' as an argument. 
-                // We removed 'MobSpawnType.CONVERSION' because the create method doesn't support it.
                 Entity newEntity = entity.getType().create(world);
                 
                 if (newEntity instanceof Mob newMob) {

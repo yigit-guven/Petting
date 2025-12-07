@@ -7,14 +7,12 @@ import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
 
 import java.util.List;
 import java.util.Comparator;
 
-// IMPORT YOUR CUSTOM ITEMS HERE
 import net.ryukazan.petting.init.PettingModItems;
 
 public class GoldenWheatItemInHandTickProcedure {
@@ -30,6 +28,7 @@ public class GoldenWheatItemInHandTickProcedure {
                                   || player.getOffhandItem().getItem() == PettingModItems.GOLDEN_WHEAT.get();
 
             // OPTIMIZATION: Run logic only once every 5 ticks (0.25s) to prevent lag
+            // In 1.19.4, use world instanceof Level to check game time
             if (world instanceof Level _lvl && _lvl.getGameTime() % 5 != 0) {
                 return;
             }
@@ -41,7 +40,6 @@ public class GoldenWheatItemInHandTickProcedure {
                 Animal.class, 
                 player.getBoundingBox().inflate(searchRadius, 4.0, searchRadius), 
                 mob -> {
-                    // FIXED: Removed .orElse(false)
                     boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed");
                     
                     if (isAlreadyCustomTamed) return false;
