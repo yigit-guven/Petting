@@ -226,6 +226,20 @@
         ]
       },
       "path": "~/TickProcedures"
+    },
+    {
+      "name": "SummonPettingCommand",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "summon_petting_command",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/SummonPettingCommandProcedure.java"
+        ]
+      },
+      "path": "~/Commands"
     }
   ],
   "variable_elements": [],
