@@ -14,11 +14,10 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.FlyingAnimal; 
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation; 
-import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.Vec3; 
+import net.minecraft.world.phys.Vec3;
 
 import java.util.UUID;
 
@@ -48,30 +47,22 @@ public class FollowOwnerOrTeleport {
             Entity entity = event.getEntity();
             Level world = entity.level();
 
-            // 1. Logic only runs on Server Side and only for Mobs
             if (world.isClientSide() || !(entity instanceof Mob mob)) {
                 return;
             }
 
-            // 2. Retrieve Custom Data
             CompoundTag data = entity.getPersistentData();
 
-            // FIXED: Removed .orElse(false)
+            // Check Tamed Status
             if (!data.contains("pettingtamed") || !data.getBoolean("pettingtamed")) {
                 return;
             }
 
-            // --- SITTING LOGIC START ---
-            // FIXED: Removed .orElse(false)
+            // --- SITTING LOGIC ---
             if (data.contains("sitstill") && data.getBoolean("sitstill")) {
-                
-                // A. Stop Pathfinding (Brains)
                 mob.getNavigation().stop();
-                
-                // B. Stop Movement Control (The Engine)
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
 
-                // C. Physics Stabilization (The Body)
                 if (isUniversalFlyingMob(mob, data)) {
                     Vec3 currentVel = mob.getDeltaMovement();
                     double newY = (currentVel.y < 0) ? 0.0 : currentVel.y * 0.8;
@@ -80,17 +71,14 @@ public class FollowOwnerOrTeleport {
                 else {
                     mob.setDeltaMovement(0, mob.getDeltaMovement().y, 0); 
                 }
-                
                 return;
             }
-            // --- SITTING LOGIC END ---
 
-            // 3. Get Owner
+            // Get Owner
             if (!data.contains("ownerUUID")) {
                 return;
             }
             
-            // FIXED: Removed .orElse("")
             String ownerUUIDStr = data.getString("ownerUUID");
             if (ownerUUIDStr.isEmpty()) return;
 
@@ -102,68 +90,66 @@ public class FollowOwnerOrTeleport {
             }
 
             Player owner = world.getPlayerByUUID(ownerUUID);
+            if (owner == null) return;
 
-            if (owner == null) {
-                return;
-            }
-
-            // 4. Calculate Distances
-            double distanceToOwner = mob.distanceTo(owner);
-            
-            // FIXED: Removed .orElse(15) and .orElse(20)
-            int followDist = data.contains("followdistance") ? data.getInt("followdistance") : 10;
+            // --- DISTANCE SETTINGS ---
+            // CHANGED: Default follow distance reduced from 15 to 6 so they actually follow.
+            int startFollowDist = data.contains("followdistance") ? data.getInt("followdistance") : 6;
+            int stopFollowDist = 2; // Stop when very close
             int teleportDist = data.contains("teleportdistance") ? data.getInt("teleportdistance") : 20;
 
-            // Determine if this specific mob should behave like a flyer
+            double distanceToOwner = mob.distanceTo(owner);
             boolean isFlyer = isUniversalFlyingMob(mob, data);
 
-            // 5. Teleport Logic (Priority)
+            // 1. TELEPORT (Too far)
             if (distanceToOwner >= teleportDist) {
                 teleportToOwner(mob, owner, isFlyer);
                 mob.getNavigation().stop();
                 mob.setDeltaMovement(0, 0, 0); 
             } 
-            // 6. Follow Logic
-            else if (distanceToOwner > followDist) {
+            // 2. STOP WALKING (Too close)
+            else if (distanceToOwner < stopFollowDist) {
+                mob.getNavigation().stop();
+                mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
+            }
+            // 3. WALK/FLY TO OWNER (In between)
+            else if (distanceToOwner > startFollowDist) {
                 
-                if (isFlyer) {
-                    // --- FLYING LOGIC ---
-                    mob.getLookControl().setLookAt(owner, 10.0F, (float)mob.getMaxHeadXRot());
-                    
-                    double targetX = owner.getX();
-                    double targetY = owner.getY() + 1.0D; 
-                    double targetZ = owner.getZ();
+                // PERFORMANCE FIX: Only update path every 10 ticks (0.5 seconds) 
+                // Updating every tick causes stuttering and lag.
+                if (mob.tickCount % 10 == 0 || mob.getNavigation().isDone()) {
 
-                    mob.getMoveControl().setWantedPosition(targetX, targetY, targetZ, 1.0D);
-                    
-                    if (mob.tickCount % 20 == 0) { 
-                         mob.getNavigation().moveTo(owner, 1.2D);
+                    if (isFlyer) {
+                        // --- FLYING LOGIC ---
+                        mob.getLookControl().setLookAt(owner, 10.0F, (float)mob.getMaxHeadXRot());
+                        
+                        double targetX = owner.getX();
+                        double targetY = owner.getY() + 1.5D; // Aim slightly above head
+                        double targetZ = owner.getZ();
+
+                        mob.getMoveControl().setWantedPosition(targetX, targetY, targetZ, 1.2D);
+                        
+                        // Fallback navigation
+                        mob.getNavigation().moveTo(owner, 1.2D);
+
+                    } else {
+                        // --- GROUND LOGIC ---
+                        // Speed 1.2D is a nice trotting speed
+                        mob.getNavigation().moveTo(owner, 1.2D);
                     }
-
-                } else {
-                    // --- GROUND LOGIC ---
-                    mob.getNavigation().moveTo(owner, 1.2D);
                 }
             }
         }
 
-        /**
-         * A Universal check to see if a mob should be treated as a flying entity.
-         */
         private static boolean isUniversalFlyingMob(Mob mob, CompoundTag data) {
-            // FIXED: Removed .orElse(false)
             if (data.contains("force_flying") && data.getBoolean("force_flying")) {
                 return true;
             }
 
-            // 2. Standard Flying Interfaces
             if (mob instanceof FlyingAnimal) return true;
             if (mob.getNavigation() instanceof FlyingPathNavigation) return true;
-
-            // 3. Physics Check
             if (mob.isNoGravity()) return true;
 
-            // 4. String/ID Check
             String registryName = mob.getEncodeId(); 
             if (registryName == null) registryName = mob.getType().getDescriptionId(); 
             
@@ -182,31 +168,28 @@ public class FollowOwnerOrTeleport {
             return false;
         }
 
-        /**
-         * Helper function to teleport the pet safely near the owner.
-         */
         private static void teleportToOwner(Mob pet, Player owner, boolean isFlyer) {
             BlockPos ownerPos = owner.blockPosition();
             Level level = pet.level();
             
             for (int i = 0; i < 10; ++i) {
-                int randomX = getRandomNumber(-3, 3);
-                int randomY = getRandomNumber(-2, 2); 
-                int randomZ = getRandomNumber(-3, 3);
+                int randomX = getRandomNumber(-2, 2); // Reduced range for closer teleport
+                int randomY = getRandomNumber(-1, 1); 
+                int randomZ = getRandomNumber(-2, 2);
 
                 BlockPos targetPos = ownerPos.offset(randomX, randomY, randomZ);
 
                 if (canTeleportTo(targetPos, level, isFlyer)) {
                     pet.teleportTo(targetPos.getX() + 0.5D, targetPos.getY(), targetPos.getZ() + 0.5D);
                     pet.getNavigation().stop();
+                    
+                    // Reset fall distance so they don't take damage if they were falling before teleport
+                    pet.fallDistance = 0; 
                     return;
                 }
             }
         }
 
-        /**
-         * Checks if a block position is safe.
-         */
         private static boolean canTeleportTo(BlockPos pos, Level level, boolean isFlyer) {
             if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) {
                 return false;
@@ -218,6 +201,7 @@ public class FollowOwnerOrTeleport {
                 return true;
             }
             BlockState blockBelow = level.getBlockState(pos.below());
+            // Must have solid ground below
             return !blockBelow.getCollisionShape(level, pos.below()).isEmpty(); 
         }
 

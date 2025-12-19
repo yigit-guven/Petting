@@ -19,25 +19,11 @@
       "registry_name": "golden_wheat",
       "metadata": {
         "files": [
-          "src/main/resources/assets/petting/models/item/golden_wheat.json",
-          "src/main/java/net/ryukazan/petting/item/GoldenWheatItem.java"
+          "src/main/java/net/ryukazan/petting/item/GoldenWheatItem.java",
+          "src/main/resources/assets/petting/models/item/golden_wheat.json"
         ]
       },
       "path": "~/Items/GoldenWheatItem"
-    },
-    {
-      "name": "PetConfigurationGUI",
-      "type": "gui",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "pet_configuration_gui",
-      "metadata": {
-        "files": [
-          "src/main/java/net/ryukazan/petting/client/gui/PetConfigurationGUIScreen.java",
-          "src/main/java/net/ryukazan/petting/world/inventory/PetConfigurationGUIMenu.java"
-        ]
-      },
-      "path": "~/GUIs"
     },
     {
       "name": "GoldenWheatItemInHandTick",
@@ -207,6 +193,52 @@
         ]
       },
       "path": "~/Recipes"
+    },
+    {
+      "name": "Pet",
+      "type": "command",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "pet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/ryukazan/petting/command/PetCommand.java"
+        ]
+      },
+      "path": "~/Commands"
+    },
+    {
+      "name": "EntityTickUpdate",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "entity_tick_update",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          }
+        ],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/EntityTickUpdateProcedure.java"
+        ]
+      },
+      "path": "~/TickProcedures"
+    },
+    {
+      "name": "SummonPettingCommand",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "summon_petting_command",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/SummonPettingCommandProcedure.java"
+        ]
+      },
+      "path": "~/Commands"
     }
   ],
   "variable_elements": [],
@@ -216,29 +248,16 @@
   "language_map": {
     "en_us": {
       "item_group.petting.petting": "Petting",
-      "item.petting.golden_wheat": "Golden Wheat",
-      "gui.petting.pet_configuration_gui.label_petnames_settings": "petname\u0027s Settings",
-      "gui.petting.pet_configuration_gui.walkvalue_prefix": "",
-      "gui.petting.pet_configuration_gui.walkvalue_suffix": "",
-      "gui.petting.pet_configuration_gui.button_save_settings": "Save Settings",
-      "gui.petting.pet_configuration_gui.label_teleport_distance": "Teleport Distance",
-      "gui.petting.pet_configuration_gui.tpvalue_prefix": "",
-      "gui.petting.pet_configuration_gui.label_follow_distance": "Follow Distance",
-      "gui.petting.pet_configuration_gui.tpvalue_suffix": "",
-      "gui.petting.pet_configuration_gui.s_prefix": "",
-      "gui.petting.pet_configuration_gui.s_suffix": ""
+      "item.petting.golden_wheat": "Golden Wheat"
     }
   },
   "metadata": {
     "files": [
-      "src/main/java/net/ryukazan/petting/network/MenuStateUpdateMessage.java",
-      "src/main/java/net/ryukazan/petting/init/PettingModMenus.java",
-      "src/main/java/net/ryukazan/petting/init/PettingModScreens.java",
       "src/main/java/net/ryukazan/petting/init/PettingModItems.java",
       "src/main/java/net/ryukazan/petting/PettingMod.java",
+      "src/main/java/net/ryukazan/petting/init/PettingModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
-      "src/main/resources/pack.mcmeta",
-      "src/main/java/net/ryukazan/petting/init/PettingModTabs.java"
+      "src/main/resources/pack.mcmeta"
     ]
   },
   "foldersRoot": {
@@ -256,10 +275,6 @@
             "children": []
           }
         ]
-      },
-      {
-        "name": "GUIs",
-        "children": []
       },
       {
         "name": "TickProcedures",
@@ -297,13 +312,17 @@
       {
         "name": "Recipes",
         "children": []
+      },
+      {
+        "name": "Commands",
+        "children": []
       }
     ]
   },
   "workspaceSettings": {
     "modid": "petting",
     "modName": "Petting",
-    "version": "4.0.0-pre1",
+    "version": "4.0.0-pre2",
     "description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
     "author": "Vuserr0",
     "websiteURL": "https://github.com/yigit-guven/Petting",
