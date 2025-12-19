@@ -4,7 +4,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import net.ryukazan.petting.init.PettingModTabs;
-import net.ryukazan.petting.init.PettingModMenus;
 import net.ryukazan.petting.init.PettingModItems;
 
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
@@ -49,7 +48,6 @@ public class PettingMod {
 		modEventBus.addListener(this::registerNetworking);
 		PettingModItems.REGISTRY.register(modEventBus);
 		PettingModTabs.REGISTRY.register(modEventBus);
-		PettingModMenus.REGISTRY.register(modEventBus);
 		// Start of user code block mod init
 		// End of user code block mod init
 	}

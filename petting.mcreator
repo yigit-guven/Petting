@@ -27,20 +27,6 @@
       "path": "~/Items/GoldenWheatItem"
     },
     {
-      "name": "PetConfigurationGUI",
-      "type": "gui",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "pet_configuration_gui",
-      "metadata": {
-        "files": [
-          "src/main/java/net/ryukazan/petting/world/inventory/PetConfigurationGUIMenu.java",
-          "src/main/java/net/ryukazan/petting/client/gui/PetConfigurationGUIScreen.java"
-        ]
-      },
-      "path": "~/GUIs"
-    },
-    {
       "name": "GoldenWheatItemInHandTick",
       "type": "procedure",
       "compiles": true,
@@ -210,58 +196,36 @@
       "path": "~/Recipes"
     },
     {
-      "name": "PetEntityReturn",
-      "type": "procedure",
+      "name": "Pet",
+      "type": "command",
       "compiles": true,
       "locked_code": true,
-      "registry_name": "pet_entity_return",
+      "registry_name": "pet",
       "metadata": {
-        "dependencies": [],
-        "return_type": "entity",
         "files": [
-          "src/main/java/net/ryukazan/petting/procedures/PetEntityReturnProcedure.java"
+          "src/main/java/net/ryukazan/petting/command/PetCommand.java"
         ]
       },
-      "path": "~/GUIs"
+      "path": "~/Commands"
     },
     {
-      "name": "OwnerShiftRightclicksPet",
+      "name": "EntityTickUpdate",
       "type": "procedure",
       "compiles": true,
       "locked_code": true,
-      "registry_name": "owner_shift_rightclicks_pet",
+      "registry_name": "entity_tick_update",
       "metadata": {
         "dependencies": [
           {
             "name": "entity",
             "type": "entity"
-          },
-          {
-            "name": "sourceentity",
-            "type": "entity"
-          },
-          {
-            "name": "x",
-            "type": "number"
-          },
-          {
-            "name": "y",
-            "type": "number"
-          },
-          {
-            "name": "z",
-            "type": "number"
-          },
-          {
-            "name": "world",
-            "type": "world"
           }
         ],
         "files": [
-          "src/main/java/net/ryukazan/petting/procedures/OwnerShiftRightclicksPetProcedure.java"
+          "src/main/java/net/ryukazan/petting/procedures/EntityTickUpdateProcedure.java"
         ]
       },
-      "path": "~/PetEntity/Interactions"
+      "path": "~/TickProcedures"
     }
   ],
   "variable_elements": [],
@@ -271,24 +235,11 @@
   "language_map": {
     "en_us": {
       "item_group.petting.petting": "Petting",
-      "item.petting.golden_wheat": "Golden Wheat",
-      "gui.petting.pet_configuration_gui.label_petnames_settings": "petname\u0027s Settings",
-      "gui.petting.pet_configuration_gui.walkvalue_prefix": "",
-      "gui.petting.pet_configuration_gui.walkvalue_suffix": "",
-      "gui.petting.pet_configuration_gui.button_save_settings": "Save Settings",
-      "gui.petting.pet_configuration_gui.label_teleport_distance": "Teleport Distance",
-      "gui.petting.pet_configuration_gui.tpvalue_prefix": "",
-      "gui.petting.pet_configuration_gui.label_follow_distance": "Follow Distance",
-      "gui.petting.pet_configuration_gui.tpvalue_suffix": "",
-      "gui.petting.pet_configuration_gui.s_prefix": "",
-      "gui.petting.pet_configuration_gui.s_suffix": ""
+      "item.petting.golden_wheat": "Golden Wheat"
     }
   },
   "metadata": {
     "files": [
-      "src/main/java/net/ryukazan/petting/init/PettingModMenus.java",
-      "src/main/java/net/ryukazan/petting/network/MenuStateUpdateMessage.java",
-      "src/main/java/net/ryukazan/petting/init/PettingModScreens.java",
       "src/main/java/net/ryukazan/petting/init/PettingModItems.java",
       "src/main/java/net/ryukazan/petting/init/PettingModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
@@ -311,10 +262,6 @@
             "children": []
           }
         ]
-      },
-      {
-        "name": "GUIs",
-        "children": []
       },
       {
         "name": "TickProcedures",
@@ -351,6 +298,10 @@
       },
       {
         "name": "Recipes",
+        "children": []
+      },
+      {
+        "name": "Commands",
         "children": []
       }
     ]
