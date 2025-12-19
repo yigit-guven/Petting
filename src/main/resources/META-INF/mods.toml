@@ -4,7 +4,7 @@ license="GNU Lesser General Public License version 3 (LGPLv3)"
 
 [[mods]]
 modId="petting"
-version="4.0.01"
+version="4.0.03"
 displayName="Petting"
 displayURL="https://github.com/yigit-guven/Petting"
 logoFile="logo.png"

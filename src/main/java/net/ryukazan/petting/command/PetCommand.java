@@ -1,39 +1,59 @@
-package net.ryukazan.petting.procedures;
+package net.ryukazan.petting.command;
+
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.CommandSourceStack;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.world.level.Level;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraft.core.particles.ParticleTypes;
 
-public class GoldenWheatRightclickedProcedure {
+@Mod.EventBusSubscriber
+public class PetCommand {
 
-    public static void execute(Entity sourceentity) {
-        execute(null, sourceentity);
+    @SubscribeEvent
+    public static void registerCommand(RegisterCommandsEvent event) {
+        event.getDispatcher().register(Commands.literal("pet")
+            .requires(s -> s.hasPermission(4))
+            .then(Commands.argument("mob", EntityArgument.entity())
+                .then(Commands.argument("sourceentity", EntityArgument.player())
+                    .executes(PetCommand::execute)
+                )
+            )
+        );
     }
 
-    public static void execute(Entity entity, Entity sourceentity) {
+    private static int execute(CommandContext<CommandSourceStack> arguments) {
+        try {
+            Entity mob = EntityArgument.getEntity(arguments, "mob");
+            Entity source = EntityArgument.getEntity(arguments, "sourceentity");
+            tameMob(mob, source);
+            return 1; 
+        } catch (CommandSyntaxException e) {
+            e.printStackTrace();
+            return 0; 
+        }
+    }
+
+    private static void tameMob(Entity entity, Entity sourceentity) {
         if (entity == null || sourceentity == null) return;
         if (entity.level().isClientSide()) return;
         if (!(sourceentity instanceof Player player)) return;
-
-        ItemStack itemInHand = player.getMainHandItem();
-        ResourceLocation itemID = ForgeRegistries.ITEMS.getKey(itemInHand.getItem());
-        
-        if (itemID == null || !itemID.toString().equals("petting:golden_wheat")) {
-            return;
-        }
 
         boolean actionSuccessful = false;
         boolean needsRespawn = false;
@@ -45,7 +65,7 @@ public class GoldenWheatRightclickedProcedure {
                 actionSuccessful = true;
             }
         }
-        else if (entity instanceof Mob oldMob) { 
+        else if (entity instanceof Mob oldMob) {
             CompoundTag data = oldMob.getPersistentData();
             boolean isAlreadyCustomTamed = data.getBoolean("pettingtamed");
 
@@ -59,33 +79,28 @@ public class GoldenWheatRightclickedProcedure {
             Level world = entity.level();
 
             if (world instanceof ServerLevel _level) {
-                _level.sendParticles(ParticleTypes.HEART, 
-                    entity.getX(), entity.getY() + 0.5, entity.getZ(), 
-                    7, 0.5, 0.5, 0.5, 0.1);
+                _level.sendParticles(ParticleTypes.HEART,
+                        entity.getX(), entity.getY() + 0.5, entity.getZ(),
+                        7, 0.5, 0.5, 0.5, 0.1);
             }
-            world.playSound(null, entity.getX(), entity.getY(), entity.getZ(), 
-                SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
-            player.swing(InteractionHand.MAIN_HAND, true);
-
-            if (!player.getAbilities().instabuild) {
-                itemInHand.shrink(1);
-            }
+            world.playSound(null, entity.getX(), entity.getY(), entity.getZ(),
+                    SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.0F);
 
             if (needsRespawn && world instanceof ServerLevel serverLevel) {
                 // FIXED: Use simple create(world) for 1.20.1
                 Entity newEntity = entity.getType().create(world);
-                
+
                 if (newEntity instanceof Mob newMob) {
                     newMob.setPos(entity.getX(), entity.getY(), entity.getZ());
                     newMob.setYRot(entity.getYRot());
                     newMob.setXRot(entity.getXRot());
-                    newMob.yBodyRot = ((Mob)entity).yBodyRot;
-                    newMob.yHeadRot = ((Mob)entity).yHeadRot;
+                    newMob.yBodyRot = ((Mob) entity).yBodyRot;
+                    newMob.yHeadRot = ((Mob) entity).yHeadRot;
 
                     CompoundTag newData = newMob.getPersistentData();
-                    
                     String ownerName = player.getDisplayName().getString();
                     String entityName = newMob.getType().getDescription().getString();
+
                     newMob.setCustomName(Component.literal(ownerName + "'s " + entityName));
                     newMob.setCustomNameVisible(false);
 
@@ -100,8 +115,8 @@ public class GoldenWheatRightclickedProcedure {
                     newData.putInt("teleportdistance", 20);
 
                     newMob.setTarget(null);
-                    world.addFreshEntity(newMob); 
-                    entity.discard(); 
+                    world.addFreshEntity(newMob);
+                    entity.discard();
                 }
             }
         }

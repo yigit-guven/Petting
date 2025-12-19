@@ -41,7 +41,8 @@ public class GoldenWheatItemInHandTickProcedure {
                 Animal.class, 
                 player.getBoundingBox().inflate(searchRadius, 4.0, searchRadius), 
                 mob -> {
-                    // FIXED: Removed .orElse(false)
+                    // FIXED: Removed .orElse(false). 
+                    // In 1.20.1, getBoolean returns false automatically if the tag doesn't exist.
                     boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed");
                     
                     if (isAlreadyCustomTamed) return false;

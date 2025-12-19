@@ -4,7 +4,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 import net.ryukazan.petting.init.PettingModTabs;
-import net.ryukazan.petting.init.PettingModMenus;
 import net.ryukazan.petting.init.PettingModItems;
 
 import net.minecraftforge.network.simple.SimpleChannel;
@@ -42,7 +41,6 @@ public class PettingMod {
 		IEventBus bus = context.getModEventBus();
 		PettingModItems.REGISTRY.register(bus);
 		PettingModTabs.REGISTRY.register(bus);
-		PettingModMenus.REGISTRY.register(bus);
 		// Start of user code block mod init
 		// End of user code block mod init
 	}
