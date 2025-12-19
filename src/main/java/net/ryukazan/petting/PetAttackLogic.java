@@ -2,6 +2,7 @@ package net.ryukazan.petting;
 
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent; 
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
@@ -18,251 +19,168 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.projectile.WitherSkull;
-import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.nbt.CompoundTag;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.Optional;
 
 @EventBusSubscriber
 public class PetAttackLogic {
-    public PetAttackLogic() {
-    }
+    public PetAttackLogic() { }
 
     @SubscribeEvent
-    public static void init(FMLCommonSetupEvent event) {
-        new PetAttackLogic();
-    }
-
-    @SubscribeEvent
-    public static void clientLoad(FMLClientSetupEvent event) {
-    }
+    public static void init(FMLCommonSetupEvent event) { new PetAttackLogic(); }
 
     @EventBusSubscriber
     private static class PetAttackLogicForgeBusEvents {
-        
+
+        /**
+         * EVENT 4: THE FIREWALL
+         * Prevents selecting "Illegal" targets (Owner, Self, Friends).
+         * Allows everything else (Monsters, etc.) to pass through.
+         */
         @SubscribeEvent
-        public static void serverLoad(ServerStartingEvent event) {
+        public static void onTargetChange(LivingChangeTargetEvent event) {
+            if (!(event.getEntity() instanceof Mob pet) || !isCustomPet(pet)) return;
+
+            // Use the safe getter for NeoForge
+            LivingEntity newTarget = event.getNewAboutToBeSetTarget();
+            if (newTarget == null) return;
+
+            Player owner = getOwner(pet);
+
+            // BLOCK: Self
+            if (newTarget == pet) {
+                event.setCanceled(true); 
+                return;
+            }
+            // BLOCK: Owner
+            if (owner != null && newTarget == owner) {
+                event.setCanceled(true); 
+                return;
+            }
+            // BLOCK: Friendly Fire
+            if (isOwnerOf(newTarget, owner)) {
+                event.setCanceled(true);
+            }
         }
 
         /**
-         * EVENT 0: TICK LOGIC (The "Blindfold" Fix)
-         * Manipulates Follow Range to physically prevent the AI from finding targets.
+         * EVENT 0: TICK LOGIC (Target Setter)
+         * Forces the pet to attack what the owner attacks.
          */
         @SubscribeEvent
         public static void onEntityTick(EntityTickEvent.Post event) {
             Entity entity = event.getEntity();
-
-            if (entity.level().isClientSide() || !(entity instanceof Mob pet)) {
-                return;
-            }
+            if (entity.level().isClientSide() || !(entity instanceof Mob pet)) return;
 
             if (isCustomPet(pet)) {
                 Player owner = getOwner(pet);
                 if (owner == null) return;
 
-                // --- LOGIC: IS COMBAT ACTIVE? ---
-                boolean combatMode = false;
+                // --- PRIORITY 1: CLEANUP EXISTING BAD TARGETS ---
+                LivingEntity currentTarget = pet.getTarget();
+                if (currentTarget != null) {
+                    // If target is Self, Owner, or Friend -> STOP IMMEDIATELY
+                    if (currentTarget == pet || currentTarget == owner || isOwnerOf(currentTarget, owner)) {
+                        pet.setTarget(null);
+                        return;
+                    }
+                    // If target is dead -> Stop
+                    if (!currentTarget.isAlive()) {
+                        pet.setTarget(null);
+                        return;
+                    }
+                }
+
+                // --- PRIORITY 2: ACQUIRE NEW TARGET (Wolf Logic) ---
+                // Only switch targets if we are idle, or if the Owner specifically just hit something new.
+                
                 LivingEntity forcedTarget = null;
 
-                // 1. Check Owner's Target
+                // A. Owner is attacking someone
                 if (owner.getLastHurtMob() != null) {
-                    combatMode = true;
                     forcedTarget = owner.getLastHurtMob();
                 }
-                // 2. Check Attacker of Owner
+                // B. Owner is being attacked
                 else if (owner.getLastHurtByMob() != null) {
-                    combatMode = true;
                     forcedTarget = owner.getLastHurtByMob();
                 }
-                // 3. Check Attacker of Pet
+                // C. Pet is being attacked (Self Defense)
                 else if (pet.getLastHurtByMob() != null) {
-                    combatMode = true;
                     forcedTarget = pet.getLastHurtByMob();
                 }
 
-                // --- ATTRIBUTE MANIPULATION ---
-                AttributeInstance followRange = pet.getAttribute(Attributes.FOLLOW_RANGE);
-                if (followRange != null) {
-                    if (combatMode) {
-                        // COMBAT: Restore vision so it can fight
-                        if (followRange.getBaseValue() < 64.0) {
-                            followRange.setBaseValue(64.0);
-                        }
-                    } else {
-                        // PEACE: Blind the pet so AI sees NOTHING
-                        if (followRange.getBaseValue() > 0.0) {
-                            followRange.setBaseValue(0.0);
-                        }
-                    }
-                }
-
-                // --- CLEANUP ---
-                if (!combatMode) {
-                    forceStopAttack(pet);
-                    
-                    // Wither Specific: Silence side heads
-                    if (pet instanceof WitherBoss wither) {
-                         wither.setAlternativeTarget(0, 0); 
-                         wither.setAlternativeTarget(1, 0); 
-                    }
-                } 
-                else if (forcedTarget != null && pet.getTarget() != forcedTarget) {
-                    // Only switch if current target is invalid
-                    if (pet.getTarget() == null || !isValidCombatTarget(pet, owner, pet.getTarget())) {
-                         pet.setTarget(forcedTarget);
+                // Apply the target if it is valid
+                if (forcedTarget != null && isValidCombatTarget(pet, owner, forcedTarget)) {
+                    // Only switch if we aren't already attacking it
+                    if (pet.getTarget() != forcedTarget) {
+                        pet.setTarget(forcedTarget);
                     }
                 }
             }
         }
 
-        /**
-         * EVENT 3: PROJECTILE INTERCEPTION (The "Bullet Catcher")
-         */
-        @SubscribeEvent
-        public static void onProjectileSpawn(EntityJoinLevelEvent event) {
-            if (event.getLevel().isClientSide()) return;
-
-            if (event.getEntity() instanceof WitherSkull skull) {
-                Entity shooter = skull.getOwner();
-                
-                if (shooter instanceof Mob pet && isCustomPet(pet)) {
-                    Player owner = getOwner(pet);
-                    
-                    if (owner != null) {
-                        boolean validCombat = false;
-                        
-                        if (owner.getLastHurtMob() != null || owner.getLastHurtByMob() != null) {
-                            validCombat = true;
-                        }
-                        if (pet.getTarget() != null && isValidCombatTarget(pet, owner, pet.getTarget())) {
-                            validCombat = true;
-                        }
-
-                        // If not in a valid fight, delete the skull
-                        if (!validCombat) {
-                            event.setCanceled(true);
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * EVENT 1: INCOMING DAMAGE (Friendly Fire Prevention)
-         */
-        @SubscribeEvent
-        public static void onIncomingDamage(LivingIncomingDamageEvent event) {
-            Entity victim = event.getEntity();
-            Entity source = event.getSource().getEntity(); 
-
-            if (victim == null || source == null || victim.level().isClientSide()) return;
-
-            // A. Prevent Pet from hurting Owner
-            if (victim instanceof Player owner && isCustomPet(source)) {
-                if (isOwnerOf(source, owner)) {
-                    boolean allowDamage = source.getPersistentData().getBoolean("damageOwner").orElse(false);
-                    if (!allowDamage) {
-                        event.setCanceled(true); 
-                    }
-                }
-            }
-            
-            // B. If Owner hits Pet: Cancel damage or wipe aggro
-            if (isCustomPet(victim) && source instanceof Player owner) {
-                if (isOwnerOf(victim, owner)) {
-                   ((Mob) victim).setLastHurtByMob(null);
-                   // REMOVED: setLastHurtByPlayer causes crashes in 1.21 if null is passed
-                }
-            }
-        }
-
-        /**
-         * EVENT 2: POST-DAMAGE (Aggro Logic)
-         */
         @SubscribeEvent
         public static void onLivingDamagePost(LivingDamageEvent.Post event) {
             LivingEntity victim = event.getEntity();
             Entity sourceEntity = event.getSource().getEntity();
 
             if (victim == null || sourceEntity == null || victim.level().isClientSide()) return;
+            if (!(victim instanceof Mob petMob) || !isCustomPet(petMob)) return;
+
+            // Scenario: Self Harm -> Forget it
+            if (victim == sourceEntity) {
+                petMob.setTarget(null);
+                petMob.setLastHurtByMob(null);
+                return; 
+            }
+
             if (!(sourceEntity instanceof LivingEntity attacker)) return;
 
-            // SCENARIO: Self Defense
-            if (isCustomPet(victim) && victim instanceof Mob petMob) {
-                Player owner = getOwner(petMob);
-                
-                if (attacker instanceof Player atkPlayer && isOwnerOf(petMob, atkPlayer)) {
-                    petMob.setTarget(null);
-                    return; 
-                }
+            // Scenario: Owner Hurt Pet -> Forgive
+            Player owner = getOwner(petMob);
+            if (attacker == owner) { 
+                petMob.setTarget(null);
+                petMob.setLastHurtByMob(null);
+                return; 
+            }
 
-                boolean attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked").orElse(true);
-                if (attackSelf) {
+            // Scenario: Stranger Hurt Pet -> Revenge
+            boolean attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked").orElse(true);
+            if (attackSelf) {
+                if (isValidCombatTarget(petMob, owner, attacker)) {
                     petMob.setTarget(attacker);
                 }
             }
-
-            // SCENARIO: Defend Owner / Assist Owner
-            // (Handled implicitly by the Tick Monitor reading LastHurt variables)
         }
 
         // --- Helper Methods ---
-
         private static boolean isCustomPet(Entity entity) {
             if (!(entity instanceof Mob)) return false;
             return entity.getPersistentData().getBoolean("pettingtamed").orElse(false);
         }
 
         private static boolean isValidCombatTarget(Mob pet, Player owner, LivingEntity potentialTarget) {
+            if (potentialTarget == null || potentialTarget == pet) return false;
             if (potentialTarget == owner) return false;
-            if (potentialTarget == pet) return false;
             if (isOwnerOf(potentialTarget, owner)) return false; 
-
-            if (owner.getLastHurtMob() != null && owner.getLastHurtMob().is(potentialTarget)) return true;
-            if (owner.getLastHurtByMob() != null && owner.getLastHurtByMob().is(potentialTarget)) return true;
-            if (pet.getLastHurtByMob() != null && pet.getLastHurtByMob().is(potentialTarget)) return true;
-
-            return false;
-        }
-
-        private static void forceStopAttack(Mob pet) {
-            pet.setTarget(null);
-            pet.setLastHurtByMob(null);
-            // CRITICAL FIX: Removed setLastHurtByPlayer(null) to prevent crashes
+            return true;
         }
 
         private static Player getOwner(Mob pet) {
             String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID").orElse("");
             if (ownerUUIDStr.isEmpty()) return null;
             try {
-                UUID storedId = UUID.fromString(ownerUUIDStr);
-                return pet.level().getPlayerByUUID(storedId);
-            } catch (Exception e) {
-                return null;
-            }
+                return pet.level().getPlayerByUUID(UUID.fromString(ownerUUIDStr));
+            } catch (Exception e) { return null; }
         }
 
         private static boolean isOwnerOf(Entity pet, Entity potentialOwner) {
-            if (!(potentialOwner instanceof Player)) return false;
+            if (!(potentialOwner instanceof Player) || pet == null) return false;
             String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID").orElse("");
             if (ownerUUIDStr.isEmpty()) return false;
-
             try {
-                UUID storedId = UUID.fromString(ownerUUIDStr);
-                return storedId.equals(potentialOwner.getUUID());
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        private static List<Mob> getPetsAround(Level level, double x, double y, double z, double radius) {
-            AABB searchBox = new AABB(x - radius, y - radius, z - radius, x + radius, y + radius, z + radius);
-            List<Mob> mobs = level.getEntitiesOfClass(Mob.class, searchBox);
-            mobs.removeIf(mob -> !isCustomPet(mob));
-            return mobs;
+                return UUID.fromString(ownerUUIDStr).equals(potentialOwner.getUUID());
+            } catch (Exception e) { return false; }
         }
     }
 }
