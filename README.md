@@ -14,7 +14,7 @@ Petting's code is licensed under the [LGPL-3.0 license](https://www.gnu.org/lice
 
 
 
-For information on: [`CONTRIBUTING`](https://github.com/yigit-guven/Petting/blob/1.21.8-neoforge/CONTRIBUTING.md)|[`REPORTING ISSUE`](https://github.com/yigit-guven/Petting/issues/new/choose)|[`SUGGESTION`](https://github.com/yigit-guven/Petting/issues/new/choose)|[`CONTACT`](https://github.com/yigit-guven/Petting#-contact).
+For information on: [`CONTRIBUTING`](https://github.com/yigit-guven/Petting/blob/1.21.8-neoforge/CONTRIBUTING.md)|[`REPORTING ISSUE`](https://github.com/yigit-guven/Petting/issues/new/choose)|[`SUGGESTION`](https://github.com/yigit-guven/Petting/issues/new/choose)|[`CONTACT`](https://github.com/yigit-guven/Petting#contact).
 
 
 
