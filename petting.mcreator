@@ -240,6 +240,32 @@
         ]
       },
       "path": "~/Commands"
+    },
+    {
+      "name": "HideTamedBossBar",
+      "type": "gamerule",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "hide_tamed_boss_bar",
+      "metadata": {
+        "type": "logic",
+        "files": []
+      },
+      "path": "~/Gamerules"
+    },
+    {
+      "name": "HideTamedBossBarProcedure",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "hide_tamed_boss_bar_procedure",
+      "metadata": {
+        "dependencies": [],
+        "files": [
+          "src/main/java/net/ryukazan/petting/procedures/HideTamedBossBarProcedureProcedure.java"
+        ]
+      },
+      "path": "~/Gamerules/HideTamedBossBarLogic"
     }
   ],
   "variable_elements": [],
@@ -249,11 +275,14 @@
   "language_map": {
     "en_us": {
       "item_group.petting.petting": "Petting",
-      "item.petting.golden_wheat": "Golden Wheat"
+      "item.petting.golden_wheat": "Golden Wheat",
+      "gamerule.hideTamedBossBar": "Hide Tamed Boss Bar",
+      "gamerule.hideTamedBossBar.description": "Hides the boss bar for bosses that have been tamed."
     }
   },
   "metadata": {
     "files": [
+      "src/main/java/net/ryukazan/petting/init/PettingModGameRules.java",
       "src/main/java/net/ryukazan/petting/init/PettingModItems.java",
       "src/main/java/net/ryukazan/petting/init/PettingModTabs.java",
       "src/main/resources/META-INF/neoforge.mods.toml",
@@ -308,7 +337,12 @@
       },
       {
         "name": "Gamerules",
-        "children": []
+        "children": [
+          {
+            "name": "HideTamedBossBarLogic",
+            "children": []
+          }
+        ]
       },
       {
         "name": "Recipes",
@@ -323,7 +357,7 @@
   "workspaceSettings": {
     "modid": "petting",
     "modName": "Petting",
-    "version": "4.0.0-pre2",
+    "version": "4.0.0-pre3",
     "description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
     "author": "Vuserr0",
     "websiteURL": "https://github.com/yigit-guven/Petting",

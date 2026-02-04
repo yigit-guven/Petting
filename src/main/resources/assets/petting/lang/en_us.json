@@ -1,4 +1,6 @@
 {
   "item_group.petting.petting": "Petting",
-  "item.petting.golden_wheat": "Golden Wheat"
+  "item.petting.golden_wheat": "Golden Wheat",
+  "gamerule.hideTamedBossBar": "Hide Tamed Boss Bar",
+  "gamerule.hideTamedBossBar.description": "Hides the boss bar for bosses that have been tamed."
 }
