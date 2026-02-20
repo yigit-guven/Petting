@@ -181,8 +181,10 @@ public class FollowOwnerOrTeleport {
 
             double distanceToOwner = mob.distanceTo(owner);
             
-            double followDist = net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get();
-            double teleportDist = net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get();
+            double followDist = data.contains("followdistance") ? data.getInt("followdistance") : net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get();
+            double teleportDist = data.contains("teleportdistance") ? data.getInt("teleportdistance") : net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get();
+            if (followDist == 0) followDist = net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get();
+            if (teleportDist == 0) teleportDist = net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get();
 
             boolean isFlyer = isUniversalFlyingMob(mob, data);
 

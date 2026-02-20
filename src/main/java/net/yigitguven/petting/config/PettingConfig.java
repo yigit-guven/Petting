@@ -19,7 +19,16 @@ public class PettingConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TAMING_BLACKLIST;
     
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CUSTOM_TAMING_ITEMS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PET_CATEGORIES;
     public static final ForgeConfigSpec.BooleanValue ALLOW_GOLDEN_WHEAT;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_STATUS;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_AGGRESSION;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_SELF_DEFENSE;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_GUARD;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_FOLLOW_DIST;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_TELEPORT_DIST;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_WHISTLE_TOGGLE;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_TETHERING;
 
     public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
     public static final ForgeConfigSpec.BooleanValue ENABLE_GOAT_HORN_WHISTLE;
@@ -147,6 +156,42 @@ public class PettingConfig {
 
         BUILDER.pop();
 
+        BUILDER.push("Item Interaction Settings");
+
+        ALLOW_PER_PET_STATUS = BUILDER
+                .comment("If true, owners can right-click their pet with a Stick to see a status report.")
+                .define("allowPerPetStatus", true);
+
+        ALLOW_PER_PET_AGGRESSION = BUILDER
+                .comment("If true, owners can right-click their pet with a Sword to toggle Aggressive Mode.")
+                .define("allowPerPetAggression", true);
+
+        ALLOW_PER_PET_SELF_DEFENSE = BUILDER
+                .comment("If true, owners can right-click their pet with a Shield to toggle Self-Defense retaliation.")
+                .define("allowPerPetSelfDefense", true);
+
+        ALLOW_PER_PET_GUARD = BUILDER
+                .comment("If true, owners can right-click their pet with a Cookie to toggle Guard Mode.")
+                .define("allowPerPetGuard", true);
+
+        ALLOW_PER_PET_FOLLOW_DIST = BUILDER
+                .comment("If true, owners can right-click their pet with a Lead to cycle follow distance settings.")
+                .define("allowPerPetFollowDist", true);
+
+        ALLOW_PER_PET_TELEPORT_DIST = BUILDER
+                .comment("If true, owners can right-click their pet with an Ender Pearl to cycle teleport distance settings.")
+                .define("allowPerPetTeleportDist", true);
+
+        ALLOW_PER_PET_WHISTLE_TOGGLE = BUILDER
+                .comment("If true, owners can right-click their pet with a Clock to toggle if it responds to Goat Horn whistles.")
+                .define("allowPerPetWhistleToggle", true);
+
+        ALLOW_PET_TETHERING = BUILDER
+                .comment("If true, owners can right-click their pet with a Pet Tether item to bind them to an area.")
+                .define("allowPetTethering", true);
+
+        BUILDER.pop();
+
         BUILDER.push("Whitelist Settings");
 
         WHITELIST_ONLY = BUILDER
@@ -176,6 +221,16 @@ public class PettingConfig {
         CUSTOM_TAMING_ITEMS = BUILDER
                 .comment("Map custom taming items to specific mobs. Format: entity_registry|item_registry. Example: [\"minecraft:zombie|minecraft:bone\"]")
                 .defineListAllowEmpty("customTamingItems", List.of(), obj -> obj instanceof String);
+
+        PET_CATEGORIES = BUILDER
+                .comment("Define pet categories with per-player attribute limits.",
+                        "Format: SlotID|DisplayName|MobList|DefaultLimit",
+                        "SlotID: 1 to 20 (corresponds to petting:max_pets_category_X)",
+                        "DisplayName: Name shown in-game (e.g. Necromancer)",
+                        "MobList: Comma-separated entity IDs (e.g. minecraft:zombie,minecraft:skeleton)",
+                        "DefaultLimit: Starting limit for that category. Attributes can override this.",
+                        "Example: [\"1|Necromancer|minecraft:zombie,minecraft:skeleton|3\"]")
+                .defineListAllowEmpty("petCategories", List.of(), obj -> obj instanceof String);
 
         BUILDER.pop();
 

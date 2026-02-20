@@ -34,6 +34,12 @@ public class PetWhistleProcedure {
                         if (pet.getPersistentData().getBoolean("pettingtamed")) {
                             String ownerUUID = pet.getPersistentData().getString("ownerUUID");
                             if (ownerUUID.equals(playerUUID)) {
+                                // Whistle Override check
+                                boolean ignoreWhistle = pet.getPersistentData().getBoolean("ignoreWhistle");
+                                if (ignoreWhistle) {
+                                    continue;
+                                }
+
                                 // Tether check
                                 boolean isBound = pet.getPersistentData().getBoolean("pettingbound");
                                 if (isBound && !PettingConfig.WHISTLE_TELEPORTS_TETHERED.get()) {

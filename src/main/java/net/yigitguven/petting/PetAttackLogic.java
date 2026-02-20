@@ -116,11 +116,15 @@ public class PetAttackLogic {
 
                 // Evaluate forced combat (owner instructed explicitly by being attacked, or attacking)
                 LivingEntity forcedTarget = null;
-                if (owner.getLastHurtMob() != null) {
+                boolean attackWithOwner = pet.getPersistentData().getBoolean("attackifownerattacks");
+                boolean defendOwner = pet.getPersistentData().getBoolean("attackifownerattacked");
+
+                if (attackWithOwner && owner.getLastHurtMob() != null) {
                     forcedTarget = owner.getLastHurtMob();
-                } else if (owner.getLastHurtByMob() != null) {
+                } else if (defendOwner && owner.getLastHurtByMob() != null) {
                     forcedTarget = owner.getLastHurtByMob();
                 } else if (pet.getLastHurtByMob() != null) {
+                    // Self-defense is checked in onLivingDamage, but this acts as a backup/persistence
                     forcedTarget = pet.getLastHurtByMob();
                 }
 

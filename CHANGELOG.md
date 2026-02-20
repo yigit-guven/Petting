@@ -1,4 +1,0 @@
-- Introduced the **Pet Tether** item and **Binding** system, allowing pets to roam freely within a configurable radius of a set coordinate,
-- Migrated the global Max Pet limit to a per-player **Attribute** (`petting:max_pets`), allowing modpacks to scale pet limits for specific classes or items,
-- Added the `whistleTeleportsTethered` configuration to control whether tethered pets are affected by the Goat Horn whistle,
-- Check [GitHub Repo](https://github.com/yigit-guven/Petting) for more info!

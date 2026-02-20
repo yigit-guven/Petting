@@ -126,7 +126,49 @@ public class GoldenWheatRightclickedProcedure {
             }
         }
 
-        // 5. Check Health Threshold
+        // 5. Check Category Limits
+        java.util.List<? extends String> categoryConfigs = PettingConfig.PET_CATEGORIES.get();
+        for (String catConfig : categoryConfigs) {
+            String[] parts = catConfig.split("\\|");
+            if (parts.length >= 4) {
+                String catName = parts[1].trim();
+                java.util.List<String> catMobs = java.util.Arrays.asList(parts[2].trim().split(","));
+                
+                if (catMobs.contains(entityName)) {
+                    try {
+                        int slot = Integer.parseInt(parts[0].trim());
+                        double catMax = player.getAttributeValue(getCategoryAttribute(slot));
+                        
+                        if (catMax <= 0) {
+                            player.displayClientMessage(Component.literal("§cYou cannot tame mobs in the " + catName + " category!"), true);
+                            return;
+                        }
+
+                        if (entity.level() instanceof ServerLevel serverLevel) {
+                            int currentCatPets = 0;
+                            for (Entity e : serverLevel.getAllEntities()) {
+                                if (e instanceof Mob m && isCustomPet(m)) {
+                                    String ownerStr = m.getPersistentData().getString("ownerUUID");
+                                    if (ownerStr.equals(player.getStringUUID())) {
+                                        ResourceLocation eKey = ForgeRegistries.ENTITY_TYPES.getKey(m.getType());
+                                        if (eKey != null && catMobs.contains(eKey.toString())) {
+                                            currentCatPets++;
+                                        }
+                                    }
+                                }
+                            }
+                            if (currentCatPets >= (int)catMax) {
+                                player.displayClientMessage(Component.literal("§cYou have reached your " + catName + " pet limit (" + (int)catMax + ")!"), true);
+                                return;
+                            }
+                        }
+                    } catch (NumberFormatException ignored) {}
+                    break; // Mob matched a category, no need to check others
+                }
+            }
+        }
+
+        // 6. Check Health Threshold
         double hpThreshold = PettingConfig.TAME_HEALTH_THRESHOLD.get();
         if (hpThreshold > 0.0 && entity instanceof net.minecraft.world.entity.LivingEntity minion) {
             float maxHp = minion.getMaxHealth();
@@ -248,6 +290,32 @@ public class GoldenWheatRightclickedProcedure {
         data.putBoolean("sitstill", false);
         data.putInt("followdistance", 10);
         data.putInt("teleportdistance", 20);
+    }
+
+    private static net.minecraft.world.entity.ai.attributes.Attribute getCategoryAttribute(int slot) {
+        return switch (slot) {
+            case 1 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C1.get();
+            case 2 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C2.get();
+            case 3 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C3.get();
+            case 4 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C4.get();
+            case 5 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C5.get();
+            case 6 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C6.get();
+            case 7 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C7.get();
+            case 8 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C8.get();
+            case 9 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C9.get();
+            case 10 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C10.get();
+            case 11 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C11.get();
+            case 12 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C12.get();
+            case 13 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C13.get();
+            case 14 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C14.get();
+            case 15 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C15.get();
+            case 16 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C16.get();
+            case 17 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C17.get();
+            case 18 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C18.get();
+            case 19 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C19.get();
+            case 20 -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS_C20.get();
+            default -> net.yigitguven.petting.init.PettingModAttributes.MAX_PETS.get();
+        };
     }
 
     private static boolean isCustomPet(Mob entity) {
