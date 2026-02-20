@@ -1,0 +1,21 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        " # ",
+        "#L#",
+        " # "
+    ],
+    "key": {
+        "#": {
+            "item": "minecraft:iron_nugget"
+        },
+        "L": {
+            "item": "minecraft:lead"
+        }
+    },
+    "result": {
+        "item": "petting:pet_tether",
+        "count": 1
+    }
+}

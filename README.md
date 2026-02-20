@@ -69,6 +69,15 @@ Provide your pets with a permanent home and specialized guarding zones.
 ### The Pet Tether (Binding Locations)
 Tired of your pets following you to their doom or cluttering up your base? Use a **Pet Tether**!
 *   **How to Bind:** Right-Click your tamed pet with a **Pet Tether** (found in the Petting creative tab) to bind them to their current coordinates.
+#### 🛠️ Crafting Recipe
+The Pet Tether can be crafted using **1 Lead** and **4 Iron Nuggets**:
+* **L** = Lead, **#** = Iron Nugget
+```
+  [ ] [#] [ ]
+  [#] [L] [#]
+  [ ] [#] [ ]
+```
+
 *   **Free Roaming:** Once bound, the pet will freely roam within a configurable radius (default: `10.0` blocks) of their anchor point. They will **not** follow you.
 *   **Pathing Back:** If a tethered pet is pushed or wanders outside its roaming radius, it will actively path find back to its anchor point. If it gets significantly separated, it will safely teleport back to its bound spot.
 *   **Unbinding:** Simply Right-Click them with the tether again to release them.
