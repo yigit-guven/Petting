@@ -36,6 +36,15 @@ Taming a mob is simple, but deeply customizable. By default, any player can crou
 ### 🌾 Golden Wheat Attraction
 Golden Wheat isn't just for taming! If you hold it in either hand, nearby animals will be **attracted** to you, looking your way and following you (speed 1.25) as long as you keep the wheat out. This makes it much easier to lead mobs into positions for taming!
 
+#### 🛠️ Crafting Recipe
+Golden Wheat can be crafted using **8 Gold Blocks** and **1 Wheat**:
+* **G** = Gold Block, **W** = Wheat
+```
+  [G] [G] [G]
+  [G] [W] [G]
+  [G] [G] [G]
+```
+
 ### Taming Factors
 * **RNG Chance:** Taming is not guaranteed! By default, there is a `33%` chance of success (configurable to match vanilla wolves). If you fail, the item is consumed and smoke particles appear.
 * **Health Scaling (Optional):** You can enable `healthScalesTamingChance` in the config. If enabled, weakening a mob physically increases your chance of taming it. A mob with 1 HP remaining is far easier to tame than a fully-healed brute!
