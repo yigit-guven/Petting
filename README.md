@@ -95,6 +95,7 @@ While global configurations set the defaults, you can customize every pet indivi
 | **Ender Pearl**| **Teleport Dist** | Cycles between **10, 20, 50, and 100** blocks. |
 | **Clock** | **Whistle Mode** | Toggles whether the pet responds to **Goat Horn whistles**. |
 | **Pet Tether** | **Bound Move** | Toggles "Anchor Mode" (Stay in a 10-block radius of current spot). |
+| **Shears** | **Release Pet** | **(Crouch Required)** Reverts the pet to a wild mob. |
 
 ---
 

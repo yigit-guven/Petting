@@ -29,6 +29,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_TELEPORT_DIST;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_WHISTLE_TOGGLE;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PET_TETHERING;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RELEASING;
 
     public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
     public static final ForgeConfigSpec.BooleanValue ENABLE_GOAT_HORN_WHISTLE;
@@ -189,6 +190,10 @@ public class PettingConfig {
         ALLOW_PET_TETHERING = BUILDER
                 .comment("If true, owners can right-click their pet with a Pet Tether item to bind them to an area.")
                 .define("allowPetTethering", true);
+
+        ALLOW_PET_RELEASING = BUILDER
+                .comment("If true, owners can Crouch + Right-Click their pet with Shears to release them.")
+                .define("allowPetReleasing", true);
 
         BUILDER.pop();
 
