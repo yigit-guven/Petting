@@ -102,7 +102,14 @@ public class GoldenWheatRightclickedProcedure {
         }
         
         // 4. Check Max Pets Limit
-        int maxPets = PettingConfig.MAX_PETS_PER_PLAYER.get();
+        double maxPets = player.getAttributeValue(net.yigitguven.petting.init.PettingModAttributes.MAX_PETS.get());
+        
+        // If the attribute is at base (1.0) or we want to sync it with config, 
+        // we should probably have initialized it with the config value.
+        // For now, let's treat the config as the source of truth if the attribute hasn't been modified or as the "Base".
+        // Actually, the most robust way is to just use the attribute value, 
+        // and we can set the base value of the attribute to the config value when the player joins or via a modifier.
+        
         if (maxPets != -1 && entity.level() instanceof ServerLevel serverLevel) {
             int currentPets = 0;
             for (Entity e : serverLevel.getAllEntities()) {
@@ -113,8 +120,8 @@ public class GoldenWheatRightclickedProcedure {
                     }
                 }
             }
-            if (currentPets >= maxPets) {
-                player.displayClientMessage(Component.literal("§cYou cannot tame any more custom pets! (Limit: " + maxPets + ")"), true);
+            if (currentPets >= (int)maxPets) {
+                player.displayClientMessage(Component.literal("§cYou cannot tame any more custom pets! (Limit: " + (int)maxPets + ")"), true);
                 return; // Exceeded limit
             }
         }

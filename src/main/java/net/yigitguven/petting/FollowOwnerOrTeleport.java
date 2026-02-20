@@ -53,6 +53,31 @@ public class FollowOwnerOrTeleport {
                 return;
             }
 
+            // --- BOUND ROAM LOGIC ---
+            if (data.getBoolean("pettingbound")) {
+                double bX = data.getDouble("boundX");
+                double bY = data.getDouble("boundY");
+                double bZ = data.getDouble("boundZ");
+                Vec3 boundPos = new Vec3(bX, bY, bZ);
+                double distToBound = mob.distanceToSqr(boundPos);
+                double roamRadius = net.yigitguven.petting.config.PettingConfig.BOUND_ROAM_RADIUS.get();
+                
+                // If extremely far (e.g. teleported away), teleport back
+                if (distToBound > 400.0) { // 20 blocks squared
+                    mob.teleportTo(bX, bY, bZ);
+                    mob.getNavigation().stop();
+                } 
+                // If outside roaming radius, walk back
+                else if (distToBound > roamRadius * roamRadius) {
+                    if (mob.tickCount % 20 == 0) {
+                        mob.getNavigation().moveTo(bX, bY, bZ, 1.0D);
+                    }
+                }
+                
+                // Skip the follow owner logic while bound
+                return;
+            }
+
             // Fetch Movement Speed Attribute
             net.minecraft.world.entity.ai.attributes.AttributeInstance speedAttribute = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
             net.minecraft.world.entity.ai.attributes.AttributeInstance flyingSpeedAttribute = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FLYING_SPEED);

@@ -1,5 +1,5 @@
 <div align="center">
-  <h1><img src="src/main/resources/logo.png" width="32" height="32" alt="Petting Logo" style="vertical-align: middle;"> Petting</h1>
+  <h1><img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/logo.png" width="32" height="32" alt="Petting Logo" style="vertical-align: middle;"> Petting</h1>
   <p><i>Turn any mob into your loyal, protective companion!</i></p>
 
   [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1083170?style=flat-square\&logo=curseforge\&label=CurseForge\&color=orange\&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Fpetting)](https://www.curseforge.com/minecraft/mc-mods/petting) [![Modrinth Downloads](https://img.shields.io/modrinth/dt/petting?style=flat-square\&logo=modrinth\&label=Modrinth\&link=https%3A%2F%2Fmodrinth.com%2Fmod%2Fpetting)](https://modrinth.com/mod/petting) [![Discord](https://img.shields.io/discord/1440563800930652235?style=flat-square\&logo=discord\&label=Discord)](https://discord.gg/aPk7Qs5d4H)
@@ -23,10 +23,11 @@ Designed with extreme configurability and vast quality-of-life improvements, Pet
 ## 📖 Table of Contents
 1. [Core Mechanics: Taming](#core-mechanics-taming)
 2. [Pet Behaviors & Commands](#pet-behaviors--commands)
-3. [Quality of Life & Pet Safety](#quality-of-life--pet-safety)
-4. [Vanilla Taming Integration (Hybrid Pets)](#vanilla-taming-integration-hybrid-pets)
-5. [Boss Pet Features (The Wither)](#boss-pet-features-the-wither)
-6. [Advanced Configuration (The Config File)](#advanced-configuration-the-config-file)
+3. [The Pet Tether (Binding Pets)](#the-pet-tether-binding-pets)
+4. [Quality of Life & Pet Safety](#quality-of-life--pet-safety)
+5. [Vanilla Taming Integration (Hybrid Pets)](#vanilla-taming-integration-hybrid-pets)
+6. [Boss Pet Features (The Wither)](#boss-pet-features-the-wither)
+7. [Advanced Configuration (The Config File)](#advanced-configuration-the-config-file)
 
 ---
 
@@ -60,6 +61,16 @@ Players can choose how they interact with their pets via the `controlScheme` con
 
 ---
 
+## ⚓ The Pet Tether (Binding Pets)
+
+Tired of your pets following you to their doom or cluttering up your base? Use a **Pet Tether**!
+
+*   **How to Bind:** Right-Click your tamed pet with a **Pet Tether** (found in the Petting creative tab) to bind them to their current coordinates.
+*   **Free Roaming:** Once bound, the pet will freely roam within a configurable radius (default: `10.0` blocks) of their anchor point. They will **not** follow you, even if you travel thousands of blocks away.
+*   **Pathing Back:** If a tethered pet is pushed or wanders outside its roaming radius, it will actively path find back to its anchor point. If it gets significantly separated, it will safely teleport back to its bound spot.
+*   **Unbinding:** Simply Right-Click them with the tether again to release them back into Wandering mode.
+
+
 ## 🛡️ Quality of Life & Pet Safety
 
 Having a pet shouldn't be stressful! Petting introduces major passive upgrades to ensure your companions don't die to silly mistakes.
@@ -71,11 +82,15 @@ All tamed pets are natively **immune to Fall Damage, Fire Damage, and Lava Damag
 Lost your pets in a cave? Left them sitting 10,000 blocks away? 
 Equip a **Goat Horn**, hold `Shift`, and use the item (Blow the horn). Doing so acts as a universal Pet Whistle, instantly teleporting **all** of your owned custom pets directly back to your side, resetting their state to Wandering!
 
+> [!NOTE]
+> By default, tethered (bound) pets will **ignore** the whistle to prevent accidentally pulling them away from their guarded posts. This can be enabled in the config via `whistleTeleportsTethered`.
+
+
 ### NBT/Armor Preservation
 When you tame a Zombie wearing Diamond Armor, you want it to keep that armor! Taming organically modifies the existing mob rather than replacing it, completely preserving custom names, NBT tags, naturally spawning weapons, and potion effects.
 
 ### Limiters
-Server owners can enforce a `maxPetsPerPlayer` soft-cap. If a player reaches this limit, they will be given an error message in chat and prevented from taming any further until they reduce their ranks.
+Server owners can enforce a `maxPetsPerPlayer` soft-cap. This is implemented via a **Player Attribute** (`petting:max_pets`), meaning modpacks can dynamically increase or decrease a player's pet limit based on their class, items, or level! If a player reaches this limit, they will be given an error message in chat and prevented from taming any further until they reduce their ranks.
 
 ---
 
@@ -111,8 +126,8 @@ Every mechanic described above can be tweaked, disabled, or amplified via the mo
 
 ### Config Summary
 * **Lists:** Define `tamingWhitelist` and `tamingBlacklist` to strictly control exactly which Entity Registry IDs can and cannot be tamed.
-* **Numbers:** Tune the `sitHealAmount`, `sitHealInterval`, `followDistance`, `teleportDistance`, `maxPetsPerPlayer`, `interactionCooldown`, `tameChance`, and `tameHealthThreshold`.
-* **Booleans:** Toggle `disableRespawnOnTame`, `enableParticles`, `whitelistOnly`, `blacklistEnabled`, `allowGoldenWheat`, `enableGoatHornWhistle`, `requireKillToTame`, `hideTamedBossBars`, and `healthScalesTamingChance`.
+* **Numbers:** Tune the `sitHealAmount`, `sitHealInterval`, `followDistance`, `teleportDistance`, `boundRoamRadius`, `maxPetsPerPlayer`, `interactionCooldown`, `tameChance`, and `tameHealthThreshold`.
+* **Booleans:** Toggle `disableRespawnOnTame`, `enableParticles`, `whitelistOnly`, `blacklistEnabled`, `allowGoldenWheat`, `enableGoatHornWhistle`, `whistleTeleportsTethered`, `requireKillToTame`, `hideTamedBossBars`, and `healthScalesTamingChance`.
 * **Enums:** Configure the `controlScheme` and `commandFeedbackStyle` (ACTION_BAR, CHAT, or NONE).
 * **Mappings:** Define `customTamingItems` (e.g., `["minecraft:zombie|minecraft:bone", "minecraft:spider|minecraft:spider_eye"]`).
 

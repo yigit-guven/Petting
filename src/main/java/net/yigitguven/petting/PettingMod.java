@@ -50,6 +50,7 @@ public class PettingMod {
 		IEventBus bus = context.getModEventBus();
 		PettingModItems.REGISTRY.register(bus);
 		PettingModTabs.REGISTRY.register(bus);
+		net.yigitguven.petting.init.PettingModAttributes.REGISTRY.register(bus);
 		// Start of user code block mod init
 		// End of user code block mod init
 	}

@@ -18,5 +18,6 @@ public class PettingModTabs {
 	public static final RegistryObject<CreativeModeTab> PETTING = REGISTRY.register("petting",
 			() -> CreativeModeTab.builder().title(Component.translatable("item_group.petting.petting")).icon(() -> new ItemStack(PettingModItems.GOLDEN_WHEAT.get())).displayItems((parameters, tabData) -> {
 				tabData.accept(PettingModItems.GOLDEN_WHEAT.get());
+				tabData.accept(PettingModItems.PET_TETHER.get());
 			}).withSearchBar().build());
 }

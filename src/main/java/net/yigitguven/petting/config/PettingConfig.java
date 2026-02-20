@@ -23,6 +23,7 @@ public class PettingConfig {
 
     public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
     public static final ForgeConfigSpec.BooleanValue ENABLE_GOAT_HORN_WHISTLE;
+    public static final ForgeConfigSpec.BooleanValue WHISTLE_TELEPORTS_TETHERED;
     public static final ForgeConfigSpec.BooleanValue HIDE_TAMED_BOSSBARS;
 
     public static final ForgeConfigSpec.BooleanValue REQUIRE_KILL_TO_TAME;
@@ -35,6 +36,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.IntValue SIT_HEAL_INTERVAL;
     public static final ForgeConfigSpec.DoubleValue FOLLOW_DISTANCE;
     public static final ForgeConfigSpec.DoubleValue TELEPORT_DISTANCE;
+    public static final ForgeConfigSpec.DoubleValue BOUND_ROAM_RADIUS;
 
     public enum ControlScheme {
         RIGHT_CLICK_SIT_SHIFT_WAIT,
@@ -82,7 +84,7 @@ public class PettingConfig {
                 .define("healthScalesTamingChance", false);
 
         MAX_PETS_PER_PLAYER = BUILDER
-                .comment("Maximum number of custom pets a player can tame simultaneously. (-1 for infinite).")
+                .comment("The BASE number of custom pets a player can tame. This is now a Player Attribute (petting:max_pets), so it can be modified per-player by other mods or commands. (-1 for infinite).")
                 .defineInRange("maxPetsPerPlayer", -1, -1, 10000);
 
         ALLOW_GOLDEN_WHEAT = BUILDER
@@ -92,6 +94,10 @@ public class PettingConfig {
         ENABLE_GOAT_HORN_WHISTLE = BUILDER
                 .comment("If true, crouching and using a Goat Horn will teleport all of your tamed pets directly to your location.")
                 .define("enableGoatHornWhistle", true);
+
+        WHISTLE_TELEPORTS_TETHERED = BUILDER
+                .comment("If true, tethered (bound) pets will also be teleported when using the Goat Horn. If false, tethered pets ignore the whistle.")
+                .define("whistleTeleportsTethered", false);
 
         HIDE_TAMED_BOSSBARS = BUILDER
                 .comment("If true, completely hides the Boss Bar UI across the server for all tamed Bosses (like Withers).")
@@ -116,6 +122,10 @@ public class PettingConfig {
         TELEPORT_DISTANCE = BUILDER
                 .comment("Distance from owner before the pet forcibly teleports to them.")
                 .defineInRange("teleportDistance", 20.0, 5.0, 200.0);
+
+        BOUND_ROAM_RADIUS = BUILDER
+                .comment("Radius (in blocks) the pet will roam around its bound coordinate.")
+                .defineInRange("boundRoamRadius", 10.0, 1.0, 100.0);
 
         BUILDER.pop();
 

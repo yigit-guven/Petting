@@ -34,6 +34,43 @@ public class OwnerRightclicksPetProcedure {
         
         if (!(sourceentity instanceof Player player)) return;
 
+        // --- PET TETHER INTERACTION ---
+        if (player.getMainHandItem().getItem() == net.yigitguven.petting.init.PettingModItems.PET_TETHER.get()) {
+            if ((entity.getPersistentData().getString("ownerUUID")).equals(player.getStringUUID())) {
+                boolean isBound = entity.getPersistentData().getBoolean("pettingbound");
+                String petName = entity.hasCustomName() ? entity.getCustomName().getString() : entity.getType().getDescription().getString();
+                
+                player.swing(InteractionHand.MAIN_HAND, true);
+                
+                if (!isBound) {
+                    // Bind the pet to the current location
+                    entity.getPersistentData().putBoolean("pettingbound", true);
+                    entity.getPersistentData().putDouble("boundX", entity.getX());
+                    entity.getPersistentData().putDouble("boundY", entity.getY());
+                    entity.getPersistentData().putDouble("boundZ", entity.getZ());
+                    
+                    sendFeedback(player, petName + " is now bound to this area.");
+                    playStateChangeFeedback(entity, true);
+                    
+                    // Cancel standard sit/wait logic if binding
+                    if (event != null && event.isCancelable()) {
+                        event.setCanceled(true);
+                    }
+                    return;
+                } else {
+                    // Unbind the pet
+                    entity.getPersistentData().putBoolean("pettingbound", false);
+                    sendFeedback(player, petName + " is no longer bound to this area.");
+                    playStateChangeFeedback(entity, false);
+                    
+                    if (event != null && event.isCancelable()) {
+                        event.setCanceled(true);
+                    }
+                    return;
+                }
+            }
+        }
+
         if ((entity.getPersistentData().getString("ownerUUID")).equals(player.getStringUUID())) {
             
             net.yigitguven.petting.config.PettingConfig.ControlScheme scheme = net.yigitguven.petting.config.PettingConfig.CONTROL_SCHEME.get();
