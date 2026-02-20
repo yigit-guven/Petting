@@ -1,50 +1,49 @@
 package net.yigitguven.petting.procedures;
 
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.particles.ParticleTypes;
-
-import java.util.List;
-import java.util.Comparator;
-
-// IMPORT YOUR CUSTOM ITEMS HERE
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.yigitguven.petting.IEntityData;
 import net.yigitguven.petting.init.PettingModItems;
+
+import java.util.Comparator;
+import java.util.List;
 
 public class GoldenWheatItemInHandTickProcedure {
 
-    public static void execute(LevelAccessor world, Entity entity) {
-        if (entity == null) return;
+    public static void register() {
+        // In 1.20.1 Fabric API, START_WORLD_TICK or START_SERVER_TICK are common.
+        // We'll use START_SERVER_TICK and iterate players or just use a Mixin if this fails.
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            for (Player player : server.getPlayerList().getPlayers()) {
+                execute(player.level(), player);
+            }
+        });
+    }
 
-        // Ensure we are processing a player
+    public static void execute(Level world, Entity entity) {
+        if (entity == null || world.isClientSide()) return;
+
         if (entity instanceof Player player) {
-
-            // 1. CHECK HANDS FOR CUSTOM GOLDEN WHEAT
-            boolean isHoldingWheat = player.getMainHandItem().getItem() == PettingModItems.GOLDEN_WHEAT.get() 
-                                  || player.getOffhandItem().getItem() == PettingModItems.GOLDEN_WHEAT.get();
-
-            // OPTIMIZATION: Run logic only once every 5 ticks (0.25s) to prevent lag
-            if (world instanceof Level _lvl && _lvl.getGameTime() % 5 != 0) {
+            if (world.getGameTime() % 5 != 0) {
                 return;
             }
 
-            double searchRadius = 12.0;
+            boolean isHoldingWheat = player.getMainHandItem().getItem() == PettingModItems.GOLDEN_WHEAT 
+                                   || player.getOffhandItem().getItem() == PettingModItems.GOLDEN_WHEAT;
 
-            // Get nearby animals
+            double searchRadius = 12.0;
             List<Animal> nearbyAnimals = world.getEntitiesOfClass(
                 Animal.class, 
                 player.getBoundingBox().inflate(searchRadius, 4.0, searchRadius), 
                 mob -> {
-                    // FIXED: Removed .orElse(false). 
-                    // In 1.20.1, getBoolean returns false automatically if the tag doesn't exist.
-                    boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed");
-                    
+                    boolean isAlreadyCustomTamed = ((IEntityData) mob).getPersistentData().getBoolean("pettingtamed");
                     if (isAlreadyCustomTamed) return false;
                     if (mob instanceof TamableAnimal tamable && tamable.isTame()) return false;
                     if (mob instanceof AbstractHorse horse && horse.isTamed()) return false;
@@ -52,26 +51,15 @@ public class GoldenWheatItemInHandTickProcedure {
                 }
             );
 
-            // --- SCENARIO A: PLAYER IS HOLDING GOLDEN WHEAT (ATTRACT) ---
             if (isHoldingWheat) {
-                
-                // Sort animals so the closest ones react first
                 nearbyAnimals.sort(Comparator.comparingDouble(mob -> mob.distanceToSqr(player)));
 
                 for (Animal mob : nearbyAnimals) {
-                    // Only attract if they aren't busy attacking someone else
                     if (mob.getTarget() == null || !mob.getTarget().isAlive()) {
-                        
-                        // 1. Force Look at Player
                         mob.getLookControl().setLookAt(player, 10.0F, mob.getMaxHeadXRot());
-
-                        // 2. Move to Player (Speed 1.25)
                         boolean success = mob.getNavigation().moveTo(player, 1.25);
-
-                        // 3. TAG THE ANIMAL
                         mob.addTag("TemptedByGoldenWheat");
 
-                        // 4. Particles (Visual feedback)
                         if (success && world instanceof ServerLevel serverLevel && Math.random() < 0.3) {
                              serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, 
                                  mob.getX(), mob.getY() + mob.getBbHeight() + 0.5, mob.getZ(), 
@@ -79,18 +67,10 @@ public class GoldenWheatItemInHandTickProcedure {
                         }
                     }
                 }
-            } 
-            
-            // --- SCENARIO B: PLAYER PUT THE ITEM AWAY (STOP THEM) ---
-            else {
+            } else {
                 for (Animal mob : nearbyAnimals) {
-                    // Check if this animal has the tag we gave it earlier
                     if (mob.getTags().contains("TemptedByGoldenWheat")) {
-                        
-                        // 1. Stop Navigation Immediately
                         mob.getNavigation().stop();
-                        
-                        // 2. Remove the tag (so they can wander freely again)
                         mob.removeTag("TemptedByGoldenWheat");
                     }
                 }

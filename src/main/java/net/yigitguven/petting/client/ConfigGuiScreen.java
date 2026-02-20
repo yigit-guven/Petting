@@ -1,11 +1,11 @@
 package net.yigitguven.petting.client;
 
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.Util;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 
 import java.io.File;
 
@@ -25,7 +25,7 @@ public class ConfigGuiScreen extends Screen {
         int centerY = this.height / 2;
 
         this.addRenderableWidget(Button.builder(Component.literal("Open Config Folder"), (button) -> {
-            File configDir = FMLPaths.CONFIGDIR.get().toFile();
+            File configDir = FabricLoader.getInstance().getConfigDir().toFile();
             Util.getPlatform().openUri(configDir.toURI());
         }).bounds(centerX - 100, centerY - 20, 200, 20).build());
 
@@ -36,11 +36,10 @@ public class ConfigGuiScreen extends Screen {
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(guiGraphics); // Will draw default dark tint over previous screen
+        this.renderBackground(guiGraphics); 
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
         
-        guiGraphics.drawCenteredString(this.font, "Edit 'petting-common.toml' and restart the game/server to apply.", 
+        guiGraphics.drawCenteredString(this.font, "Edit 'petting.json' and restart the game/server to apply.", 
                 this.width / 2, this.height / 2 - 50, 0xFFFFFF);
     }
 }
-

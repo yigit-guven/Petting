@@ -1,39 +1,44 @@
 package net.yigitguven.petting.procedures;
 
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.yigitguven.petting.IEntityData;
+import net.yigitguven.petting.config.PettingConfig;
 
-import javax.annotation.Nullable;
-
-@Mod.EventBusSubscriber
 public class OwnerRightclicksPetProcedure {
-    @SubscribeEvent
-    public static void onRightClickEntity(PlayerInteractEvent.EntityInteract event) {
-        if (event.getHand() != InteractionHand.MAIN_HAND)
-            return;
-        execute(event, event.getTarget(), event.getEntity());
-    }
 
-    public static void execute(Entity entity, Entity sourceentity) {
-        execute(null, entity, sourceentity);
-    }
-
-    private static void execute(@Nullable Event event, Entity entity, Entity sourceentity) {
-        if (entity == null || sourceentity == null)
-            return;
+    public static void register() {
+        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> {
+            if (hand != InteractionHand.MAIN_HAND) {
+                return InteractionResult.PASS;
+            }
             
-        if (!(sourceentity instanceof Player player)) return;
+            InteractionResult result = execute(entity, player);
+            if (result != InteractionResult.PASS) return result;
+            
+            return GoldenWheatRightclickedProcedure.execute(entity, player);
+        });
+    }
+
+    public static InteractionResult execute(Entity entity, Entity sourceentity) {
+        if (entity == null || sourceentity == null)
+            return InteractionResult.PASS;
+            
+        if (!(sourceentity instanceof Player player)) return InteractionResult.PASS;
         boolean isClient = entity.level().isClientSide();
-        CompoundTag data = entity.getPersistentData();
+        CompoundTag data = ((IEntityData) entity).getPersistentData();
         String petName = entity.hasCustomName() ? entity.getCustomName().getString() : entity.getType().getDescription().getString();
 
         if ((data.getString("ownerUUID")).equals(player.getStringUUID())) {
@@ -41,7 +46,7 @@ public class OwnerRightclicksPetProcedure {
             net.minecraft.world.item.Item item = heldItem.getItem();
 
             // 1. STICK (Status Report)
-            if (item == net.minecraft.world.item.Items.STICK && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_STATUS.get()) {
+            if (item == net.minecraft.world.item.Items.STICK && PettingConfig.allowPerPetStatus) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     player.sendSystemMessage(Component.literal("§6--- Pet Status: §f" + petName + " §6---"));
@@ -52,12 +57,11 @@ public class OwnerRightclicksPetProcedure {
                     player.sendSystemMessage(Component.literal("§eTeleport Distance: §f" + data.getInt("teleportdistance")));
                     player.sendSystemMessage(Component.literal("§eWhistle Response: " + (data.getBoolean("ignoreWhistle") ? "§cIgnored" : "§aNormal")));
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 2. SWORD (Toggle Aggressive Mode)
-            if (item instanceof net.minecraft.world.item.SwordItem && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_AGGRESSION.get()) {
+            if (item instanceof net.minecraft.world.item.SwordItem && PettingConfig.allowPerPetAggression) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifownerattacks");
@@ -66,12 +70,11 @@ public class OwnerRightclicksPetProcedure {
                     playStateChangeFeedback(entity, current);
                     playControlSound(entity, !current);
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 3. SHIELD (Toggle Retaliation)
-            if (item instanceof net.minecraft.world.item.ShieldItem && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_SELF_DEFENSE.get()) {
+            if (item instanceof net.minecraft.world.item.ShieldItem && PettingConfig.allowPerPetSelfDefense) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifselfattacked");
@@ -80,12 +83,11 @@ public class OwnerRightclicksPetProcedure {
                     playStateChangeFeedback(entity, current);
                     playControlSound(entity, !current);
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 4. COOKIE (Toggle Guard Owner)
-            if (item == net.minecraft.world.item.Items.COOKIE && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_GUARD.get()) {
+            if (item == net.minecraft.world.item.Items.COOKIE && PettingConfig.allowPerPetGuard) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifownerattacked");
@@ -94,12 +96,11 @@ public class OwnerRightclicksPetProcedure {
                     playStateChangeFeedback(entity, current);
                     playControlSound(entity, !current);
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 5. LEAD (Cycle Follow Distance)
-            if (item == net.minecraft.world.item.Items.LEAD && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_FOLLOW_DIST.get()) {
+            if (item == net.minecraft.world.item.Items.LEAD && PettingConfig.allowPerPetFollowDist) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("followdistance");
@@ -115,12 +116,11 @@ public class OwnerRightclicksPetProcedure {
                     playStateChangeFeedback(entity, false);
                     playControlSound(entity, true);
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 6. ENDER PEARL (Cycle Teleport Distance)
-            if (item == net.minecraft.world.item.Items.ENDER_PEARL && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_TELEPORT_DIST.get()) {
+            if (item == net.minecraft.world.item.Items.ENDER_PEARL && PettingConfig.allowPerPetTeleportDist) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("teleportdistance");
@@ -136,12 +136,11 @@ public class OwnerRightclicksPetProcedure {
                     playStateChangeFeedback(entity, false);
                     playControlSound(entity, true);
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 7. CLOCK (Toggle Whistle Response)
-            if (item == net.minecraft.world.item.Items.CLOCK && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_WHISTLE_TOGGLE.get()) {
+            if (item == net.minecraft.world.item.Items.CLOCK && PettingConfig.allowPerPetWhistleToggle) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("ignoreWhistle");
@@ -150,12 +149,11 @@ public class OwnerRightclicksPetProcedure {
                     playStateChangeFeedback(entity, current);
                     playControlSound(entity, !current);
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 8. PET TETHER (Toggle Binding)
-            if (item == net.yigitguven.petting.init.PettingModItems.PET_TETHER.get() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_TETHERING.get()) {
+            if (item == net.yigitguven.petting.init.PettingModItems.PET_TETHER && PettingConfig.allowPetTethering) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean isBound = data.getBoolean("pettingbound");
@@ -172,12 +170,11 @@ public class OwnerRightclicksPetProcedure {
                         playStateChangeFeedback(entity, false);
                     }
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // 9. SHEARS (Release Pet - Crouch REQUIRED)
-            if (item instanceof net.minecraft.world.item.ShearsItem && player.isShiftKeyDown() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RELEASING.get()) {
+            if (item instanceof net.minecraft.world.item.ShearsItem && player.isShiftKeyDown() && PettingConfig.allowPetReleasing) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     data.remove("pettingtamed");
@@ -193,24 +190,23 @@ public class OwnerRightclicksPetProcedure {
                     data.remove("attackifselfattacked");
                     data.remove("ignoreWhistle");
                     
-                    net.minecraft.world.level.Level world = entity.level();
-                    world.playSound(null, entity.blockPosition(), net.minecraft.sounds.SoundEvents.SHEEP_SHEAR, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
-                    if (world instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                        serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.CLOUD, entity.getX(), entity.getY() + 0.5, entity.getZ(), 20, 0.3, 0.3, 0.3, 0.1);
+                    Level world = entity.level();
+                    world.playSound(null, entity.blockPosition(), SoundEvents.SHEEP_SHEAR, SoundSource.PLAYERS, 1.0F, 1.0F);
+                    if (world instanceof ServerLevel serverLevel) {
+                        serverLevel.sendParticles(ParticleTypes.CLOUD, entity.getX(), entity.getY() + 0.5, entity.getZ(), 20, 0.3, 0.3, 0.3, 0.1);
                     }
                     sendFeedback(player, "§c[Released] §f" + petName + " is no longer your pet and has returned to the wild.");
                 }
-                cancelInteraction(event);
-                return;
+                return InteractionResult.SUCCESS;
             }
 
             // HANDLE SIT/WAIT states
-            net.yigitguven.petting.config.PettingConfig.ControlScheme scheme = net.yigitguven.petting.config.PettingConfig.CONTROL_SCHEME.get();
+            PettingConfig.ControlScheme scheme = PettingConfig.controlScheme;
             boolean isShift = player.isShiftKeyDown();
             
-            boolean shouldHandle = (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT)
-                    || (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.RIGHT_CLICK_CYCLE && !isShift)
-                    || (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.SHIFT_RIGHT_CLICK_CYCLE && isShift);
+            boolean shouldHandle = (scheme == PettingConfig.ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT)
+                    || (scheme == PettingConfig.ControlScheme.RIGHT_CLICK_CYCLE && !isShift)
+                    || (scheme == PettingConfig.ControlScheme.SHIFT_RIGHT_CLICK_CYCLE && isShift);
 
             if (shouldHandle) {
                 if (!isClient) {
@@ -218,7 +214,7 @@ public class OwnerRightclicksPetProcedure {
                     boolean isSitting = data.getBoolean("sitstill");
                     boolean isWaiting = data.getBoolean("waiting");
                     
-                    if (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT) {
+                    if (scheme == PettingConfig.ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT) {
                         if (isShift) { // Wait
                             data.putBoolean("sitstill", false);
                             boolean targetWait = !isWaiting;
@@ -256,54 +252,43 @@ public class OwnerRightclicksPetProcedure {
                         }
                     }
                 }
-                cancelInteraction(event);
+                return InteractionResult.SUCCESS;
             }
         }
-    }
-
-    private static void cancelInteraction(@Nullable Event event) {
-        if (event instanceof PlayerInteractEvent.EntityInteract interactEvent) {
-            interactEvent.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
-            interactEvent.setCanceled(true);
-        } else if (event != null && event.isCancelable()) {
-            event.setCanceled(true);
-        }
+        return InteractionResult.PASS;
     }
 
     private static void sendFeedback(Player player, String message) {
-        net.yigitguven.petting.config.PettingConfig.FeedbackStyle style = net.yigitguven.petting.config.PettingConfig.COMMAND_FEEDBACK_STYLE.get();
-        if (style == net.yigitguven.petting.config.PettingConfig.FeedbackStyle.CHAT) {
+        PettingConfig.FeedbackStyle style = PettingConfig.commandFeedbackStyle;
+        if (style == PettingConfig.FeedbackStyle.CHAT) {
             player.sendSystemMessage(Component.literal(message));
-        } else if (style == net.yigitguven.petting.config.PettingConfig.FeedbackStyle.ACTION_BAR) {
+        } else if (style == PettingConfig.FeedbackStyle.ACTION_BAR) {
             player.displayClientMessage(Component.literal(message), true);
         }
-        // NONE does nothing, staying silent.
     }
 
     private static void playControlSound(Entity entity, boolean positive) {
-        net.minecraft.world.level.Level world = entity.level();
+        Level world = entity.level();
         world.playSound(null, entity.blockPosition(), 
-            positive ? net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.get() : net.minecraft.sounds.SoundEvents.RESPAWN_ANCHOR_DEPLETE.get(), 
-            net.minecraft.sounds.SoundSource.PLAYERS, 0.5F, positive ? 1.5F : 0.8F);
+            positive ? SoundEvents.UI_BUTTON_CLICK.value() : SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), 
+            SoundSource.PLAYERS, 0.5F, positive ? 1.5F : 0.8F);
     }
 
     private static void playStateChangeFeedback(Entity entity, boolean isStopping) {
-        net.minecraft.world.level.Level world = entity.level();
-        if (world instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+        Level world = entity.level();
+        if (world instanceof ServerLevel serverLevel) {
             if (isStopping) {
-                // Happy/Stopping feedback
-                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.NOTE, 
+                serverLevel.sendParticles(ParticleTypes.NOTE, 
                     entity.getX(), entity.getY() + entity.getBbHeight() + 0.5D, entity.getZ(), 
                     3, 0.2, 0.2, 0.2, 0.0);
-                world.playSound(null, entity.blockPosition(), net.minecraft.sounds.SoundEvents.NOTE_BLOCK_CHIME.get(), 
-                    net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.2F);
+                world.playSound(null, entity.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(), 
+                    SoundSource.NEUTRAL, 1.0F, 1.2F);
             } else {
-                // Resuming/Wandering feedback
-                serverLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.ASH, 
+                serverLevel.sendParticles(ParticleTypes.ASH, 
                     entity.getX(), entity.getY() + entity.getBbHeight() + 0.5D, entity.getZ(), 
                     10, 0.2, 0.2, 0.2, 0.0);
-                world.playSound(null, entity.blockPosition(), net.minecraft.sounds.SoundEvents.NOTE_BLOCK_SNARE.get(), 
-                    net.minecraft.sounds.SoundSource.NEUTRAL, 0.7F, 1.5F);
+                world.playSound(null, entity.blockPosition(), SoundEvents.NOTE_BLOCK_SNARE.value(), 
+                    SoundSource.NEUTRAL, 0.7F, 1.5F);
             }
         }
     }

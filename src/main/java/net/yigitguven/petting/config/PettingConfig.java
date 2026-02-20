@@ -1,245 +1,214 @@
 package net.yigitguven.petting.config;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PettingConfig {
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
-    public static final ForgeConfigSpec SPEC;
+    private static final Logger LOGGER = LogManager.getLogger("PettingConfig");
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir().toFile(), "petting.json");
 
-    public static final ForgeConfigSpec.BooleanValue DISABLE_RESPAWN_ON_TAME;
-    public static final ForgeConfigSpec.IntValue INTERACTION_COOLDOWN;
-    public static final ForgeConfigSpec.BooleanValue ENABLE_PARTICLES;
-    
-    public static final ForgeConfigSpec.BooleanValue WHITELIST_ONLY;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TAMING_WHITELIST;
-    
-    public static final ForgeConfigSpec.BooleanValue BLACKLIST_ENABLED;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TAMING_BLACKLIST;
-    
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CUSTOM_TAMING_ITEMS;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PET_CATEGORIES;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_GOLDEN_WHEAT;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_STATUS;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_AGGRESSION;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_SELF_DEFENSE;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_GUARD;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_FOLLOW_DIST;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_TELEPORT_DIST;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_WHISTLE_TOGGLE;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_TETHERING;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RELEASING;
+    // General
+    public static boolean disableRespawnOnTame = true;
+    public static int interactionCooldown = 20;
+    public static boolean enableParticles = true;
+    public static boolean requireKillToTame = false;
+    public static double tameHealthThreshold = 0.0;
+    public static double tameChance = 0.33;
+    public static boolean healthScalesTamingChance = false;
+    public static int maxPetsPerPlayer = -1;
+    public static boolean allowGoldenWheat = true;
+    public static boolean enableGoatHornWhistle = true;
+    public static boolean whistleTeleportsTethered = false;
+    public static boolean hideTamedBossBars = true;
 
-    public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
-    public static final ForgeConfigSpec.BooleanValue ENABLE_GOAT_HORN_WHISTLE;
-    public static final ForgeConfigSpec.BooleanValue WHISTLE_TELEPORTS_TETHERED;
-    public static final ForgeConfigSpec.BooleanValue HIDE_TAMED_BOSSBARS;
+    // Behavior
+    public static double sitHealAmount = 1.0;
+    public static int sitHealInterval = 40;
+    public static double followDistance = 10.0;
+    public static double teleportDistance = 20.0;
+    public static double boundRoamRadius = 10.0;
 
-    public static final ForgeConfigSpec.BooleanValue REQUIRE_KILL_TO_TAME;
-    public static final ForgeConfigSpec.DoubleValue TAME_HEALTH_THRESHOLD;
+    // Controls
+    public static ControlScheme controlScheme = ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT;
+    public static FeedbackStyle commandFeedbackStyle = FeedbackStyle.ACTION_BAR;
 
-    public static final ForgeConfigSpec.DoubleValue TAME_CHANCE;
-    public static final ForgeConfigSpec.BooleanValue HEALTH_SCALES_TAMING_CHANCE;
+    // Interactions
+    public static boolean allowPerPetStatus = true;
+    public static boolean allowPerPetAggression = true;
+    public static boolean allowPerPetSelfDefense = true;
+    public static boolean allowPerPetGuard = true;
+    public static boolean allowPerPetFollowDist = true;
+    public static boolean allowPerPetTeleportDist = true;
+    public static boolean allowPerPetWhistleToggle = true;
+    public static boolean allowPetTethering = true;
+    public static boolean allowPetReleasing = true;
 
-    public static final ForgeConfigSpec.DoubleValue SIT_HEAL_AMOUNT;
-    public static final ForgeConfigSpec.IntValue SIT_HEAL_INTERVAL;
-    public static final ForgeConfigSpec.DoubleValue FOLLOW_DISTANCE;
-    public static final ForgeConfigSpec.DoubleValue TELEPORT_DISTANCE;
-    public static final ForgeConfigSpec.DoubleValue BOUND_ROAM_RADIUS;
+    // Filters
+    public static boolean whitelistOnly = false;
+    public static List<String> tamingWhitelist = new ArrayList<>();
+    public static boolean blacklistEnabled = false;
+    public static List<String> tamingBlacklist = new ArrayList<>();
+
+    // Custom
+    public static List<String> customTamingItems = new ArrayList<>();
+    public static List<String> petCategories = new ArrayList<>();
 
     public enum ControlScheme {
         RIGHT_CLICK_SIT_SHIFT_WAIT,
         RIGHT_CLICK_CYCLE,
         SHIFT_RIGHT_CLICK_CYCLE
     }
-    public static final ForgeConfigSpec.EnumValue<ControlScheme> CONTROL_SCHEME;
 
     public enum FeedbackStyle {
         ACTION_BAR,
         CHAT,
         NONE
     }
-    public static final ForgeConfigSpec.EnumValue<FeedbackStyle> COMMAND_FEEDBACK_STYLE;
 
-    static {
-        BUILDER.push("General Settings");
+    public static void load() {
+        if (CONFIG_FILE.exists()) {
+            try (FileReader reader = new FileReader(CONFIG_FILE)) {
+                ConfigData data = GSON.fromJson(reader, ConfigData.class);
+                if (data != null) {
+                    apply(data);
+                }
+            } catch (IOException e) {
+                LOGGER.error("Failed to load Petting config", e);
+            }
+        } else {
+            save();
+        }
+    }
 
-        DISABLE_RESPAWN_ON_TAME = BUILDER
-                .comment("If true, mobs will not respawn when tamed to preserve their NBT data (like vanilla armor and weapons), instead applying tags to the existing mob.")
-                .define("disableRespawnOnTame", true);
+    public static void save() {
+        try (FileWriter writer = new FileWriter(CONFIG_FILE)) {
+            GSON.toJson(createData(), writer);
+        } catch (IOException e) {
+            LOGGER.error("Failed to save Petting config", e);
+        }
+    }
 
-        INTERACTION_COOLDOWN = BUILDER
-                .comment("Cooldown in ticks before petting the same mob again.")
-                .defineInRange("interactionCooldown", 20, 0, 1000000);
+    private static void apply(ConfigData data) {
+        disableRespawnOnTame = data.disableRespawnOnTame;
+        interactionCooldown = data.interactionCooldown;
+        enableParticles = data.enableParticles;
+        requireKillToTame = data.requireKillToTame;
+        tameHealthThreshold = data.tameHealthThreshold;
+        tameChance = data.tameChance;
+        healthScalesTamingChance = data.healthScalesTamingChance;
+        maxPetsPerPlayer = data.maxPetsPerPlayer;
+        allowGoldenWheat = data.allowGoldenWheat;
+        enableGoatHornWhistle = data.enableGoatHornWhistle;
+        whistleTeleportsTethered = data.whistleTeleportsTethered;
+        hideTamedBossBars = data.hideTamedBossBars;
+        sitHealAmount = data.sitHealAmount;
+        sitHealInterval = data.sitHealInterval;
+        followDistance = data.followDistance;
+        teleportDistance = data.teleportDistance;
+        boundRoamRadius = data.boundRoamRadius;
+        controlScheme = data.controlScheme;
+        commandFeedbackStyle = data.commandFeedbackStyle;
+        allowPerPetStatus = data.allowPerPetStatus;
+        allowPerPetAggression = data.allowPerPetAggression;
+        allowPerPetSelfDefense = data.allowPerPetSelfDefense;
+        allowPerPetGuard = data.allowPerPetGuard;
+        allowPerPetFollowDist = data.allowPerPetFollowDist;
+        allowPerPetTeleportDist = data.allowPerPetTeleportDist;
+        allowPerPetWhistleToggle = data.allowPerPetWhistleToggle;
+        allowPetTethering = data.allowPetTethering;
+        allowPetReleasing = data.allowPetReleasing;
+        whitelistOnly = data.whitelistOnly;
+        tamingWhitelist = data.tamingWhitelist != null ? data.tamingWhitelist : new ArrayList<>();
+        blacklistEnabled = data.blacklistEnabled;
+        tamingBlacklist = data.tamingBlacklist != null ? data.tamingBlacklist : new ArrayList<>();
+        customTamingItems = data.customTamingItems != null ? data.customTamingItems : new ArrayList<>();
+        petCategories = data.petCategories != null ? data.petCategories : new ArrayList<>();
+    }
 
-        ENABLE_PARTICLES = BUILDER
-                .comment("If true, heart particles will appear when petting/taming.")
-                .define("enableParticles", true);
+    private static ConfigData createData() {
+        ConfigData data = new ConfigData();
+        data.disableRespawnOnTame = disableRespawnOnTame;
+        data.interactionCooldown = interactionCooldown;
+        data.enableParticles = enableParticles;
+        data.requireKillToTame = requireKillToTame;
+        data.tameHealthThreshold = tameHealthThreshold;
+        data.tameChance = tameChance;
+        data.healthScalesTamingChance = healthScalesTamingChance;
+        data.maxPetsPerPlayer = maxPetsPerPlayer;
+        data.allowGoldenWheat = allowGoldenWheat;
+        data.enableGoatHornWhistle = enableGoatHornWhistle;
+        data.whistleTeleportsTethered = whistleTeleportsTethered;
+        data.hideTamedBossBars = hideTamedBossBars;
+        data.sitHealAmount = sitHealAmount;
+        data.sitHealInterval = sitHealInterval;
+        data.followDistance = followDistance;
+        data.teleportDistance = teleportDistance;
+        data.boundRoamRadius = boundRoamRadius;
+        data.controlScheme = controlScheme;
+        data.commandFeedbackStyle = commandFeedbackStyle;
+        data.allowPerPetStatus = allowPerPetStatus;
+        data.allowPerPetAggression = allowPerPetAggression;
+        data.allowPerPetSelfDefense = allowPerPetSelfDefense;
+        data.allowPerPetGuard = allowPerPetGuard;
+        data.allowPerPetFollowDist = allowPerPetFollowDist;
+        data.allowPerPetTeleportDist = allowPerPetTeleportDist;
+        data.allowPerPetWhistleToggle = allowPerPetWhistleToggle;
+        data.allowPetTethering = allowPetTethering;
+        data.allowPetReleasing = allowPetReleasing;
+        data.whitelistOnly = whitelistOnly;
+        data.tamingWhitelist = tamingWhitelist;
+        data.blacklistEnabled = blacklistEnabled;
+        data.tamingBlacklist = tamingBlacklist;
+        data.customTamingItems = customTamingItems;
+        data.petCategories = petCategories;
+        return data;
+    }
 
-        REQUIRE_KILL_TO_TAME = BUILDER
-                .comment("If true, players must have killed at least one of the entity type before they are allowed to tame it.")
-                .define("requireKillToTame", false);
-
-        TAME_HEALTH_THRESHOLD = BUILDER
-                .comment("Required percentage of missing health before taming works (0.0 to 1.0). e.g., 0.5 means the mob must be missing 50% of its max health.")
-                .defineInRange("tameHealthThreshold", 0.0, 0.0, 1.0);
-
-        TAME_CHANCE = BUILDER
-                .comment("Base chance (0.0 to 1.0) for a tame attempt to succeed. (e.g., 0.33 means ~1 in 3 chance, like vanilla wolves).")
-                .defineInRange("tameChance", 0.33, 0.0, 1.0);
-
-        HEALTH_SCALES_TAMING_CHANCE = BUILDER
-                .comment("If true, the mob's missing health percentage is added to the base tame chance, making weaker mobs easier to tame.")
-                .define("healthScalesTamingChance", false);
-
-        MAX_PETS_PER_PLAYER = BUILDER
-                .comment("The BASE number of custom pets a player can tame. This is now a Player Attribute (petting:max_pets), so it can be modified per-player by other mods or commands. (-1 for infinite).")
-                .defineInRange("maxPetsPerPlayer", -1, -1, 10000);
-
-        ALLOW_GOLDEN_WHEAT = BUILDER
-                .comment("If true, Golden Wheat can be used to tame mobs. If false, ONLY items defined in Custom Item Settings can be used.")
-                .define("allowGoldenWheat", true);
-
-        ENABLE_GOAT_HORN_WHISTLE = BUILDER
-                .comment("If true, crouching and using a Goat Horn will teleport all of your tamed pets directly to your location.")
-                .define("enableGoatHornWhistle", true);
-
-        WHISTLE_TELEPORTS_TETHERED = BUILDER
-                .comment("If true, tethered (bound) pets will also be teleported when using the Goat Horn. If false, tethered pets ignore the whistle.")
-                .define("whistleTeleportsTethered", false);
-
-        HIDE_TAMED_BOSSBARS = BUILDER
-                .comment("If true, completely hides the Boss Bar UI across the server for all tamed Bosses (like Withers).")
-                .define("hideTamedBossBars", true);
-
-        BUILDER.pop();
-
-        BUILDER.push("Behavior & AI Settings");
-
-        SIT_HEAL_AMOUNT = BUILDER
-                .comment("Amount of health (in half-hearts) a sitting pet regenerates.")
-                .defineInRange("sitHealAmount", 1.0, 0.0, 100.0);
-
-        SIT_HEAL_INTERVAL = BUILDER
-                .comment("Interval (in ticks) between each sitting health regeneration.")
-                .defineInRange("sitHealInterval", 40, 1, 1000000);
-
-        FOLLOW_DISTANCE = BUILDER
-                .comment("Distance from owner before the pet starts walking to them.")
-                .defineInRange("followDistance", 10.0, 1.0, 100.0);
-
-        TELEPORT_DISTANCE = BUILDER
-                .comment("Distance from owner before the pet forcibly teleports to them.")
-                .defineInRange("teleportDistance", 20.0, 5.0, 200.0);
-
-        BOUND_ROAM_RADIUS = BUILDER
-                .comment("Radius (in blocks) the pet will roam around its bound coordinate.")
-                .defineInRange("boundRoamRadius", 10.0, 1.0, 100.0);
-
-        BUILDER.pop();
-
-        BUILDER.push("Controls Settings");
-
-        CONTROL_SCHEME = BUILDER
-                .comment("Scheme for commanding pets.",
-                        "RIGHT_CLICK_SIT_SHIFT_WAIT: Right-Click toggles Sitting, Shift-Right-Click toggles Waiting (Default)",
-                        "RIGHT_CLICK_CYCLE: Right-Click cycles sequentially (Wander -> Sit -> Wait)",
-                        "SHIFT_RIGHT_CLICK_CYCLE: Shift-Right-Click cycles sequentially (Wander -> Sit -> Wait)")
-                .defineEnum("controlScheme", ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT);
-
-        COMMAND_FEEDBACK_STYLE = BUILDER
-                .comment("How state changes (e.g. 'Spot is now Sitting') are communicated.",
-                        "ACTION_BAR: Small text above the hotbar (Default)",
-                        "CHAT: Standard chat message",
-                        "NONE: Completely silent")
-                .defineEnum("commandFeedbackStyle", FeedbackStyle.ACTION_BAR);
-
-        BUILDER.pop();
-
-        BUILDER.push("Item Interaction Settings");
-
-        ALLOW_PER_PET_STATUS = BUILDER
-                .comment("If true, owners can right-click their pet with a Stick to see a status report.")
-                .define("allowPerPetStatus", true);
-
-        ALLOW_PER_PET_AGGRESSION = BUILDER
-                .comment("If true, owners can right-click their pet with a Sword to toggle Aggressive Mode.")
-                .define("allowPerPetAggression", true);
-
-        ALLOW_PER_PET_SELF_DEFENSE = BUILDER
-                .comment("If true, owners can right-click their pet with a Shield to toggle Self-Defense retaliation.")
-                .define("allowPerPetSelfDefense", true);
-
-        ALLOW_PER_PET_GUARD = BUILDER
-                .comment("If true, owners can right-click their pet with a Cookie to toggle Guard Mode.")
-                .define("allowPerPetGuard", true);
-
-        ALLOW_PER_PET_FOLLOW_DIST = BUILDER
-                .comment("If true, owners can right-click their pet with a Lead to cycle follow distance settings.")
-                .define("allowPerPetFollowDist", true);
-
-        ALLOW_PER_PET_TELEPORT_DIST = BUILDER
-                .comment("If true, owners can right-click their pet with an Ender Pearl to cycle teleport distance settings.")
-                .define("allowPerPetTeleportDist", true);
-
-        ALLOW_PER_PET_WHISTLE_TOGGLE = BUILDER
-                .comment("If true, owners can right-click their pet with a Clock to toggle if it responds to Goat Horn whistles.")
-                .define("allowPerPetWhistleToggle", true);
-
-        ALLOW_PET_TETHERING = BUILDER
-                .comment("If true, owners can right-click their pet with a Pet Tether item to bind them to an area.")
-                .define("allowPetTethering", true);
-
-        ALLOW_PET_RELEASING = BUILDER
-                .comment("If true, owners can Crouch + Right-Click their pet with Shears to release them.")
-                .define("allowPetReleasing", true);
-
-        BUILDER.pop();
-
-        BUILDER.push("Whitelist Settings");
-
-        WHITELIST_ONLY = BUILDER
-                .comment("If true, only mobs listed in 'tamingWhitelist' can be tamed.")
-                .define("whitelistOnly", false);
-
-        TAMING_WHITELIST = BUILDER
-                .comment("List of entity registry names that are allowed to be tamed. (e.g. [\"minecraft:zombie\" , \"minecraft:creeper\"])")
-                .defineListAllowEmpty("tamingWhitelist", List.of(), obj -> obj instanceof String);
-
-        BUILDER.pop();
-
-        BUILDER.push("Blacklist Settings");
-
-        BLACKLIST_ENABLED = BUILDER
-                .comment("If true, mobs listed in 'tamingBlacklist' CANNOT be tamed. (Overrides Whitelist)")
-                .define("blacklistEnabled", false);
-
-        TAMING_BLACKLIST = BUILDER
-                .comment("List of entity registry names that are forbidden from taming. (e.g. [\"minecraft:wither\"])")
-                .defineListAllowEmpty("tamingBlacklist", List.of(), obj -> obj instanceof String);
-
-        BUILDER.pop();
-
-        BUILDER.push("Custom Item Settings");
-
-        CUSTOM_TAMING_ITEMS = BUILDER
-                .comment("Map custom taming items to specific mobs. Format: entity_registry|item_registry. Example: [\"minecraft:zombie|minecraft:bone\"]")
-                .defineListAllowEmpty("customTamingItems", List.of(), obj -> obj instanceof String);
-
-        PET_CATEGORIES = BUILDER
-                .comment("Define pet categories with per-player attribute limits.",
-                        "Format: SlotID|DisplayName|MobList|DefaultLimit",
-                        "SlotID: 1 to 20 (corresponds to petting:max_pets_category_X)",
-                        "DisplayName: Name shown in-game (e.g. Necromancer)",
-                        "MobList: Comma-separated entity IDs (e.g. minecraft:zombie,minecraft:skeleton)",
-                        "DefaultLimit: Starting limit for that category. Attributes can override this.",
-                        "Example: [\"1|Necromancer|minecraft:zombie,minecraft:skeleton|3\"]")
-                .defineListAllowEmpty("petCategories", List.of(), obj -> obj instanceof String);
-
-        BUILDER.pop();
-
-        SPEC = BUILDER.build();
+    private static class ConfigData {
+        private boolean disableRespawnOnTame = true;
+        private int interactionCooldown = 20;
+        private boolean enableParticles = true;
+        private boolean requireKillToTame = false;
+        private double tameHealthThreshold = 0.0;
+        private double tameChance = 0.33;
+        private boolean healthScalesTamingChance = false;
+        private int maxPetsPerPlayer = -1;
+        private boolean allowGoldenWheat = true;
+        private boolean enableGoatHornWhistle = true;
+        private boolean whistleTeleportsTethered = false;
+        private boolean hideTamedBossBars = true;
+        private double sitHealAmount = 1.0;
+        private int sitHealInterval = 40;
+        private double followDistance = 10.0;
+        private double teleportDistance = 20.0;
+        private double boundRoamRadius = 10.0;
+        private ControlScheme controlScheme = ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT;
+        private FeedbackStyle commandFeedbackStyle = FeedbackStyle.ACTION_BAR;
+        private boolean allowPerPetStatus = true;
+        private boolean allowPerPetAggression = true;
+        private boolean allowPerPetSelfDefense = true;
+        private boolean allowPerPetGuard = true;
+        private boolean allowPerPetFollowDist = true;
+        private boolean allowPerPetTeleportDist = true;
+        private boolean allowPerPetWhistleToggle = true;
+        private boolean allowPetTethering = true;
+        private boolean allowPetReleasing = true;
+        private boolean whitelistOnly = false;
+        private List<String> tamingWhitelist = new ArrayList<>();
+        private boolean blacklistEnabled = false;
+        private List<String> tamingBlacklist = new ArrayList<>();
+        private List<String> customTamingItems = new ArrayList<>();
+        private List<String> petCategories = new ArrayList<>();
     }
 }
-

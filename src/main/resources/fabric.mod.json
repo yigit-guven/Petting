@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "petting",
+	"version": "${version}",
+	"name": "Petting",
+	"description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
+	"authors": [
+		"Yigit Guven"
+	],
+	"contact": {
+		"homepage": "https://github.com/yigit-guven/Petting",
+		"sources": "https://github.com/yigit-guven/Petting"
+	},
+	"license": "LGPLv3",
+	"icon": "assets/petting/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"net.yigitguven.petting.PettingMod"
+		],
+		"client": [
+			"net.yigitguven.petting.PettingModClient"
+		]
+	},
+	"mixins": [
+		"petting.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=${loader_version}",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}

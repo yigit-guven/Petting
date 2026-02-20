@@ -1,75 +1,67 @@
 package net.yigitguven.petting.procedures;
 
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.yigitguven.petting.IEntityData;
+import net.yigitguven.petting.PetAttackLogic;
 import net.yigitguven.petting.config.PettingConfig;
 
-import java.util.List;
-
-@Mod.EventBusSubscriber
 public class PetWhistleProcedure {
-    @SubscribeEvent
-    public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        Player player = event.getEntity();
-        if (player.level().isClientSide() || !player.isShiftKeyDown()) return;
 
-        if (!PettingConfig.ENABLE_GOAT_HORN_WHISTLE.get()) return;
+    public static void register() {
+        UseItemCallback.EVENT.register((player, world, hand) -> {
+            ItemStack stack = player.getItemInHand(hand);
+            if (!world.isClientSide() && player.isShiftKeyDown() && PettingConfig.enableGoatHornWhistle) {
+                if (stack.getItem() == Items.GOAT_HORN) {
+                    execute(player);
+                }
+            }
+            return InteractionResultHolder.pass(stack);
+        });
+    }
 
-        if (event.getItemStack().getItem() == net.minecraft.world.item.Items.GOAT_HORN) {
-            if (player.level() instanceof ServerLevel serverLevel) {
-                int summonedCount = 0;
-                String playerUUID = player.getStringUUID();
+    private static void execute(Player player) {
+        if (player.level() instanceof ServerLevel serverLevel) {
+            int summonedCount = 0;
+            String playerUUID = player.getStringUUID();
 
-                for (Entity entity : serverLevel.getAllEntities()) {
-                    if (entity instanceof Mob pet) {
-                        if (pet.getPersistentData().getBoolean("pettingtamed")) {
-                            String ownerUUID = pet.getPersistentData().getString("ownerUUID");
-                            if (ownerUUID.equals(playerUUID)) {
-                                // Whistle Override check
-                                boolean ignoreWhistle = pet.getPersistentData().getBoolean("ignoreWhistle");
-                                if (ignoreWhistle) {
-                                    continue;
-                                }
+            for (Entity entity : serverLevel.getAllEntities()) {
+                if (entity instanceof Mob pet && PetAttackLogic.isCustomPet(pet)) {
+                    String ownerUUID = ((IEntityData) pet).getPersistentData().getString("ownerUUID");
+                    if (ownerUUID.equals(playerUUID)) {
+                        boolean ignoreWhistle = ((IEntityData) pet).getPersistentData().getBoolean("ignoreWhistle");
+                        if (ignoreWhistle) continue;
 
-                                // Tether check
-                                boolean isBound = pet.getPersistentData().getBoolean("pettingbound");
-                                if (isBound && !PettingConfig.WHISTLE_TELEPORTS_TETHERED.get()) {
-                                    continue;
-                                }
+                        boolean isBound = ((IEntityData) pet).getPersistentData().getBoolean("pettingbound");
+                        if (isBound && !PettingConfig.whistleTeleportsTethered) continue;
 
-                                // Teleport pet to owner
-                                pet.teleportTo(player.getX(), player.getY(), player.getZ());
-                                
-                                // Reset its waiting state to ensure it follows again
-                                pet.getPersistentData().putBoolean("waiting", false);
-                                pet.getPersistentData().putBoolean("sitstill", false);
+                        pet.teleportTo(player.getX(), player.getY(), player.getZ());
+                        ((IEntityData) pet).getPersistentData().putBoolean("waiting", false);
+                        ((IEntityData) pet).getPersistentData().putBoolean("sitstill", false);
 
-                                // Visual feedback
-                                serverLevel.sendParticles(ParticleTypes.PORTAL, 
-                                    pet.getX(), pet.getY() + 1.0D, pet.getZ(), 
-                                    20, 0.5, 0.5, 0.5, 0.1);
-                                
-                                summonedCount++;
-                            }
-                        }
+                        serverLevel.sendParticles(ParticleTypes.PORTAL, 
+                            pet.getX(), pet.getY() + 1.0D, pet.getZ(), 
+                            20, 0.5, 0.5, 0.5, 0.1);
+                        summonedCount++;
                     }
                 }
+            }
 
-                if (summonedCount > 0) {
-                    player.displayClientMessage(Component.literal("§aSummoned " + summonedCount + " pet(s) to your location!"), true);
-                    serverLevel.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
-                } else {
-                    player.displayClientMessage(Component.literal("§cYou have no custom pets in this dimension to summon."), true);
-                }
+            if (summonedCount > 0) {
+                player.displayClientMessage(Component.literal("§aSummoned " + summonedCount + " pet(s) to your location!"), true);
+                serverLevel.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
+            } else {
+                player.displayClientMessage(Component.literal("§cYou have no custom pets in this dimension to summon."), true);
             }
         }
     }
