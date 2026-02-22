@@ -1,40 +1,28 @@
 modLoader="javafml"
-loaderVersion="[4,)"
-license="GNU Lesser General Public License version 3 (LGPLv3)"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+issueTrackerURL="https://github.com/yigit-guven/Petting/issues"
 
 [[mods]]
-modId="petting"
-version="4.0.02"
-displayName="Petting"
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
 displayURL="https://github.com/yigit-guven/Petting"
 logoFile="logo.png"
 credits="Special thanks to Anchor Studios & Ryukazan for their contributions."
-authors="Vuserr0"
-description="Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures."
+authors="Yigit Guven"
+description="Break the limits of Minecraft taming. This mod introduces a universal Petting mechanic that allows you to tame any mob—whether vanilla or mods."
 
-# Start of user code block mod configuration
-# End of user code block mod configuration
-
-
-# Start of user code block custom mixins
-# End of user code block custom mixins
-
-[[dependencies.petting]]
-    modId="neoforge"
-    type="required"
-    versionRange="[21.1.190,)"
-    ordering="AFTER"
-    side="BOTH"
-
-[[dependencies.petting]]
+[[dependencies.${mod_id}]]
     modId="minecraft"
-    type="required"
-    versionRange="[1.21.1]"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
     ordering="AFTER"
     side="BOTH"
 
-
-
-
-# Start of user code block dependencies configuration
-# End of user code block dependencies configuration
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    mandatory=true
+    versionRange="${loader_version_range}"
+    ordering="AFTER"
+    side="BOTH"
