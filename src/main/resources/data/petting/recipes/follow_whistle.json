@@ -1,0 +1,21 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        " i ",
+        " i ",
+        " s "
+    ],
+    "key": {
+        "i": {
+            "item": "minecraft:iron_ingot"
+        },
+        "s": {
+            "item": "minecraft:string"
+        }
+    },
+    "result": {
+        "item": "petting:follow_whistle",
+        "count": 1
+    }
+}

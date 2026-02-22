@@ -1,5 +1,11 @@
 {
   "item_group.petting.petting": "Petting",
   "item.petting.golden_wheat": "Golden Wheat",
-  "item.petting.pet_tether": "Pet Tether"
+  "item.petting.golden_wheat.tooltip": "Used to tame animals that find traditional wheat too common.",
+  "item.petting.pet_tether": "Pet Tether",
+  "item.petting.pet_tether.tooltip": "Right-click an owned pet to bind it to its current location.",
+  "item.petting.teleport_orb": "Teleport Orb",
+  "item.petting.teleport_orb.tooltip": "Right-click an owned pet to cycle teleportation distance (10-100 blocks).",
+  "item.petting.follow_whistle": "Follow Whistle",
+  "item.petting.follow_whistle.tooltip": "Right-click an owned pet to cycle follow distance (5-50 blocks)."
 }

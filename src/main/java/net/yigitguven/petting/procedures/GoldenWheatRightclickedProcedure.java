@@ -28,17 +28,17 @@ public class GoldenWheatRightclickedProcedure {
         execute(null, sourceentity);
     }
 
-    public static void execute(Entity entity, Entity sourceentity) {
-        if (entity == null || sourceentity == null) return;
-        if (entity.level().isClientSide()) return;
-        if (!(sourceentity instanceof Player player)) return;
+    public static boolean execute(Entity entity, Entity sourceentity) {
+        if (entity == null || sourceentity == null) return false;
+        if (entity.level().isClientSide()) return false;
+        if (!(sourceentity instanceof Player player)) return false;
 
         ItemStack itemInHand = player.getMainHandItem();
         ResourceLocation itemID = ForgeRegistries.ITEMS.getKey(itemInHand.getItem());
-        if (itemID == null) return;
+        if (itemID == null) return false;
         
         ResourceLocation entityKey = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        if (entityKey == null) return;
+        if (entityKey == null) return false;
         
         String entityName = entityKey.toString();
         String itemName = itemID.toString();
@@ -61,18 +61,20 @@ public class GoldenWheatRightclickedProcedure {
 
         // Evaluate Taming Eligibility
         if (hasCustomItem) {
-            if (!customItemMatch) return; // Entity strictly requires the mapped item
+            if (!customItemMatch) return false; // Entity strictly requires the mapped item
         } else {
-            if (!itemName.equals("petting:golden_wheat")) return; // Must be holding Wheat
-            if (!PettingConfig.ALLOW_GOLDEN_WHEAT.get()) return; // Wheat must be globally enabled
+            if (!itemName.equals("petting:golden_wheat")) return false; // Must be holding Wheat
+            if (!PettingConfig.ALLOW_GOLDEN_WHEAT.get()) return false; // Wheat must be globally enabled
         }
 
+        // Interaction handled beyond this point
+        
         // --- NEW CONFIG CHECKS ---
         long currentTime = entity.level().getGameTime();
         if (entity.getPersistentData().contains("pettingLastInteracted")) {
             long lastInteracted = entity.getPersistentData().getLong("pettingLastInteracted");
             if (currentTime - lastInteracted < PettingConfig.INTERACTION_COOLDOWN.get()) {
-                return; // Cooldown active
+                return true; // Cooldown active, but still "handled"
             }
         }
         
@@ -80,7 +82,7 @@ public class GoldenWheatRightclickedProcedure {
         if (PettingConfig.BLACKLIST_ENABLED.get()) {
             List<? extends String> blacklist = PettingConfig.TAMING_BLACKLIST.get();
             if (blacklist.contains(entityName)) {
-                return; // Explicitly forbidden
+                return true;
             }
         }
 
@@ -88,7 +90,7 @@ public class GoldenWheatRightclickedProcedure {
         if (PettingConfig.WHITELIST_ONLY.get()) {
             List<? extends String> whitelist = PettingConfig.TAMING_WHITELIST.get();
             if (!whitelist.contains(entityName)) {
-                return; // Not in whitelist
+                return true; 
             }
         }
         
@@ -96,19 +98,13 @@ public class GoldenWheatRightclickedProcedure {
             if (player instanceof ServerPlayer serverPlayer) {
                 int kills = serverPlayer.getStats().getValue(Stats.ENTITY_KILLED.get(entity.getType()));
                 if (kills <= 0) {
-                    return; // Must kill at least one first
+                    return true;
                 }
             }
         }
         
         // 4. Check Max Pets Limit
         double maxPets = player.getAttributeValue(net.yigitguven.petting.init.PettingModAttributes.MAX_PETS.get());
-        
-        // If the attribute is at base (1.0) or we want to sync it with config, 
-        // we should probably have initialized it with the config value.
-        // For now, let's treat the config as the source of truth if the attribute hasn't been modified or as the "Base".
-        // Actually, the most robust way is to just use the attribute value, 
-        // and we can set the base value of the attribute to the config value when the player joins or via a modifier.
         
         if (maxPets != -1 && entity.level() instanceof ServerLevel serverLevel) {
             int currentPets = 0;
@@ -122,7 +118,7 @@ public class GoldenWheatRightclickedProcedure {
             }
             if (currentPets >= (int)maxPets) {
                 player.displayClientMessage(Component.literal("§cYou cannot tame any more custom pets! (Limit: " + (int)maxPets + ")"), true);
-                return; // Exceeded limit
+                return true;
             }
         }
 
@@ -141,7 +137,7 @@ public class GoldenWheatRightclickedProcedure {
                         
                         if (catMax <= 0) {
                             player.displayClientMessage(Component.literal("§cYou cannot tame mobs in the " + catName + " category!"), true);
-                            return;
+                            return true;
                         }
 
                         if (entity.level() instanceof ServerLevel serverLevel) {
@@ -159,11 +155,11 @@ public class GoldenWheatRightclickedProcedure {
                             }
                             if (currentCatPets >= (int)catMax) {
                                 player.displayClientMessage(Component.literal("§cYou have reached your " + catName + " pet limit (" + (int)catMax + ")!"), true);
-                                return;
+                                return true;
                             }
                         }
                     } catch (NumberFormatException ignored) {}
-                    break; // Mob matched a category, no need to check others
+                    break;
                 }
             }
         }
@@ -177,12 +173,11 @@ public class GoldenWheatRightclickedProcedure {
             
             if (missingPercentage < hpThreshold) {
                 player.displayClientMessage(Component.literal("§cThis entity is too strong to be tamed right now. Weaken it first! (Requires at least " + (int)(hpThreshold * 100) + "% missing health)"), true);
-                return;
+                return true;
             }
         }
         
         entity.getPersistentData().putLong("pettingLastInteracted", currentTime);
-        // --- END CONFIG CHECKS ---
 
         // We consume the item since an attempt was made (unless in creative)
         if (!player.getAbilities().instabuild) {
@@ -197,7 +192,7 @@ public class GoldenWheatRightclickedProcedure {
             float maxHp = minion.getMaxHealth();
             float currentHp = minion.getHealth();
             double missingPercentage = (maxHp - currentHp) / maxHp;
-            actualChance = baseChance + (missingPercentage * (1.0 - baseChance)); // Scale up to 100% chance based on missing health
+            actualChance = baseChance + (missingPercentage * (1.0 - baseChance)); 
         }
 
         boolean rngPass = Math.random() < actualChance;
@@ -213,8 +208,6 @@ public class GoldenWheatRightclickedProcedure {
                     tamable.tame(player);
                     tamable.setTarget(null);
                     actionSuccessful = true;
-                    
-                    // HYBRIDIZATION: Inject Petting logic into Vanilla Wolves/Cats
                     injectPettingTags(entity, player, data);
                     tamable.targetSelector.removeAllGoals(goal -> true);
                 }
@@ -225,8 +218,6 @@ public class GoldenWheatRightclickedProcedure {
                     needsRespawn = true;
                 } else {
                     injectPettingTags(entity, player, data);
-
-                    // Wipe Vanilla Hostile Goals
                     oldMob.targetSelector.removeAllGoals(goal -> true);
                     oldMob.setTarget(null);
                 }
@@ -235,7 +226,6 @@ public class GoldenWheatRightclickedProcedure {
 
         if (actionSuccessful) {
             Level world = entity.level();
-
             if (world instanceof ServerLevel _level && PettingConfig.ENABLE_PARTICLES.get()) {
                 _level.sendParticles(ParticleTypes.HEART, 
                     entity.getX(), entity.getY() + 0.5, entity.getZ(), 
@@ -247,24 +237,20 @@ public class GoldenWheatRightclickedProcedure {
 
             if (needsRespawn && world instanceof ServerLevel serverLevel) {
                 Entity newEntity = entity.getType().create(world);
-                
                 if (newEntity instanceof Mob newMob) {
                     newMob.setPos(entity.getX(), entity.getY(), entity.getZ());
                     newMob.setYRot(entity.getYRot());
                     newMob.setXRot(entity.getXRot());
                     newMob.yBodyRot = ((Mob)entity).yBodyRot;
                     newMob.yHeadRot = ((Mob)entity).yHeadRot;
-
                     CompoundTag newData = newMob.getPersistentData();
                     injectPettingTags(newMob, player, newData);
-
                     newMob.setTarget(null);
                     world.addFreshEntity(newMob); 
                     entity.discard(); 
                 }
             }
         } else if (!isAlreadyCustomTamed) {
-            // RNG Failed
             Level world = entity.level();
             if (world instanceof ServerLevel _level && PettingConfig.ENABLE_PARTICLES.get()) {
                 _level.sendParticles(ParticleTypes.SMOKE, 
@@ -273,6 +259,7 @@ public class GoldenWheatRightclickedProcedure {
             }
             player.swing(InteractionHand.MAIN_HAND, true);
         }
+        return true;
     }
 
     private static void injectPettingTags(Entity entity, Player player, CompoundTag data) {
@@ -283,6 +270,7 @@ public class GoldenWheatRightclickedProcedure {
 
         data.putString("ownerUUID", player.getStringUUID());
         data.putBoolean("pettingtamed", true);
+        data.putBoolean("isNameGenerated", true);
         data.putBoolean("attackifownerattacks", true);
         data.putBoolean("attackifownerattacked", true);
         data.putBoolean("attackifselfattacked", true);

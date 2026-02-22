@@ -19,5 +19,7 @@ public class PettingModTabs {
 			() -> CreativeModeTab.builder().title(Component.translatable("item_group.petting.petting")).icon(() -> new ItemStack(PettingModItems.GOLDEN_WHEAT.get())).displayItems((parameters, tabData) -> {
 				tabData.accept(PettingModItems.GOLDEN_WHEAT.get());
 				tabData.accept(PettingModItems.PET_TETHER.get());
+				tabData.accept(PettingModItems.TELEPORT_ORB.get());
+				tabData.accept(PettingModItems.FOLLOW_WHISTLE.get());
 			}).withSearchBar().build());
 }

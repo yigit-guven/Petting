@@ -26,6 +26,13 @@ public class PlayerRightclicksEntitzProcedure {
 	private static void execute(@Nullable Event event, Entity entity, Entity sourceentity) {
 		if (entity == null || sourceentity == null)
 			return;
-		GoldenWheatRightclickedProcedure.execute(entity, sourceentity);
+		if (GoldenWheatRightclickedProcedure.execute(entity, sourceentity)) {
+			if (event instanceof PlayerInteractEvent.EntityInteract interactEvent) {
+				interactEvent.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+				interactEvent.setCanceled(true);
+			} else if (event != null && event.isCancelable()) {
+				event.setCanceled(true);
+			}
+		}
 	}
 }

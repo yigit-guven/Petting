@@ -36,9 +36,16 @@ public class OwnerRightclicksPetProcedure {
         CompoundTag data = entity.getPersistentData();
         String petName = entity.hasCustomName() ? entity.getCustomName().getString() : entity.getType().getDescription().getString();
 
-        if ((data.getString("ownerUUID")).equals(player.getStringUUID())) {
+        if (isOwner(entity, player)) {
             net.minecraft.world.item.ItemStack heldItem = player.getMainHandItem();
             net.minecraft.world.item.Item item = heldItem.getItem();
+            
+            // DETECTION for Name Tag usage to clear "automatic" flag
+            if (item == net.minecraft.world.item.Items.NAME_TAG) {
+                if (!isClient) data.remove("isNameGenerated");
+                // Don't cancel here, let vanilla handle name tagging if they wish, 
+                // OR cancel if we want to manage it. For now, let's just detect it.
+            }
 
             // 1. STICK (Status Report)
             if (item == net.minecraft.world.item.Items.STICK && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_STATUS.get()) {
@@ -98,12 +105,12 @@ public class OwnerRightclicksPetProcedure {
                 return;
             }
 
-            // 5. LEAD (Cycle Follow Distance)
-            if (item == net.minecraft.world.item.Items.LEAD && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_FOLLOW_DIST.get()) {
+            // 5. FOLLOW WHISTLE (Cycle Follow Distance)
+            if (item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get() && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_FOLLOW_DIST.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("followdistance");
-                    if (current == 0) current = 10;
+                    if (current == 0) current = 5;
                     int next = switch (current) {
                         case 5 -> 10;
                         case 10 -> 20;
@@ -119,8 +126,8 @@ public class OwnerRightclicksPetProcedure {
                 return;
             }
 
-            // 6. ENDER PEARL (Cycle Teleport Distance)
-            if (item == net.minecraft.world.item.Items.ENDER_PEARL && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_TELEPORT_DIST.get()) {
+            // 6. TELEPORT ORB (Cycle Teleport Distance)
+            if (item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_TELEPORT_DIST.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("teleportdistance");
@@ -180,8 +187,14 @@ public class OwnerRightclicksPetProcedure {
             if (item instanceof net.minecraft.world.item.ShearsItem && player.isShiftKeyDown() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RELEASING.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
+                    
+                    if (data.getBoolean("isNameGenerated")) {
+                        entity.setCustomName(null);
+                    }
+
                     data.remove("pettingtamed");
                     data.remove("ownerUUID");
+                    data.remove("isNameGenerated");
                     data.remove("sitstill");
                     data.remove("waiting");
                     data.remove("pettingbound");
@@ -256,9 +269,39 @@ public class OwnerRightclicksPetProcedure {
                         }
                     }
                 }
-                cancelInteraction(event);
+            
+            // CATCH-ALL: If we are here and own the pet, and held item is something that would be used (like Ender Pearl),
+            // we should probably cancel the interaction anyway if it's meant for petting controls.
+            // Items like Ender Pearls, Goat Horns, etc. often trigger right-click actions.
+                if (heldItem.isEdible() || item == net.minecraft.world.item.Items.ENDER_PEARL || item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() || item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get() || item instanceof net.minecraft.world.item.ChorusFruitItem) {
+                    cancelInteraction(event);
+                }
             }
         }
+    }
+
+    private static boolean isOwner(Entity entity, Player player) {
+        if (entity == null || player == null) return false;
+        
+        // 1. Check NBT (Reliable on Server, potentially empty on Client depending on sync)
+        CompoundTag data = entity.getPersistentData();
+        if (data.contains("ownerUUID") && data.getString("ownerUUID").equals(player.getStringUUID())) {
+            return true;
+        }
+        
+        // 2. Check TamableAnimal (Works on Client for Vanilla pets)
+        if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+            if (tamable.isOwnedBy(player)) return true;
+        }
+        
+        // 3. Fallback: Custom Name check (Client-side helper)
+        if (entity.hasCustomName()) {
+            String name = entity.getCustomName().getString();
+            String expectedPrefix = player.getDisplayName().getString() + "'s";
+            if (name.startsWith(expectedPrefix)) return true;
+        }
+        
+        return false;
     }
 
     private static void cancelInteraction(@Nullable Event event) {

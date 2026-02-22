@@ -42,9 +42,11 @@ public class PettingMod {
 		// Start of user code block mod constructor
 // Inside PettingMod constructor
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, PettingConfig.SPEC, "petting-common.toml");
-		// Register a config GUI factory so the "Config" button works
-		ModLoadingContext.get().registerExtensionPoint(net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
-			() -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new net.yigitguven.petting.client.ConfigGuiScreen(screen)));
+		if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+			// Register a config GUI factory so the "Config" button works
+			ModLoadingContext.get().registerExtensionPoint(net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
+				() -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new net.yigitguven.petting.client.ConfigGuiScreen(screen)));
+		}
 		// End of user code block mod constructor
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus bus = context.getModEventBus();

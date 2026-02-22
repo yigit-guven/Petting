@@ -33,17 +33,8 @@ Designed with extreme configurability and vast quality-of-life improvements, Pet
 
 Taming a mob is simple, but deeply customizable. By default, any player can crouch (Shift) and Right-Click a mob using **Golden Wheat** to attempt to tame it.
 
-### 🌾 Golden Wheat Attraction
+### <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="24" height="24" style="vertical-align: middle;"> Golden Wheat Attraction
 Golden Wheat isn't just for taming! If you hold it in either hand, nearby animals will be **attracted** to you, looking your way and following you (speed 1.25) as long as you keep the wheat out. This makes it much easier to lead mobs into positions for taming!
-
-#### 🛠️ Crafting Recipe
-Golden Wheat can be crafted using **8 Gold Blocks** and **1 Wheat**:
-* **G** = Gold Block, **W** = Wheat
-```
-  [G] [G] [G]
-  [G] [W] [G]
-  [G] [G] [G]
-```
 
 ### Taming Factors
 * **RNG Chance:** Taming is not guaranteed! By default, there is a `33%` chance of success (configurable to match vanilla wolves). If you fail, the item is consumed and smoke particles appear.
@@ -71,21 +62,13 @@ Players can choose how they interact with their pets via the `controlScheme` con
 
 ---
 
-## ⚓ The Pet Tether & Pet Beds
+## <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/assets/petting/textures/item/pet_tether.png" width="32" height="32" style="vertical-align: middle;"> The Pet Tether & Pet Beds
 
 Provide your pets with a permanent home and specialized guarding zones.
 
 ### The Pet Tether (Binding Locations)
 Tired of your pets following you to their doom or cluttering up your base? Use a **Pet Tether**!
 *   **How to Bind:** Right-Click your tamed pet with a **Pet Tether** (found in the Petting creative tab) to bind them to their current coordinates.
-#### 🛠️ Crafting Recipe
-The Pet Tether can be crafted using **1 Lead** and **4 Iron Nuggets**:
-* **L** = Lead, **#** = Iron Nugget
-```
-  [ ] [#] [ ]
-  [#] [L] [#]
-  [ ] [#] [ ]
-```
 
 *   **Free Roaming:** Once bound, the pet will freely roam within a configurable radius (default: `10.0` blocks) of their anchor point. They will **not** follow you.
 *   **Pathing Back:** If a tethered pet is pushed or wanders outside its roaming radius, it will actively path find back to its anchor point. If it gets significantly separated, it will safely teleport back to its bound spot.
@@ -109,8 +92,8 @@ While global configurations set the defaults, you can customize every pet indivi
 | **Any Sword**| **Aggressive Mode** | Toggles whether the pet attacks mobs that you attack. |
 | **Shield** | **Defend Self** | Toggles whether the pet retaliates when it takes damage. |
 | **Cookie** | **Guard Owner** | Toggles whether the pet protects you when you are attacked. |
-| **Lead** | **Follow Dist** | Cycles between **5, 10, 20, and 50** blocks. |
-| **Ender Pearl**| **Teleport Dist** | Cycles between **10, 20, 50, and 100** blocks. |
+| **Follow Whistle** | **Follow Dist** | Cycles between **5, 10, 20, and 50** blocks. |
+| **Teleport Orb** | **Teleport Dist** | Cycles between **10, 20, 50, and 100** blocks. |
 | **Clock** | **Whistle Mode** | Toggles whether the pet responds to **Goat Horn whistles**. |
 | **Pet Tether** | **Bound Move** | Toggles "Anchor Mode" (Stay in a 10-block radius of current spot). |
 | **Shears** | **Release Pet** | **(Crouch Required)** Reverts the pet to a wild mob. |
@@ -183,6 +166,47 @@ Taming a Wither Boss is the ultimate flex, but their destructive nature can be a
 For map makers and modpack developers, you can summon mobs that are **automatically tamed** upon spawning by using custom tags:
 *   Add the tag `petowner:UUID` (e.g., `petowner:796c428d-1234...`) to a mob to assign it to that UUID.
 *   Use `petowner:self` or `petowner:me` to automatically assign the mob to the nearest player within 10 blocks when it spawns.
+
+---
+
+## 🛠️ Crafting Recipes
+
+Every custom item in Petting can be crafted using the following patterns.
+
+### <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="24" height="24" style="vertical-align: middle;"> Golden Wheat
+Used for taming animals.
+* **G** = Gold Block, **W** = Wheat
+```
+  [G] [G] [G]
+  [G] [W] [G]
+  [G] [G] [G]
+```
+
+### <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/assets/petting/textures/item/pet_tether.png" width="24" height="24" style="vertical-align: middle;"> Pet Tether
+Binds a pet to its current location.
+* **W** = Blue Wool, **I** = Iron Ingot, **L** = Lead, **G** = Glowstone Dust
+```
+  [W] [I] [ ]
+  [I] [L] [I]
+  [ ] [G] [ ]
+```
+
+### <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/assets/petting/textures/item/teleport_orb.png" width="24" height="24" style="vertical-align: middle;"> Teleport Orb
+Cycles pet teleport distance (10-100 blocks).
+* **P** = Ender Pearl, **A** = Amethyst Shard
+```
+  [P] [A]
+```
+*(Shapeless Recipe)*
+
+### <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/assets/petting/textures/item/follow_whistle.png" width="24" height="24" style="vertical-align: middle;"> Follow Whistle
+Cycles pet follow distance (5-50 blocks).
+* **I** = Iron Ingot, **S** = String
+```
+  [ ] [I] [ ]
+  [ ] [I] [ ]
+  [ ] [S] [ ]
+```
 
 ---
 

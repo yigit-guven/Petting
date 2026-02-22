@@ -2,16 +2,22 @@
     "type": "minecraft:crafting_shaped",
     "category": "misc",
     "pattern": [
-        " # ",
-        "#L#",
-        " # "
+        "wi ",
+        "ili",
+        " g "
     ],
     "key": {
-        "#": {
-            "item": "minecraft:iron_nugget"
+        "i": {
+            "item": "minecraft:iron_ingot"
         },
-        "L": {
+        "l": {
             "item": "minecraft:lead"
+        },
+        "g": {
+            "item": "minecraft:glowstone_dust"
+        },
+        "w": {
+            "item": "minecraft:blue_wool"
         }
     },
     "result": {
