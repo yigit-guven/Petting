@@ -1,0 +1,106 @@
+
+["General Settings"]
+	#If true, mobs will not respawn when tamed to preserve their NBT data (like vanilla armor and weapons), instead applying tags to the existing mob.
+	disableRespawnOnTame = true
+	#Cooldown in ticks before petting the same mob again.
+	#Range: 0 ~ 1000000
+	interactionCooldown = 20
+	#If true, heart particles will appear when petting/taming.
+	enableParticles = true
+	#If true, players must have killed at least one of the entity type before they are allowed to tame it.
+	requireKillToTame = false
+	#Required percentage of missing health before taming works (0.0 to 1.0). e.g., 0.5 means the mob must be missing 50% of its max health.
+	#Range: 0.0 ~ 1.0
+	tameHealthThreshold = 0.0
+	#Base chance (0.0 to 1.0) for a tame attempt to succeed. (e.g., 0.33 means ~1 in 3 chance, like vanilla wolves).
+	#Range: 0.0 ~ 1.0
+	tameChance = 0.33
+	#If true, the mob's missing health percentage is added to the base tame chance, making weaker mobs easier to tame.
+	healthScalesTamingChance = false
+	#The BASE number of custom pets a player can tame. This is now a Player Attribute (petting:max_pets), so it can be modified per-player by other mods or commands. (-1 for infinite).
+	#Range: -1 ~ 10000
+	maxPetsPerPlayer = -1
+	#If true, Golden Wheat can be used to tame mobs. If false, ONLY items defined in Custom Item Settings can be used.
+	allowGoldenWheat = true
+	#If true, crouching and using a Goat Horn will teleport all of your tamed pets directly to your location.
+	enableGoatHornWhistle = true
+	#If true, tethered (bound) pets will also be teleported when using the Goat Horn. If false, tethered pets ignore the whistle.
+	whistleTeleportsTethered = false
+	#If true, completely hides the Boss Bar UI across the server for all tamed Bosses (like Withers).
+	hideTamedBossBars = true
+
+["Behavior & AI Settings"]
+	#Amount of health (in half-hearts) a sitting pet regenerates.
+	#Range: 0.0 ~ 100.0
+	sitHealAmount = 1.0
+	#Interval (in ticks) between each sitting health regeneration.
+	#Range: 1 ~ 1000000
+	sitHealInterval = 40
+	#Distance from owner before the pet starts walking to them.
+	#Range: 1.0 ~ 100.0
+	followDistance = 10.0
+	#Distance from owner before the pet forcibly teleports to them.
+	#Range: 5.0 ~ 200.0
+	teleportDistance = 20.0
+	#Radius (in blocks) the pet will roam around its bound coordinate.
+	#Range: 1.0 ~ 100.0
+	boundRoamRadius = 10.0
+
+["Controls Settings"]
+	#Scheme for commanding pets.
+	#RIGHT_CLICK_SIT_SHIFT_WAIT: Right-Click toggles Sitting, Shift-Right-Click toggles Waiting (Default)
+	#RIGHT_CLICK_CYCLE: Right-Click cycles sequentially (Wander -> Sit -> Wait)
+	#SHIFT_RIGHT_CLICK_CYCLE: Shift-Right-Click cycles sequentially (Wander -> Sit -> Wait)
+	#Allowed Values: RIGHT_CLICK_SIT_SHIFT_WAIT, RIGHT_CLICK_CYCLE, SHIFT_RIGHT_CLICK_CYCLE
+	controlScheme = "RIGHT_CLICK_SIT_SHIFT_WAIT"
+	#How state changes (e.g. 'Spot is now Sitting') are communicated.
+	#ACTION_BAR: Small text above the hotbar (Default)
+	#CHAT: Standard chat message
+	#NONE: Completely silent
+	#Allowed Values: ACTION_BAR, CHAT, NONE
+	commandFeedbackStyle = "ACTION_BAR"
+
+["Item Interaction Settings"]
+	#If true, owners can right-click their pet with a Stick to see a status report.
+	allowPerPetStatus = true
+	#If true, owners can right-click their pet with a Sword to toggle Aggressive Mode.
+	allowPerPetAggression = true
+	#If true, owners can right-click their pet with a Shield to toggle Self-Defense retaliation.
+	allowPerPetSelfDefense = true
+	#If true, owners can right-click their pet with a Cookie to toggle Guard Mode.
+	allowPerPetGuard = true
+	#If true, owners can right-click their pet with a Lead to cycle follow distance settings.
+	allowPerPetFollowDist = true
+	#If true, owners can right-click their pet with an Ender Pearl to cycle teleport distance settings.
+	allowPerPetTeleportDist = true
+	#If true, owners can right-click their pet with a Clock to toggle if it responds to Goat Horn whistles.
+	allowPerPetWhistleToggle = true
+	#If true, owners can right-click their pet with a Pet Tether item to bind them to an area.
+	allowPetTethering = true
+	#If true, owners can Crouch + Right-Click their pet with Shears to release them.
+	allowPetReleasing = true
+
+["Whitelist Settings"]
+	#If true, only mobs listed in 'tamingWhitelist' can be tamed.
+	whitelistOnly = false
+	#List of entity registry names that are allowed to be tamed. (e.g. ["minecraft:zombie" , "minecraft:creeper"])
+	tamingWhitelist = []
+
+["Blacklist Settings"]
+	#If true, mobs listed in 'tamingBlacklist' CANNOT be tamed. (Overrides Whitelist)
+	blacklistEnabled = false
+	#List of entity registry names that are forbidden from taming. (e.g. ["minecraft:wither"])
+	tamingBlacklist = []
+
+["Custom Item Settings"]
+	#Map custom taming items to specific mobs. Format: entity_registry|item_registry. Example: ["minecraft:zombie|minecraft:bone"]
+	customTamingItems = []
+	#Define pet categories with per-player attribute limits.
+	#Format: SlotID|DisplayName|MobList|DefaultLimit
+	#SlotID: 1 to 20 (corresponds to petting:max_pets_category_X)
+	#DisplayName: Name shown in-game (e.g. Necromancer)
+	#MobList: Comma-separated entity IDs (e.g. minecraft:zombie,minecraft:skeleton)
+	#DefaultLimit: Starting limit for that category. Attributes can override this.
+	#Example: ["1|Necromancer|minecraft:zombie,minecraft:skeleton|3"]
+	petCategories = []
+

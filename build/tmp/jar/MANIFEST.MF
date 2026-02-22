@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: petting
+Specification-Vendor: petting
+Specification-Version: 1
+Implementation-Title: Petting
+Implementation-Version: 4.1.4
+Implementation-Vendor: petting
+Implementation-Timestamp: 2026-02-22T04:11:45+0100
+
