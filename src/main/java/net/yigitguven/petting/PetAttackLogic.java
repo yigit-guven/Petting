@@ -73,10 +73,11 @@ public class PetAttackLogic {
             if (spawned instanceof net.minecraft.world.entity.projectile.WitherSkull skull) {
                 Entity shooter = skull.getOwner();
                 if (shooter instanceof Mob shooterMob && isCustomPet(shooterMob)) {
-                    // We forcefully destroy ALL skulls fired by tamed Withers to completely neuter
-                    // the erratic side-head firing behavior. They use melee solely.
-                    skull.kill();
-                    skull.remove(Entity.RemovalReason.KILLED);
+                    // Only cancel projectiles if the Wither is NOT actively targeting something.
+                    // This allows legit attacks while still neutering erratic side-head firing into nothingness.
+                    if (shooterMob.getTarget() == null) {
+                        event.setCanceled(true);
+                    }
                     return;
                 }
             }
