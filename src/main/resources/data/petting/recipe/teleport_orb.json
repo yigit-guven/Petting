@@ -10,7 +10,7 @@
         }
     ],
     "result": {
-        "item": "petting:teleport_orb",
+        "id": "petting:teleport_orb",
         "count": 1
     }
 }

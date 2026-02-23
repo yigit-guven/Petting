@@ -21,7 +21,7 @@
         }
     },
     "result": {
-        "item": "petting:pet_tether",
+        "id": "petting:pet_tether",
         "count": 1
     }
 }

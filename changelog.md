@@ -1,0 +1,2 @@
+- Fixed a server-side crash during mod loading (`ClassNotFoundException: Screen`). This was caused by client-only GUI registration in the mod constructor. The fix now properly isolates client-side code in a separate registration class.
+- Fixed all crafting recipes (Pet Tether, Golden Wheat, etc.) failing to load on 1.21.1 due to the new `result.id` JSON format requirements.

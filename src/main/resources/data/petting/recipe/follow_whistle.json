@@ -15,7 +15,7 @@
         }
     },
     "result": {
-        "item": "petting:follow_whistle",
+        "id": "petting:follow_whistle",
         "count": 1
     }
 }
