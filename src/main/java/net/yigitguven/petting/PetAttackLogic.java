@@ -15,6 +15,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerBossEvent;
 import net.yigitguven.petting.config.PettingConfig;
 
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.entity.monster.warden.Warden;
+
 import java.lang.reflect.Field;
 import java.util.UUID;
 import java.util.List;
@@ -94,11 +98,22 @@ public class PetAttackLogic {
             if (isCustomPet(pet)) {
                 Player owner = getOwner(pet);
                 if (owner == null) return;
+                
+                // ALWAYS enforce owner peace on Wardens globally
+                if (pet instanceof Warden warden) {
+                    warden.clearAnger(owner);
+                }
 
                 LivingEntity currentTarget = pet.getTarget();
                 if (currentTarget != null) {
                     if (currentTarget == pet || currentTarget == owner || isOwnerOf(currentTarget, owner)) {
                         pet.setTarget(null);
+                        pet.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+                        
+                        if (pet instanceof Warden warden) {
+                            warden.clearAnger(currentTarget);
+                            warden.clearAnger(owner);
+                        }
                     }
                 }
 
@@ -129,16 +144,45 @@ public class PetAttackLogic {
                 }
 
                 if (forcedTarget != null && isValidCombatTarget(pet, owner, forcedTarget)) {
+                    // Always ensure anger and activity is maintained every tick for the Warden
+                    if (pet instanceof Warden warden) {
+                        warden.increaseAngerAt(forcedTarget, 100, true);
+                        warden.getBrain().setActiveActivityIfPossible(Activity.FIGHT);
+                    }
+                    
                     if (pet.getTarget() != forcedTarget) {
                         pet.setTarget(forcedTarget);
+                        pet.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, forcedTarget);
+                        if (!(pet instanceof Warden)) {
+                            pet.getBrain().setMemory(MemoryModuleType.ANGRY_AT, forcedTarget.getUUID());
+                        }
                     }
                 } else {
                     // TRUE PACIFISM OVERRIDE: 
                     // If no valid commanded target exists, forcefully zero out targets EVERY tick 
                     // This paralyzes standard hostile AI loops (like Withers scanning for players)
                     pet.setTarget(null);
+                    
+                    // Clear modern Brain targeting
+                    pet.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+                    pet.getBrain().eraseMemory(MemoryModuleType.ANGRY_AT);
+                    
+                    if (pet instanceof Warden warden) {
+                        pet.getBrain().eraseMemory(MemoryModuleType.ROAR_TARGET);
+                        pet.getBrain().eraseMemory(MemoryModuleType.DISTURBANCE_LOCATION);
+                        if (currentTarget != null) {
+                            warden.clearAnger(currentTarget);
+                        }
+                        // removed owner clear
+                    }
+                }
+                
+                // ALWAYS enforce owner peace on Wardens globally
+                if (pet instanceof Warden warden) {
+                    warden.clearAnger(owner);
+                }
 
-                    // --- WITHER BOSS PATCH ---
+                // --- WITHER BOSS PATCH ---
                     if (pet instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
                         // Blast side-heads back to 0 (no target) actively
                         wither.setAlternativeTarget(1, 0);
@@ -170,7 +214,6 @@ public class PetAttackLogic {
                     }
                 }
             }
-        }
 
         @SubscribeEvent
         public static void onLivingDamage(LivingDamageEvent event) {
@@ -229,6 +272,14 @@ public class PetAttackLogic {
             if (attackSelf) {
                 if (isValidCombatTarget(petMob, owner, attacker)) {
                     petMob.setTarget(attacker);
+                    petMob.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, attacker);
+                    
+                    if (petMob instanceof Warden warden) {
+                        warden.increaseAngerAt(attacker, 100, true);
+                        warden.getBrain().setActiveActivityIfPossible(Activity.FIGHT);
+                    } else {
+                        petMob.getBrain().setMemory(MemoryModuleType.ANGRY_AT, attacker.getUUID());
+                    }
                 }
             }
         }
