@@ -94,10 +94,20 @@ public class PetDeathHandlerProcedure {
     }
 
     private static boolean isSafePos(Level level, BlockPos pos) {
+        // 1. Ground Check
+        // Must be solid OR a liquid (so aquatic pets don't die instantly)
         BlockState ground = level.getBlockState(pos.below());
-        if (!ground.isSolid() && ground.getFluidState().isEmpty()) return false; 
+        boolean isGroundSolid = ground.isSolid(); 
+        boolean isLiquid = !ground.getFluidState().isEmpty();
+        
+        if (!isGroundSolid && !isLiquid) return false; 
+
+        // 2. Legs Space Check
         if (!level.getBlockState(pos).getCollisionShape(level, pos).isEmpty()) return false;
+
+        // 3. Head Space Check
         if (!level.getBlockState(pos.above()).getCollisionShape(level, pos.above()).isEmpty()) return false;
+
         return true;
     }
 }

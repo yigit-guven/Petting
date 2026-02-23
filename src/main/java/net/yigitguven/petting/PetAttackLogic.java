@@ -138,8 +138,26 @@ public class PetAttackLogic {
 
         if (forcedTarget != null && isValidCombatTarget(pet, owner, forcedTarget)) {
             if (pet.getTarget() != forcedTarget) pet.setTarget(forcedTarget);
+            
+            if (pet instanceof net.minecraft.world.entity.monster.warden.Warden warden) {
+                warden.increaseAngerAt(forcedTarget, 100, true);
+                warden.getBrain().setActiveActivityIfPossible(net.minecraft.world.entity.schedule.Activity.FIGHT);
+                pet.getBrain().setMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.ATTACK_TARGET, forcedTarget);
+            }
         } else {
             pet.setTarget(null);
+            
+            if (pet instanceof net.minecraft.world.entity.monster.warden.Warden warden) {
+                pet.getBrain().eraseMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.ATTACK_TARGET);
+                pet.getBrain().eraseMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.ANGRY_AT);
+                pet.getBrain().eraseMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.ROAR_TARGET);
+                pet.getBrain().eraseMemory(net.minecraft.world.entity.ai.memory.MemoryModuleType.DISTURBANCE_LOCATION);
+                if (currentTarget != null) {
+                    warden.clearAnger(currentTarget);
+                }
+                warden.clearAnger(owner);
+            }
+
             handleFollow(pet, owner, data);
 
             if (pet instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {

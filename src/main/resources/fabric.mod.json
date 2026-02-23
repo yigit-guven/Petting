@@ -1,7 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "petting",
-	"version": "${version}",
+	"version": "4.1.7",
 	"name": "Petting",
 	"description": "Pet mobs and have them become protective companions that follow you, offering support and assistance during your adventures.",
 	"authors": [

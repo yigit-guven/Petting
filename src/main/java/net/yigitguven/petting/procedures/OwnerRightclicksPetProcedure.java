@@ -45,6 +45,11 @@ public class OwnerRightclicksPetProcedure {
             net.minecraft.world.item.ItemStack heldItem = player.getMainHandItem();
             net.minecraft.world.item.Item item = heldItem.getItem();
 
+            // DETECTION for Name Tag usage to clear "automatic" flag
+            if (item == net.minecraft.world.item.Items.NAME_TAG) {
+                if (!isClient) data.remove("isNameGenerated");
+            }
+
             // 1. STICK (Status Report)
             if (item == net.minecraft.world.item.Items.STICK && PettingConfig.allowPerPetStatus) {
                 if (!isClient) {

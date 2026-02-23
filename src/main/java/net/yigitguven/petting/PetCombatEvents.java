@@ -11,6 +11,18 @@ import net.minecraft.nbt.CompoundTag;
 public class PetCombatEvents {
 
     public static void register() {
+        net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents.ENTITY_LOAD.register((entity, world) -> {
+            if (entity instanceof net.minecraft.world.entity.projectile.WitherSkull skull) {
+                net.minecraft.world.entity.Entity shooter = skull.getOwner();
+                if (shooter instanceof Mob shooterMob && PetAttackLogic.isCustomPet(shooterMob)) {
+                    // Refined fix: Only cancel if NOT targeting
+                    if (shooterMob.getTarget() == null) {
+                        skull.discard(); // Fabric equivalent of event cancellation for loading
+                    }
+                }
+            }
+        });
+
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((victim, source, amount) -> {
             if (victim.level().isClientSide()) return true;
 

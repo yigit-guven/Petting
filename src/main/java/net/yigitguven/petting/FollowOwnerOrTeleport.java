@@ -72,9 +72,10 @@ public class FollowOwnerOrTeleport {
             mob.getNavigation().stop();
             mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
             
-            mob.setZza(0.0f);
-            mob.setXxa(0.0f);
-            mob.setYya(0.0f);
+            // SPIDER/CLIMBER FIX: Physically zero out movement inputs so they can't shimmy or climb walls
+            mob.setZza(0.0f); // Forward
+            mob.setXxa(0.0f); // Strafe
+            mob.setYya(0.0f); // Up/Jump/Climb
             mob.setSpeed(0.0f);
 
             if (speedAttribute != null && !speedAttribute.hasModifier(stopModifier)) {
@@ -104,6 +105,7 @@ public class FollowOwnerOrTeleport {
             mob.getNavigation().stop();
             mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
 
+            // SPIDER/CLIMBER FIX: 
             mob.setZza(0.0f); 
             mob.setXxa(0.0f); 
             mob.setYya(0.0f); 
