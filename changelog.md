@@ -1,0 +1,3 @@
+- Fixed tamed Piglins and Hoglins losing their pet status and behavior settings after converting to Zombified versions in the overworld.
+- Added data transfer logic for entity conversion using `LivingConversionEvent.Post`.
+- Updated build.gradle and resource properties to version 4.1.8.
