@@ -39,6 +39,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     private static final ResourceLocation LEGS_ICON = new ResourceLocation("minecraft", "textures/item/empty_armor_slot_leggings.png");
     private static final ResourceLocation BOOTS_ICON = new ResourceLocation("minecraft", "textures/item/empty_armor_slot_boots.png");
     private static final ResourceLocation SHIELD_ICON = new ResourceLocation("minecraft", "textures/item/empty_armor_slot_shield.png");
+    private static final ResourceLocation SWORD_ICON = new ResourceLocation("minecraft", "textures/item/iron_sword.png");
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
@@ -84,6 +85,8 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             
             // Right Column
             if (this.menu.getSlot(0).getItem().isEmpty()) guiGraphics.blit(SADDLE_ICON, i + 80, j + 17, 0, 0, 16, 16, 16, 16);
+            if (this.menu.getSlot(5).getItem().isEmpty()) guiGraphics.blit(SWORD_ICON, i + 80, j + 35, 0, 0, 16, 16, 16, 16);
+            if (this.menu.getSlot(6).getItem().isEmpty()) guiGraphics.blit(SHIELD_ICON, i + 80, j + 53, 0, 0, 16, 16, 16, 16);
         } else {
             // Darken equipment slots if not a Mob
             guiGraphics.fill(i + 7, j + 16, i + 43, j + 52, 0xAA000000); // 2x2 grid
