@@ -25,10 +25,8 @@ public class PetInventoryMenu extends AbstractContainerMenu {
     private static final int EQUIPMENT_START = 1;
     private static final int EQUIPMENT_COUNT = 6;
     private static final int STORAGE_START = 7;
-    private static final int STORAGE_COUNT = 15; // Capability has 16 slots, index 0 is saddle
-    private static final int PLAYER_START = 22;
-
-    private static final net.minecraft.world.SimpleContainer DUMMY_CONTAINER = new net.minecraft.world.SimpleContainer(6);
+    private static final int STORAGE_COUNT = 16; 
+    private static final int PLAYER_START = 23;
 
     public PetInventoryMenu(int id, Inventory playerInventory, FriendlyByteBuf extraData) {
         this(id, playerInventory, playerInventory.player.level().getEntity(extraData.readInt()));
@@ -40,13 +38,13 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         
         if (pet != null) {
             this.petCapabilityInventory = pet.getCapability(ForgeCapabilities.ITEM_HANDLER)
-                    .orElse(new ItemStackHandler(1));
+                    .orElse(new ItemStackHandler(40));
         } else {
-            this.petCapabilityInventory = new ItemStackHandler(1);
+            this.petCapabilityInventory = new ItemStackHandler(40);
         }
 
-        // 1. Saddle Slot (Capability Slot 0) - x=8, y=18
-        this.addSlot(new SlotItemHandler(petCapabilityInventory, 0, 8, 18) {
+        // 1. Equipment Column (Further Right)
+        this.addSlot(new SlotItemHandler(petCapabilityInventory, 10, 80, 17) { // Saddle - Unbinded to index 10
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.is(Items.SADDLE);
@@ -57,17 +55,18 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             }
         });
 
-        // 2. Equipment Slots (Slots 1-6) - Arranged around portrait
         if (pet instanceof Mob mob) {
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.HEAD, 8, 36));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.CHEST, 8, 54));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 61, 18));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 61, 36));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 61, 54));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 34, 54));
+            // 2. Armor Grid (2x2 on Left)
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.HEAD, 8, 17));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.CHEST, 26, 17));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 8, 35));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 26, 35));
+            
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 80, 35));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 80, 53));
         } else {
             for (int i = 0; i < 6; i++) {
-                this.addSlot(new Slot(DUMMY_CONTAINER, i, -1000, -1000) {
+                this.addSlot(new Slot(new net.minecraft.world.SimpleContainer(1), 0, -1000, -1000) {
                     @Override
                     public boolean mayPlace(ItemStack stack) { return false; }
                     @Override
@@ -76,16 +75,16 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             }
         }
 
-        // 3. Storage Slots (Capability Slots 1-15 -> Menu Slots 7-21)
+        // 3. Storage Slots (Capability Slots 11-26 -> Menu Slots 7-22)
         int capabilitySize = petCapabilityInventory.getSlots();
         for (int i = 0; i < STORAGE_COUNT; i++) {
-            int slotIdx = i + 1;
-            int row = i / 5;
-            int col = i % 5;
+            int slotIdx = i + 11; // Offset to index 11+
+            int row = i / 4;
+            int col = i % 4;
             if (slotIdx < capabilitySize) {
-                this.addSlot(new SlotItemHandler(petCapabilityInventory, slotIdx, 80 + col * 18, 18 + row * 18));
+                this.addSlot(new SlotItemHandler(petCapabilityInventory, slotIdx, 108 + col * 18, 18 + row * 18));
             } else {
-                this.addSlot(new Slot(DUMMY_CONTAINER, i, -1000, -1000) {
+                this.addSlot(new Slot(new net.minecraft.world.SimpleContainer(1), 0, -1000, -1000) {
                     @Override
                     public boolean mayPlace(ItemStack stack) { return false; }
                 });
@@ -125,23 +124,42 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         if (slot != null && slot.hasItem()) {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
+            
             if (index < PLAYER_START) { // From Pet to Player
                 if (!this.moveItemStackTo(itemstack1, PLAYER_START, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
             } else { // From Player to Pet
+                // 1. Try Saddle
                 if (itemstack1.is(Items.SADDLE)) {
                     if (!this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                } else {
-                    // Try storage first
+                } 
+                // 2. Try Armor
+                else if (itemstack1.getItem() instanceof net.minecraft.world.item.ArmorItem armor) {
+                    int armorSlot = -1;
+                    EquipmentSlot type = armor.getType().getSlot();
+                    if (type == EquipmentSlot.HEAD) armorSlot = 1;
+                    else if (type == EquipmentSlot.CHEST) armorSlot = 2;
+                    else if (type == EquipmentSlot.LEGS) armorSlot = 3;
+                    else if (type == EquipmentSlot.FEET) armorSlot = 4;
+                    
+                    if (armorSlot != -1 && !this.moveItemStackTo(itemstack1, armorSlot, armorSlot + 1, false)) {
+                        // Fall back to storage if armor slot full
+                        if (!this.moveItemStackTo(itemstack1, STORAGE_START, STORAGE_START + STORAGE_COUNT, false)) {
+                            return ItemStack.EMPTY;
+                        }
+                    }
+                }
+                // 3. Try Storage
+                else {
                     if (!this.moveItemStackTo(itemstack1, STORAGE_START, STORAGE_START + STORAGE_COUNT, false)) {
-                        // Then equipment if applicable (too complex for simple quickMove, usually only for specific items)
                         return ItemStack.EMPTY;
                     }
                 }
             }
+
             if (itemstack1.isEmpty()) {
                 slot.set(ItemStack.EMPTY);
             } else {
@@ -149,52 +167,5 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             }
         }
         return itemstack;
-    }
-
-    // Custom Slot for Entity Equipment
-    private static class EquipmentSlotHandler extends Slot {
-        private final Mob mob;
-        private final EquipmentSlot slot;
-
-        public EquipmentSlotHandler(Mob mob, EquipmentSlot slot, int x, int y) {
-            super(DUMMY_CONTAINER, slot.getIndex(), x, y); // Use dummy container instead of null!
-            this.mob = mob;
-            this.slot = slot;
-        }
-
-        @Override
-        public ItemStack getItem() {
-            return mob.getItemBySlot(slot);
-        }
-
-        @Override
-        public void set(ItemStack stack) {
-            mob.setItemSlot(slot, stack);
-            this.setChanged();
-        }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            if (!(mob instanceof Mob)) return false;
-            if (slot.getType() == EquipmentSlot.Type.ARMOR) {
-                return stack.getItem() instanceof net.minecraft.world.item.ArmorItem armor && armor.getType().getSlot() == slot;
-            }
-            return true; // Hands can hold anything
-        }
-
-        @Override
-        public boolean mayPickup(Player player) {
-            return true;
-        }
-
-        @Override
-        public void setChanged() {
-            // Entity equipment usually updates immediately
-        }
-        
-        @Override
-        public int getMaxStackSize() {
-            return 1;
-        }
     }
 }

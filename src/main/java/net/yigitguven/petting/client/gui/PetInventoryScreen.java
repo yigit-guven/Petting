@@ -49,56 +49,53 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         
         Entity pet = this.menu.getPet();
         if (pet instanceof LivingEntity living) {
-            // DYNAMIC SCALE: Fit to a 30x30 area
+            // DYNAMIC SCALE: Fit to a 32x32 area
             float bbWidth = living.getBbWidth();
             float bbHeight = living.getBbHeight();
             float scale = 22.0F / Math.max(1.0F, Math.max(bbWidth, bbHeight));
             
-            // Center of portrait area is approx i + 42
-            InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, i + 42, j + 50, (int)scale, (float)(i + 42) - mouseX, (float)(j + 50 - 30) - mouseY, living);
+            // Center of portrait area is now approx i + 57 (expanded area)
+            InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, i + 57, j + 60, (int)scale, (float)(i + 57) - mouseX, (float)(j + 60 - 30) - mouseY, living);
         }
 
         // 1. Draw Slot Backgrounds (Boxes) for all 7 equipment slots
         RenderSystem.setShaderTexture(0, HORSE_GUI_TEXTURES);
-        // Left: Saddle, Head, Chest
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 7, j + 17, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 7, j + 35, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 7, j + 53, 0, 166, 18, 18);
-        // Right: Legs, Feet, Mainhand
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 60, j + 17, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 60, j + 35, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 60, j + 53, 0, 166, 18, 18);
-        // Center Bottom: Offhand
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 33, j + 53, 0, 166, 18, 18);
+        // Left Column (2x2 Armor): Head, Chest, Legs, Feet
+        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 7, j + 16, 0, 166, 18, 18);
+        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 25, j + 16, 0, 166, 18, 18);
+        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 7, j + 34, 0, 166, 18, 18);
+        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 25, j + 34, 0, 166, 18, 18);
+        
+        // Right Column (Equipment): Saddle, Mainhand, Offhand (Shifted Right)
+        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 16, 0, 166, 18, 18);
+        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 34, 0, 166, 18, 18);
+        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 52, 0, 166, 18, 18);
 
         // 2. Draw Ghost Icons for clarity
         RenderSystem.enableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.4F);
         
-        // Saddle (Slot 0)
-        if (this.menu.getSlot(0).getItem().isEmpty()) {
-            guiGraphics.blit(SADDLE_ICON, i + 8, j + 18, 0, 0, 16, 16, 16, 16);
-        }
-
         if (pet instanceof Mob) {
-            if (this.menu.getSlot(1).getItem().isEmpty()) guiGraphics.blit(HELMET_ICON, i + 8, j + 36, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(2).getItem().isEmpty()) guiGraphics.blit(CHEST_ICON, i + 8, j + 54, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(3).getItem().isEmpty()) guiGraphics.blit(LEGS_ICON, i + 61, j + 18, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(4).getItem().isEmpty()) guiGraphics.blit(BOOTS_ICON, i + 61, j + 36, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(6).getItem().isEmpty()) guiGraphics.blit(SHIELD_ICON, i + 34, j + 54, 0, 0, 16, 16, 16, 16);
+            // Left Grid
+            if (this.menu.getSlot(1).getItem().isEmpty()) guiGraphics.blit(HELMET_ICON, i + 8, j + 17, 0, 0, 16, 16, 16, 16);
+            if (this.menu.getSlot(2).getItem().isEmpty()) guiGraphics.blit(CHEST_ICON, i + 26, j + 17, 0, 0, 16, 16, 16, 16);
+            if (this.menu.getSlot(3).getItem().isEmpty()) guiGraphics.blit(LEGS_ICON, i + 8, j + 35, 0, 0, 16, 16, 16, 16);
+            if (this.menu.getSlot(4).getItem().isEmpty()) guiGraphics.blit(BOOTS_ICON, i + 26, j + 35, 0, 0, 16, 16, 16, 16);
+            
+            // Right Column
+            if (this.menu.getSlot(0).getItem().isEmpty()) guiGraphics.blit(SADDLE_ICON, i + 80, j + 17, 0, 0, 16, 16, 16, 16);
         } else {
             // Darken equipment slots if not a Mob
-            guiGraphics.fill(i + 7, j + 35, i + 25, j + 71, 0xAA000000); // Helmet/Chest
-            guiGraphics.fill(i + 60, j + 17, i + 78, j + 71, 0xAA000000); // Legs/Feet/Main
-            guiGraphics.fill(i + 33, j + 53, i + 51, j + 71, 0xAA000000); // Offhand
+            guiGraphics.fill(i + 7, j + 16, i + 43, j + 52, 0xAA000000); // 2x2 grid
+            guiGraphics.fill(i + 79, j + 16, i + 97, j + 70, 0xAA000000); // Column
         }
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();
 
-        // 3. Storage Grid (Only if capability has storage)
-        if (this.menu.getPetInventory().getSlots() > 1) {
-            guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 17, 0, 166, 90, 54);
+        // 3. Storage Grid (4x4, Shifted Further Right)
+        if (this.menu.getPetInventory().getSlots() > 11) {
+            guiGraphics.blit(HORSE_GUI_TEXTURES, i + 107, j + 17, 0, 166, 72, 72);
         }
     }
 
