@@ -130,13 +130,17 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             } else { // From Player to Pet
-                // 1. Try Saddle
+                // 1. Try Saddle (Menu Slot 0 -> Capability Slot 10)
                 if (itemstack1.is(Items.SADDLE)) {
-                    if (!this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
+                    if (this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
+                        // Success
+                    } else if (this.moveItemStackTo(itemstack1, STORAGE_START, STORAGE_START + STORAGE_COUNT, false)) {
+                        // Fallback to storage
+                    } else {
                         return ItemStack.EMPTY;
                     }
                 } 
-                // 2. Try Armor
+                // 2. Try Armor (Menu Slots 1-4)
                 else if (itemstack1.getItem() instanceof net.minecraft.world.item.ArmorItem armor) {
                     int armorSlot = -1;
                     EquipmentSlot type = armor.getType().getSlot();
@@ -152,7 +156,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                         }
                     }
                 }
-                // 3. Try Storage
+                // 3. Try Storage (Menu Slots 7-22)
                 else {
                     if (!this.moveItemStackTo(itemstack1, STORAGE_START, STORAGE_START + STORAGE_COUNT, false)) {
                         return ItemStack.EMPTY;

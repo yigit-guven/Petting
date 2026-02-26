@@ -39,8 +39,18 @@ public class EquipmentSlotHandler extends Slot {
     }
 
     @Override
-    public boolean mayPickup(Player player) {
-        return true;
+    public ItemStack remove(int amount) {
+        ItemStack current = mob.getItemBySlot(slot);
+        if (current.isEmpty()) return ItemStack.EMPTY;
+        ItemStack taken = current.split(amount);
+        mob.setItemSlot(slot, current);
+        return taken;
+    }
+
+    @Override
+    public void onTake(Player player, ItemStack stack) {
+        this.setChanged();
+        super.onTake(player, stack);
     }
 
     @Override
