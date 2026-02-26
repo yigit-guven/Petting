@@ -232,22 +232,38 @@ public class OwnerRightclicksPetProcedure {
                     boolean isWaiting = data.getBoolean("waiting");
                     
                     if (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT) {
-                        if (isShift) { // Wait
-                            data.putBoolean("sitstill", false);
-                            boolean targetWait = !isWaiting;
-                            data.putBoolean("waiting", targetWait);
-                            entity.setShiftKeyDown(false);
-                            sendFeedback(player, petName + (targetWait ? " is now waiting." : " is now wandering."));
-                            playStateChangeFeedback(entity, targetWait);
-                        } else { // Sit
-                            data.putBoolean("waiting", false);
-                            boolean targetSit = !isSitting;
-                            data.putBoolean("sitstill", targetSit);
-                            entity.setShiftKeyDown(targetSit);
-                            sendFeedback(player, petName + (targetSit ? " is now sitting and relaxing." : " is now wandering."));
-                            playStateChangeFeedback(entity, targetSit);
+                        if (isShift) { // Stand up / Wait toggle
+                            boolean targetWander = isSitting; // If sitting, standing up means wandering
+                            if (isSitting) {
+                                data.putBoolean("sitstill", false);
+                                entity.setShiftKeyDown(false);
+                                sendFeedback(player, petName + " is now wandering.");
+                                playStateChangeFeedback(entity, false);
+                            } else {
+                                // Original Wait toggle
+                                data.putBoolean("sitstill", false);
+                                boolean targetWait = !isWaiting;
+                                data.putBoolean("waiting", targetWait);
+                                entity.setShiftKeyDown(false);
+                                sendFeedback(player, petName + (targetWait ? " is now waiting." : " is now wandering."));
+                                playStateChangeFeedback(entity, targetWait);
+                            }
+                        } else { // Sit / Ride logic
+                            if (isSitting && heldItem.isEmpty() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get()) {
+                                // RIDE if sitting and hand is empty
+                                player.startRiding(entity, true);
+                                sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ".");
+                            } else {
+                                // Original Sit toggle
+                                data.putBoolean("waiting", false);
+                                boolean targetSit = !isSitting;
+                                data.putBoolean("sitstill", targetSit);
+                                entity.setShiftKeyDown(targetSit);
+                                sendFeedback(player, petName + (targetSit ? " is now sitting and relaxing." : " is now wandering."));
+                                playStateChangeFeedback(entity, targetSit);
+                            }
                         }
-                    } else { // CYCLE
+                    } else { // CYCLE (Keep as is for now, riding only integrated into default scheme)
                         if (!isSitting && !isWaiting) {
                             data.putBoolean("sitstill", true);
                             data.putBoolean("waiting", false);
@@ -255,11 +271,16 @@ public class OwnerRightclicksPetProcedure {
                             sendFeedback(player, petName + " is now sitting and relaxing.");
                             playStateChangeFeedback(entity, true);
                         } else if (isSitting) {
-                            data.putBoolean("sitstill", false);
-                            data.putBoolean("waiting", true);
-                            entity.setShiftKeyDown(false);
-                            sendFeedback(player, petName + " is now waiting.");
-                            playStateChangeFeedback(entity, true);
+                            if (heldItem.isEmpty() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get()) {
+                                player.startRiding(entity, true);
+                                sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ".");
+                            } else {
+                                data.putBoolean("sitstill", false);
+                                data.putBoolean("waiting", true);
+                                entity.setShiftKeyDown(false);
+                                sendFeedback(player, petName + " is now waiting.");
+                                playStateChangeFeedback(entity, true);
+                            }
                         } else {
                             data.putBoolean("sitstill", false);
                             data.putBoolean("waiting", false);

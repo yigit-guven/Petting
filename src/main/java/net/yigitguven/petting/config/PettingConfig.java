@@ -11,6 +11,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue DISABLE_RESPAWN_ON_TAME;
     public static final ForgeConfigSpec.IntValue INTERACTION_COOLDOWN;
     public static final ForgeConfigSpec.BooleanValue ENABLE_PARTICLES;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RIDING;
     
     public static final ForgeConfigSpec.BooleanValue WHITELIST_ONLY;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TAMING_WHITELIST;
@@ -112,6 +113,10 @@ public class PettingConfig {
         HIDE_TAMED_BOSSBARS = BUILDER
                 .comment("If true, completely hides the Boss Bar UI across the server for all tamed Bosses (like Withers).")
                 .define("hideTamedBossBars", true);
+
+        ALLOW_PET_RIDING = BUILDER
+                .comment("If true, owners can Shift + Right-Click their pet with an empty hand to ride it.")
+                .define("allowPetRiding", true);
 
         BUILDER.pop();
 

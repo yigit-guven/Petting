@@ -1,1 +1,3 @@
 - Updated build.gradle and resource properties to version 4.2.0.
+- Added Pet Riding feature: Right-Click a sitting pet with an empty hand to ride it, and Shift + Right-Click to make it stand up.
+- Added `allowPetRiding` configuration option to enable or disable pet riding.
