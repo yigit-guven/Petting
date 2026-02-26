@@ -19,6 +19,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.yigitguven.petting.config.PettingConfig;
+import net.yigitguven.petting.network.OpenPetInventoryPacket;
+import net.yigitguven.petting.init.PettingModMenus;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.FriendlyByteBuf;
@@ -46,18 +48,48 @@ public class PettingMod {
 			// Register a config GUI factory so the "Config" button works
 			ModLoadingContext.get().registerExtensionPoint(net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
 				() -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new net.yigitguven.petting.client.ConfigGuiScreen(screen)));
+            
+            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
 		}
 		// End of user code block mod constructor
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus bus = context.getModEventBus();
 		PettingModItems.REGISTRY.register(bus);
 		PettingModTabs.REGISTRY.register(bus);
+		PettingModMenus.REGISTRY.register(bus);
 		net.yigitguven.petting.init.PettingModAttributes.REGISTRY.register(bus);
 		// Start of user code block mod init
+        addNetworkMessage(OpenPetInventoryPacket.class, OpenPetInventoryPacket::toBytes, OpenPetInventoryPacket::new, OpenPetInventoryPacket::handle);
+        if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
+            MinecraftForge.EVENT_BUS.register(net.yigitguven.petting.client.ClientEvents.class);
+        }
 		// End of user code block mod init
 	}
 
 	// Start of user code block mod methods
+    private void clientSetup(final net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
+        event.enqueueWork(() -> {
+            net.minecraft.client.gui.screens.MenuScreens.register(net.yigitguven.petting.init.PettingModMenus.PET_INVENTORY.get(), net.yigitguven.petting.client.gui.PetInventoryScreen::new);
+        });
+    }
+
+    @SubscribeEvent
+    public void onAttachCapabilities(net.minecraftforge.event.AttachCapabilitiesEvent<net.minecraft.world.entity.Entity> event) {
+        if (event.getObject() instanceof net.minecraft.world.entity.LivingEntity) {
+            event.addCapability(new net.minecraft.resources.ResourceLocation(MODID, "pet_inventory"), new net.yigitguven.petting.capability.PetInventoryProvider());
+        }
+    }
+    @SubscribeEvent
+    public void onEntityDeath(net.minecraftforge.event.entity.living.LivingDropsEvent event) {
+        event.getEntity().getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER).ifPresent(handler -> {
+            for (int i = 0; i < handler.getSlots(); i++) {
+                net.minecraft.world.item.ItemStack stack = handler.getStackInSlot(i);
+                if (!stack.isEmpty()) {
+                    event.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(event.getEntity().level(), event.getEntity().getX(), event.getEntity().getY(), event.getEntity().getZ(), stack.copy()));
+                }
+            }
+        });
+    }
 	// End of user code block mod methods
 	private static final String PROTOCOL_VERSION = "1";
 	public static final SimpleChannel PACKET_HANDLER = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, MODID), () -> PROTOCOL_VERSION, PROTOCOL_VERSION::equals, PROTOCOL_VERSION::equals);
