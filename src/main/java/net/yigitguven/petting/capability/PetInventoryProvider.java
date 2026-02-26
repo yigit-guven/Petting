@@ -11,12 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PetInventoryProvider implements ICapabilitySerializable<CompoundTag> {
-    private final ItemStackHandler inventory = new ItemStackHandler(16) { // 1 saddle, 1 armor, 14 slots
-        @Override
-        protected void onContentsChanged(int slot) {
-            // Mark entity as dirty if needed? Capabilities usually handle their own NBT
-        }
-    };
+    private final ItemStackHandler inventory = new ItemStackHandler(1);
     private final LazyOptional<ItemStackHandler> optional = LazyOptional.of(() -> inventory);
 
     @Override
