@@ -17,16 +17,17 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.yigitguven.petting.init.PettingModMenus;
+import net.yigitguven.petting.capability.PetInventoryCapability;
+
 public class PetInventoryMenu extends AbstractContainerMenu {
     private final Entity pet;
     private final IItemHandler petCapabilityInventory;
 
     private static final int SADDLE_SLOT = 0;
-    private static final int EQUIPMENT_START = 1;
-    private static final int EQUIPMENT_COUNT = 6;
-    private static final int STORAGE_START = 7;
-    private static final int STORAGE_COUNT = 16; 
-    private static final int PLAYER_START = 23;
+    private static final int ARMOR_START = 1;
+    private static final int ARMOR_COUNT = 4;
+    private static final int HANDS_START = 5;
+    private static final int PLAYER_START = 7;
 
     public PetInventoryMenu(int id, Inventory playerInventory, FriendlyByteBuf extraData) {
         this(id, playerInventory, playerInventory.player.level().getEntity(extraData.readInt()));
@@ -37,14 +38,14 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         this.pet = pet;
         
         if (pet != null) {
-            this.petCapabilityInventory = pet.getCapability(ForgeCapabilities.ITEM_HANDLER)
-                    .orElse(new ItemStackHandler(40));
+            this.petCapabilityInventory = pet.getCapability(PetInventoryCapability.PET_INVENTORY)
+                    .orElse(new PetInventoryCapability.PetInventoryHandler(1));
         } else {
-            this.petCapabilityInventory = new ItemStackHandler(40);
+            this.petCapabilityInventory = new PetInventoryCapability.PetInventoryHandler(1);
         }
 
-        // 1. Equipment Column (Further Right)
-        this.addSlot(new SlotItemHandler(petCapabilityInventory, 10, 80, 17) { // Saddle - Unbinded to index 10
+        // 1. Saddle Slot (Right)
+        this.addSlot(new SlotItemHandler(petCapabilityInventory, 0, 80, 17) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.is(Items.SADDLE);
@@ -62,6 +63,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 8, 35));
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 26, 35));
             
+            // 3. Hands (Right)
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 80, 35));
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 80, 53));
         } else {
@@ -71,22 +73,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     public boolean mayPlace(ItemStack stack) { return false; }
                     @Override
                     public boolean mayPickup(Player player) { return false; }
-                });
-            }
-        }
-
-        // 3. Storage Slots (Capability Slots 11-26 -> Menu Slots 7-22)
-        int capabilitySize = petCapabilityInventory.getSlots();
-        for (int i = 0; i < STORAGE_COUNT; i++) {
-            int slotIdx = i + 11; // Offset to index 11+
-            int row = i / 4;
-            int col = i % 4;
-            if (slotIdx < capabilitySize) {
-                this.addSlot(new SlotItemHandler(petCapabilityInventory, slotIdx, 108 + col * 18, 18 + row * 18));
-            } else {
-                this.addSlot(new Slot(new net.minecraft.world.SimpleContainer(1), 0, -1000, -1000) {
-                    @Override
-                    public boolean mayPlace(ItemStack stack) { return false; }
                 });
             }
         }
@@ -130,18 +116,11 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     return ItemStack.EMPTY;
                 }
             } else { // From Player to Pet
-                // 1. Try Saddle (Menu Slot 0 -> Capability Slot 10)
                 if (itemstack1.is(Items.SADDLE)) {
-                    if (this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
-                        // Success
-                    } else if (this.moveItemStackTo(itemstack1, STORAGE_START, STORAGE_START + STORAGE_COUNT, false)) {
-                        // Fallback to storage
-                    } else {
+                    if (!this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                } 
-                // 2. Try Armor (Menu Slots 1-4)
-                else if (itemstack1.getItem() instanceof net.minecraft.world.item.ArmorItem armor) {
+                } else if (itemstack1.getItem() instanceof net.minecraft.world.item.ArmorItem armor) {
                     int armorSlot = -1;
                     EquipmentSlot type = armor.getType().getSlot();
                     if (type == EquipmentSlot.HEAD) armorSlot = 1;
@@ -149,18 +128,11 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     else if (type == EquipmentSlot.LEGS) armorSlot = 3;
                     else if (type == EquipmentSlot.FEET) armorSlot = 4;
                     
-                    if (armorSlot != -1 && !this.moveItemStackTo(itemstack1, armorSlot, armorSlot + 1, false)) {
-                        // Fall back to storage if armor slot full
-                        if (!this.moveItemStackTo(itemstack1, STORAGE_START, STORAGE_START + STORAGE_COUNT, false)) {
-                            return ItemStack.EMPTY;
-                        }
-                    }
-                }
-                // 3. Try Storage (Menu Slots 7-22)
-                else {
-                    if (!this.moveItemStackTo(itemstack1, STORAGE_START, STORAGE_START + STORAGE_COUNT, false)) {
+                    if (armorSlot == -1 || !this.moveItemStackTo(itemstack1, armorSlot, armorSlot + 1, false)) {
                         return ItemStack.EMPTY;
                     }
+                } else {
+                    return ItemStack.EMPTY; // No other destinations
                 }
             }
 

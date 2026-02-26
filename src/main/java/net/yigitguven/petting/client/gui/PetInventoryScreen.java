@@ -92,11 +92,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.disableBlend();
-
-        // 3. Storage Grid (4x4, Shifted Further Right)
-        if (this.menu.getPetInventory().getSlots() > 11) {
-            guiGraphics.blit(HORSE_GUI_TEXTURES, i + 107, j + 17, 0, 166, 72, 72);
-        }
     }
 
     @Override

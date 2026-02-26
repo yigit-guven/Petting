@@ -11,12 +11,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class PetInventoryProvider implements ICapabilitySerializable<CompoundTag> {
-    private final ItemStackHandler inventory = new ItemStackHandler(40);
-    private final LazyOptional<ItemStackHandler> optional = LazyOptional.of(() -> inventory);
+    private final PetInventoryCapability.PetInventoryHandler inventory = new PetInventoryCapability.PetInventoryHandler(1);
+    private final LazyOptional<PetInventoryCapability.IPetInventory> optional = LazyOptional.of(() -> inventory);
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == ForgeCapabilities.ITEM_HANDLER) {
+        if (cap == PetInventoryCapability.PET_INVENTORY) {
             return optional.cast();
         }
         return LazyOptional.empty();

@@ -11,10 +11,10 @@ import net.minecraft.world.SimpleContainer;
 public class EquipmentSlotHandler extends Slot {
     private final Mob mob;
     private final EquipmentSlot slot;
-    private static final SimpleContainer DUMMY_CONTAINER = new SimpleContainer(6);
+    private final SimpleContainer dummyContainer = new SimpleContainer(1);
 
     public EquipmentSlotHandler(Mob mob, EquipmentSlot slot, int x, int y) {
-        super(DUMMY_CONTAINER, slot.getIndex(), x, y);
+        super(new SimpleContainer(1), 0, x, y);
         this.mob = mob;
         this.slot = slot;
     }
