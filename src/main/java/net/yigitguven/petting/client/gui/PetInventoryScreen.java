@@ -53,9 +53,9 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         // 1. Draw Main Background Frame
         guiGraphics.blit(HORSE_GUI_TEXTURES, i, j, 0, 0, this.imageWidth, this.imageHeight);
 
-        // 2. Clean up the "Storage Slots" background area to make it look smooth and empty
-        // This covers the old horse/llama slot indices in the texture
-        guiGraphics.fill(i + 52, j + 15, i + 140, j + 75, 0xFFC6C6C6); // Standard GUI gray
+        // 2. Clean up the ENTIRE upper equipment area to hide ALL legacy horse UI elements
+        // This creates a clean gray canvas for our new symmetrical layout
+        guiGraphics.fill(i + 7, j + 7, i + 169, j + 82, 0xFFC6C6C6); // Standard GUI gray
         
         // 3. Draw standard slot background boxes at the current positions
         // Left Armor Grid
