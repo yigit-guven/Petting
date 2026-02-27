@@ -1,10 +1,28 @@
-- Implemented a Universal Smart Slot system using reflection to dynamically detect equippable slots for any mob.
-- Added Barrier icons and interaction locks for unsupported slots (e.g., armor on Spiders).
-- Added new Hand slot ghost icons (Sword/Shield) for better visual guidance.
-- Fixed manual item interaction and improved shift-clicking logic for all pet inventory slots.
-- Added `extraEquippableMobs` configuration list for manual slot overrides.
-- Fixed a critical startup crash and improved capability isolation for pet data.
-- Updated build.gradle and resource properties to version 4.2.0.
-- Added Pet Riding feature: Right-Click a sitting pet with an empty hand to ride it, and Shift + Right-Click to make it stand up.
-- Added `allowPetRiding` configuration option to enable or disable pet riding.
-- Added Pet Inventory: Press 'E' while riding a pet to access its persistent inventory (Saddle, Armor, and 14 storage slots).
+- Reworked pet interaction system with smarter empty-hand right-click behavior (Stand → Mount if saddled → Sit).
+- Shift + Right-Click now consistently opens pet inventory.
+- Introduced Command Stick as the dedicated AI controller.
+- Stick now cycles AI modes: Wander → Sit → Wait.
+- Added Action Bar feedback displaying current AI mode.
+- Shift + Stick now provides a full pet status report.
+- Introduced Pet Riding system with optional saddle requirement.
+- Added allowPetRiding configuration toggle.
+- Added mountRequireSaddle configuration option.
+- Balanced default flying riding speed to 1.0x for more natural control.
+- Added persistent Pet Inventory (Saddle slot, Armor slot, 14 storage slots).
+- Press E while riding to access pet inventory.
+- Improved shift-click behavior and manual item placement logic.
+- Added hand slot ghost icons (Sword/Shield) for better UI clarity.
+- Implemented Universal Smart Slot system using reflection for dynamic mob equipment detection.
+- Added barrier icons and interaction locks for unsupported equipment slots.
+- Added extraEquippableMobs configuration list for manual slot overrides.
+- Fully reorganized petting-common.toml into structured categories.
+- Added detailed comments, valid options, and usage examples to all config entries.
+- Added sitHealEnabled option to control sitting regeneration.
+- Added petPortraitRenderScale option for inventory UI scaling.
+- Removed deprecated controlScheme system.
+- Fixed dedicated server crash caused by client-only class loading.
+- Isolated client/server registrations to prevent future dedicated server issues.
+- Fixed startup crash related to pet data capability initialization.
+- Fixed inventory desync issues under lag conditions.
+- Fixed mounted flying speed inconsistencies.
+- Fixed AI state updates not syncing correctly during name tag interactions.
