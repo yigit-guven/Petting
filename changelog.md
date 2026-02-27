@@ -1,5 +1,3 @@
-- Redesigned the Pet Inventory UI to be compact and equipment-focused (Saddle, Hands, Armor).
-- Removed 16 pet storage slots to create a cleaner, equipment-only interface.
 - Implemented a Universal Smart Slot system using reflection to dynamically detect equippable slots for any mob.
 - Added Barrier icons and interaction locks for unsupported slots (e.g., armor on Spiders).
 - Added new Hand slot ghost icons (Sword/Shield) for better visual guidance.

@@ -46,40 +46,68 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
-        RenderSystem.setShaderTexture(0, HORSE_GUI_TEXTURES);
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i, j, 0, 0, this.imageWidth, this.imageHeight);
+
+        // 1. Draw "Modern Dark Glass" Background
+        RenderSystem.enableBlend();
+        // Main Container Shadow/Outer Glow
+        guiGraphics.fill(i - 2, j - 2, i + this.imageWidth + 2, j + this.imageHeight + 2, 0x33000000);
+        // Main Semi-Transparent Dark Glass
+        int glassColor = 0xCC050505; // Very dark, high opacity glass
+        guiGraphics.fill(i, j, i + this.imageWidth, j + this.imageHeight, glassColor);
         
+        // Blue Neon Border (Main Window)
+        int neonBlue = 0xFF3AB0FF;
+        guiGraphics.hLine(i, i + this.imageWidth - 1, j, neonBlue); // Top
+        guiGraphics.hLine(i, i + this.imageWidth - 1, j + this.imageHeight - 1, neonBlue); // Bottom
+        guiGraphics.vLine(i, j, j + this.imageHeight - 1, neonBlue); // Left
+        guiGraphics.vLine(i + this.imageWidth - 1, j, j + this.imageHeight - 1, neonBlue); // Right
+
+        // 2. Draw Pet Portrait Area (Center)
+        int portraitX = i + 53;
+        int portraitY = j + 15;
+        int portraitWidth = 70;
+        int portraitHeight = 56;
+        // Subtle background for portrait
+        guiGraphics.fill(portraitX, portraitY, portraitX + portraitWidth, portraitY + portraitHeight, 0x22FFFFFF);
+        // Border for portrait
+        drawSlotBorder(guiGraphics, portraitX, portraitY, portraitWidth, portraitHeight, 0x443AB0FF);
+
         Entity pet = this.menu.getPet();
         if (pet instanceof LivingEntity living) {
-            // DYNAMIC SCALE: Fit to a 32x32 area
             float bbWidth = living.getBbWidth();
             float bbHeight = living.getBbHeight();
-            float scale = 22.0F / Math.max(1.0F, Math.max(bbWidth, bbHeight));
-            
-            // Center of portrait area is now approx i + 57 (expanded area)
-            InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, i + 57, j + 60, (int)scale, (float)(i + 57) - mouseX, (float)(j + 60 - 30) - mouseY, living);
+            float scale = 30.0F / Math.max(1.0F, Math.max(bbWidth, bbHeight));
+            InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, portraitX + (portraitWidth / 2), portraitY + portraitHeight - 5, (int)scale, (float)(portraitX + (portraitWidth / 2)) - mouseX, (float)(portraitY + portraitHeight / 2 - 30) - mouseY, living);
         }
 
-        // 1. Draw Slot Backgrounds (Boxes) for all 7 equipment slots
-        RenderSystem.setShaderTexture(0, HORSE_GUI_TEXTURES);
-        // Left Column (2x2 Armor): Head, Chest, Legs, Feet
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 7, j + 16, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 25, j + 16, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 7, j + 34, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 25, j + 34, 0, 166, 18, 18);
+        // 3. Draw Equipment Slots (Using custom boxes)
+        // Armor (Left 2x2)
+        drawCustomSlot(guiGraphics, i + 16, j + 16); // Head
+        drawCustomSlot(guiGraphics, i + 34, j + 16); // Chest
+        drawCustomSlot(guiGraphics, i + 16, j + 34); // Legs
+        drawCustomSlot(guiGraphics, i + 34, j + 34); // Feet
         
-        // Right Column (Equipment): Saddle, Mainhand, Offhand (Shifted Right)
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 16, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 34, 0, 166, 18, 18);
-        guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 52, 0, 166, 18, 18);
+        // Right Column
+        drawCustomSlot(guiGraphics, i + 141, j + 16); // Saddle
+        drawCustomSlot(guiGraphics, i + 141, j + 34); // Mainhand
+        drawCustomSlot(guiGraphics, i + 141, j + 52); // Offhand
 
-        // 2. Draw Ghost Icons or Barriers
-        RenderSystem.enableBlend();
-        
+        // 4. Draw Player Inventory Slots
+        int playerInvY = j + 83;
+        for (int row = 0; row < 3; ++row) {
+            for (int col = 0; col < 9; ++col) {
+                drawCustomSlot(guiGraphics, i + 7 + col * 18, playerInvY + row * 18);
+            }
+        }
+        for (int col = 0; col < 9; ++col) {
+            drawCustomSlot(guiGraphics, i + 7 + col * 18, playerInvY + 58);
+        }
+
+        // 5. Draw Ghost Icons
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.4F);
         if (pet instanceof Mob mob) {
-            // Check Armor Support using Universal Util
             boolean headSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.HEAD);
             boolean chestSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.CHEST);
             boolean legsSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.LEGS);
@@ -87,42 +115,48 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             boolean mainSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
             boolean offSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.OFFHAND);
 
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.4F);
-            
             // Left Grid
-            if (headSup) { if (this.menu.getSlot(1).getItem().isEmpty()) guiGraphics.blit(HELMET_ICON, i + 8, j + 17, 0, 0, 16, 16, 16, 16); }
-            else { guiGraphics.blit(BARRIER_ICON, i + 8, j + 17, 0, 0, 16, 16, 16, 16); }
+            if (headSup) { if (this.menu.getSlot(1).getItem().isEmpty()) guiGraphics.blit(HELMET_ICON, i + 17, j + 17, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 17, j + 17, 0, 0, 16, 16, 16, 16); }
 
-            if (chestSup) { if (this.menu.getSlot(2).getItem().isEmpty()) guiGraphics.blit(CHEST_ICON, i + 26, j + 17, 0, 0, 16, 16, 16, 16); }
-            else { guiGraphics.blit(BARRIER_ICON, i + 26, j + 17, 0, 0, 16, 16, 16, 16); }
+            if (chestSup) { if (this.menu.getSlot(2).getItem().isEmpty()) guiGraphics.blit(CHEST_ICON, i + 35, j + 17, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 35, j + 17, 0, 0, 16, 16, 16, 16); }
 
-            if (legsSup) { if (this.menu.getSlot(3).getItem().isEmpty()) guiGraphics.blit(LEGS_ICON, i + 8, j + 35, 0, 0, 16, 16, 16, 16); }
-            else { guiGraphics.blit(BARRIER_ICON, i + 8, j + 35, 0, 0, 16, 16, 16, 16); }
+            if (legsSup) { if (this.menu.getSlot(3).getItem().isEmpty()) guiGraphics.blit(LEGS_ICON, i + 17, j + 35, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 17, j + 35, 0, 0, 16, 16, 16, 16); }
 
-            if (feetSup) { if (this.menu.getSlot(4).getItem().isEmpty()) guiGraphics.blit(BOOTS_ICON, i + 26, j + 35, 0, 0, 16, 16, 16, 16); }
-            else { guiGraphics.blit(BARRIER_ICON, i + 26, j + 35, 0, 0, 16, 16, 16, 16); }
+            if (feetSup) { if (this.menu.getSlot(4).getItem().isEmpty()) guiGraphics.blit(BOOTS_ICON, i + 35, j + 35, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 35, j + 35, 0, 0, 16, 16, 16, 16); }
             
             // Right Column
-            if (this.menu.getSlot(0).getItem().isEmpty()) guiGraphics.blit(SADDLE_ICON, i + 80, j + 17, 0, 0, 16, 16, 16, 16);
-
-            if (mainSup) { if (this.menu.getSlot(5).getItem().isEmpty()) guiGraphics.blit(SWORD_ICON, i + 80, j + 35, 0, 0, 16, 16, 16, 16); }
-            else { guiGraphics.blit(BARRIER_ICON, i + 80, j + 35, 0, 0, 16, 16, 16, 16); }
-
-            if (offSup) { if (this.menu.getSlot(6).getItem().isEmpty()) guiGraphics.blit(SHIELD_ICON, i + 80, j + 53, 0, 0, 16, 16, 16, 16); }
-            else { guiGraphics.blit(BARRIER_ICON, i + 80, j + 53, 0, 0, 16, 16, 16, 16); }
-        } else {
-            // Darken equipment slots if not a Mob
-            guiGraphics.fill(i + 7, j + 16, i + 43, j + 52, 0xAA000000); // 2x2 grid
-            guiGraphics.fill(i + 79, j + 16, i + 97, j + 70, 0xAA000000); // Column
+            if (this.menu.getSlot(0).getItem().isEmpty()) guiGraphics.blit(SADDLE_ICON, i + 142, j + 17, 0, 0, 16, 16, 16, 16);
+            if (mainSup) { if (this.menu.getSlot(5).getItem().isEmpty()) guiGraphics.blit(SWORD_ICON, i + 142, j + 35, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 142, j + 35, 0, 0, 16, 16, 16, 16); }
+            if (offSup) { if (this.menu.getSlot(6).getItem().isEmpty()) guiGraphics.blit(SHIELD_ICON, i + 142, j + 53, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 142, j + 53, 0, 0, 16, 16, 16, 16); }
         }
-
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.disableBlend();
+    }
+
+    private void drawCustomSlot(GuiGraphics guiGraphics, int x, int y) {
+        // Slot background
+        guiGraphics.fill(x, y, x + 18, y + 18, 0x44FFFFFF);
+        // Slot inner shadow
+        guiGraphics.fill(x + 1, y + 1, x + 17, y + 17, 0x22000000);
+        // Neon border for slots (subtle)
+        drawSlotBorder(guiGraphics, x, y, 18, 18, 0xAA3AB0FF);
+    }
+
+    private void drawSlotBorder(GuiGraphics guiGraphics, int x, int y, int w, int h, int color) {
+        guiGraphics.hLine(x, x + w - 1, y, color);
+        guiGraphics.hLine(x, x + w - 1, y + h - 1, color);
+        guiGraphics.vLine(x, y, y + h - 1, color);
+        guiGraphics.vLine(x + w - 1, y, y + h - 1, color);
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
-        guiGraphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
+        guiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0x3AB0FF, false);
+        guiGraphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFFFFFF, false);
     }
 }

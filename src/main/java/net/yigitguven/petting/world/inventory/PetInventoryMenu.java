@@ -46,8 +46,8 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             this.petCapabilityInventory = new PetInventoryCapability.PetInventoryHandler(1);
         }
 
-        // 1. Saddle Slot (Right)
-        this.addSlot(new SlotItemHandler(petCapabilityInventory, 0, 80, 17) {
+        // 1. Saddle Slot (Top Right of equipment area)
+        this.addSlot(new SlotItemHandler(petCapabilityInventory, 0, 142, 17) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.is(Items.SADDLE);
@@ -59,15 +59,15 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         });
 
         if (pet instanceof Mob mob) {
-            // 2. Armor Grid (2x2 on Left)
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.HEAD, 8, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.HEAD)));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.CHEST, 26, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.CHEST)));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 8, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.LEGS)));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 26, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.FEET)));
+            // 2. Armor Grid (2x2 on Left) - Shifted slightly
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.HEAD, 17, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.HEAD)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.CHEST, 35, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.CHEST)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 17, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.LEGS)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 35, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.FEET)));
             
-            // 3. Hands (Right)
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 80, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.MAINHAND)));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 80, 53, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.OFFHAND)));
+            // 3. Hands (Right Column) - Shifted slightly
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 142, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.MAINHAND)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 142, 53, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.OFFHAND)));
         } else {
             for (int i = 0; i < 6; i++) {
                 this.addSlot(new Slot(new net.minecraft.world.SimpleContainer(1), 0, -1000, -1000) {
@@ -79,7 +79,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             }
         }
 
-        // Player Inventory
+        // Player Inventory - Standard position
         int playerInvY = 84;
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
