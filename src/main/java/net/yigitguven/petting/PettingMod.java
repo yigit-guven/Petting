@@ -44,13 +44,6 @@ public class PettingMod {
 		// Start of user code block mod constructor
 // Inside PettingMod constructor
 		ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, PettingConfig.SPEC, "petting-common.toml");
-		if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
-			// Register a config GUI factory so the "Config" button works
-			ModLoadingContext.get().registerExtensionPoint(net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
-				() -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory((mc, screen) -> new net.yigitguven.petting.client.ConfigGuiScreen(screen)));
-            
-            FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientSetup);
-		}
 		// End of user code block mod constructor
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus bus = context.getModEventBus();
@@ -60,19 +53,10 @@ public class PettingMod {
 		net.yigitguven.petting.init.PettingModAttributes.REGISTRY.register(bus);
 		// Start of user code block mod init
         addNetworkMessage(OpenPetInventoryPacket.class, OpenPetInventoryPacket::toBytes, OpenPetInventoryPacket::new, OpenPetInventoryPacket::handle);
-        if (net.minecraftforge.fml.loading.FMLEnvironment.dist.isClient()) {
-            MinecraftForge.EVENT_BUS.register(net.yigitguven.petting.client.ClientEvents.class);
-        }
 		// End of user code block mod init
 	}
 
 	// Start of user code block mod methods
-    private void clientSetup(final net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
-        event.enqueueWork(() -> {
-            net.minecraft.client.gui.screens.MenuScreens.register(net.yigitguven.petting.init.PettingModMenus.PET_INVENTORY.get(), net.yigitguven.petting.client.gui.PetInventoryScreen::new);
-        });
-    }
-
     @SubscribeEvent
     public void onAttachCapabilities(net.minecraftforge.event.AttachCapabilitiesEvent<net.minecraft.world.entity.Entity> event) {
         if (event.getObject() instanceof net.minecraft.world.entity.LivingEntity) {
