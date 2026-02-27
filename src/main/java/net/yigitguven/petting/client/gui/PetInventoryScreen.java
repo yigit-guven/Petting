@@ -49,9 +49,15 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         RenderSystem.setShaderTexture(0, HORSE_GUI_TEXTURES);
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
+        
+        // 1. Draw Main Background Frame
         guiGraphics.blit(HORSE_GUI_TEXTURES, i, j, 0, 0, this.imageWidth, this.imageHeight);
 
-        // 1. Draw standard slot background boxes at the new symmetrical positions
+        // 2. Clean up the "Storage Slots" background area to make it look smooth and empty
+        // This covers the old horse/llama slot indices in the texture
+        guiGraphics.fill(i + 52, j + 15, i + 140, j + 75, 0xFFC6C6C6); // Standard GUI gray
+        
+        // 3. Draw standard slot background boxes at the current positions
         // Left Armor Grid
         guiGraphics.blit(HORSE_GUI_TEXTURES, i + 16, j + 16, 0, 166, 18, 18);
         guiGraphics.blit(HORSE_GUI_TEXTURES, i + 34, j + 16, 0, 166, 18, 18);
@@ -63,11 +69,14 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         guiGraphics.blit(HORSE_GUI_TEXTURES, i + 141, j + 34, 0, 166, 18, 18);
         guiGraphics.blit(HORSE_GUI_TEXTURES, i + 141, j + 52, 0, 166, 18, 18);
 
-        // 2. Draw Pet Portrait Area
-        int portraitX = i + 53;
-        int portraitY = j + 15;
-        int portraitWidth = 70;
-        int portraitHeight = 56;
+        // 4. Draw Pet Portrait Area (Centered between columns)
+        int portraitX = i + 62; // Centered between end of armor (52) and start of equipment (141)
+        int portraitY = j + 14;
+        int portraitWidth = 68;
+        int portraitHeight = 58;
+        
+        // Dark background for the portrait area (The "Black One")
+        guiGraphics.fill(portraitX, portraitY, portraitX + portraitWidth, portraitY + portraitHeight, 0xFF000000);
         
         Entity pet = this.menu.getPet();
         if (pet instanceof LivingEntity living) {
@@ -77,7 +86,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, portraitX + (portraitWidth / 2), portraitY + portraitHeight - 5, (int)scale, (float)(portraitX + (portraitWidth / 2)) - mouseX, (float)(portraitY + portraitHeight / 2 - 30) - mouseY, living);
         }
 
-        // 3. Draw Ghost Icons & Barriers (High Transparency for Ghosts)
+        // 5. Draw Ghost Icons & Barriers
         RenderSystem.enableBlend();
         if (pet instanceof Mob mob) {
             boolean headSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.HEAD);
