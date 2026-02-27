@@ -19,6 +19,8 @@ import net.minecraftforge.items.SlotItemHandler;
 import net.yigitguven.petting.init.PettingModMenus;
 import net.yigitguven.petting.capability.PetInventoryCapability;
 
+import net.yigitguven.petting.util.PetInventoryUtil;
+
 public class PetInventoryMenu extends AbstractContainerMenu {
     private final Entity pet;
     private final IItemHandler petCapabilityInventory;
@@ -58,14 +60,14 @@ public class PetInventoryMenu extends AbstractContainerMenu {
 
         if (pet instanceof Mob mob) {
             // 2. Armor Grid (2x2 on Left)
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.HEAD, 8, 17));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.CHEST, 26, 17));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 8, 35));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 26, 35));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.HEAD, 8, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.HEAD)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.CHEST, 26, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.CHEST)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 8, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.LEGS)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 26, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.FEET)));
             
             // 3. Hands (Right)
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 80, 35));
-            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 80, 53));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 80, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.MAINHAND)));
+            this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 80, 53, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.OFFHAND)));
         } else {
             for (int i = 0; i < 6; i++) {
                 this.addSlot(new Slot(new net.minecraft.world.SimpleContainer(1), 0, -1000, -1000) {

@@ -1,3 +1,11 @@
+- Redesigned the Pet Inventory UI to be compact and equipment-focused (Saddle, Hands, Armor).
+- Removed 16 pet storage slots to create a cleaner, equipment-only interface.
+- Implemented a Universal Smart Slot system using reflection to dynamically detect equippable slots for any mob.
+- Added Barrier icons and interaction locks for unsupported slots (e.g., armor on Spiders).
+- Added new Hand slot ghost icons (Sword/Shield) for better visual guidance.
+- Fixed manual item interaction and improved shift-clicking logic for all pet inventory slots.
+- Added `extraEquippableMobs` configuration list for manual slot overrides.
+- Fixed a critical startup crash and improved capability isolation for pet data.
 - Updated build.gradle and resource properties to version 4.2.0.
 - Added Pet Riding feature: Right-Click a sitting pet with an empty hand to ride it, and Shift + Right-Click to make it stand up.
 - Added `allowPetRiding` configuration option to enable or disable pet riding.

@@ -36,6 +36,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue ENABLE_GOAT_HORN_WHISTLE;
     public static final ForgeConfigSpec.BooleanValue WHISTLE_TELEPORTS_TETHERED;
     public static final ForgeConfigSpec.BooleanValue HIDE_TAMED_BOSSBARS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> EXTRA_EQUIPPABLE_MOBS;
 
     public static final ForgeConfigSpec.BooleanValue REQUIRE_KILL_TO_TAME;
     public static final ForgeConfigSpec.DoubleValue TAME_HEALTH_THRESHOLD;
@@ -117,6 +118,14 @@ public class PettingConfig {
         ALLOW_PET_RIDING = BUILDER
                 .comment("If true, owners can Shift + Right-Click their pet with an empty hand to ride it.")
                 .define("allowPetRiding", true);
+
+        BUILDER.pop();
+
+        BUILDER.push("Inventory Settings");
+
+        EXTRA_EQUIPPABLE_MOBS = BUILDER
+                .comment("List of entity registry names that should ALWAYS show equipment slots (Armor/Hands), even if the mod doesn't automatically detect them as humanoid. Example: [\"minecraft:ghast\", \"minecraft:creeper\"]")
+                .defineListAllowEmpty("extraEquippableMobs", List.of(), obj -> obj instanceof String);
 
         BUILDER.pop();
 

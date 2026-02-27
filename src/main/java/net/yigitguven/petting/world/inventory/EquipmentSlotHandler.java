@@ -11,12 +11,14 @@ import net.minecraft.world.SimpleContainer;
 public class EquipmentSlotHandler extends Slot {
     private final Mob mob;
     private final EquipmentSlot slot;
+    private final boolean active;
     private final SimpleContainer dummyContainer = new SimpleContainer(1);
 
-    public EquipmentSlotHandler(Mob mob, EquipmentSlot slot, int x, int y) {
+    public EquipmentSlotHandler(Mob mob, EquipmentSlot slot, int x, int y, boolean active) {
         super(new SimpleContainer(1), 0, x, y);
         this.mob = mob;
         this.slot = slot;
+        this.active = active;
     }
 
     @Override
@@ -32,10 +34,16 @@ public class EquipmentSlotHandler extends Slot {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
+        if (!active) return false;
         if (slot.getType() == EquipmentSlot.Type.ARMOR) {
             return stack.getItem() instanceof ArmorItem armor && armor.getType().getSlot() == slot;
         }
         return true; // Hands can hold anything
+    }
+
+    @Override
+    public boolean mayPickup(Player player) {
+        return active && super.mayPickup(player);
     }
 
     @Override

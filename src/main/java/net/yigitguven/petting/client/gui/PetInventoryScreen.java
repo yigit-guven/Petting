@@ -11,6 +11,8 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.yigitguven.petting.world.inventory.PetInventoryMenu;
+import net.yigitguven.petting.util.PetInventoryUtil;
+
 
 public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu> {
     private static final ResourceLocation HORSE_GUI_TEXTURES = new ResourceLocation("minecraft", "textures/gui/container/horse.png");
@@ -40,6 +42,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     private static final ResourceLocation BOOTS_ICON = new ResourceLocation("minecraft", "textures/item/empty_armor_slot_boots.png");
     private static final ResourceLocation SHIELD_ICON = new ResourceLocation("minecraft", "textures/item/empty_armor_slot_shield.png");
     private static final ResourceLocation SWORD_ICON = new ResourceLocation("minecraft", "textures/item/iron_sword.png");
+    private static final ResourceLocation BARRIER_ICON = new ResourceLocation("minecraft", "textures/item/barrier.png");
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
@@ -72,21 +75,41 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 34, 0, 166, 18, 18);
         guiGraphics.blit(HORSE_GUI_TEXTURES, i + 79, j + 52, 0, 166, 18, 18);
 
-        // 2. Draw Ghost Icons for clarity
+        // 2. Draw Ghost Icons or Barriers
         RenderSystem.enableBlend();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.4F);
         
-        if (pet instanceof Mob) {
+        if (pet instanceof Mob mob) {
+            // Check Armor Support using Universal Util
+            boolean headSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.HEAD);
+            boolean chestSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.CHEST);
+            boolean legsSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.LEGS);
+            boolean feetSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.FEET);
+            boolean mainSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+            boolean offSup = PetInventoryUtil.isSlotSupported(mob, net.minecraft.world.entity.EquipmentSlot.OFFHAND);
+
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 0.4F);
+            
             // Left Grid
-            if (this.menu.getSlot(1).getItem().isEmpty()) guiGraphics.blit(HELMET_ICON, i + 8, j + 17, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(2).getItem().isEmpty()) guiGraphics.blit(CHEST_ICON, i + 26, j + 17, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(3).getItem().isEmpty()) guiGraphics.blit(LEGS_ICON, i + 8, j + 35, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(4).getItem().isEmpty()) guiGraphics.blit(BOOTS_ICON, i + 26, j + 35, 0, 0, 16, 16, 16, 16);
+            if (headSup) { if (this.menu.getSlot(1).getItem().isEmpty()) guiGraphics.blit(HELMET_ICON, i + 8, j + 17, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 8, j + 17, 0, 0, 16, 16, 16, 16); }
+
+            if (chestSup) { if (this.menu.getSlot(2).getItem().isEmpty()) guiGraphics.blit(CHEST_ICON, i + 26, j + 17, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 26, j + 17, 0, 0, 16, 16, 16, 16); }
+
+            if (legsSup) { if (this.menu.getSlot(3).getItem().isEmpty()) guiGraphics.blit(LEGS_ICON, i + 8, j + 35, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 8, j + 35, 0, 0, 16, 16, 16, 16); }
+
+            if (feetSup) { if (this.menu.getSlot(4).getItem().isEmpty()) guiGraphics.blit(BOOTS_ICON, i + 26, j + 35, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 26, j + 35, 0, 0, 16, 16, 16, 16); }
             
             // Right Column
             if (this.menu.getSlot(0).getItem().isEmpty()) guiGraphics.blit(SADDLE_ICON, i + 80, j + 17, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(5).getItem().isEmpty()) guiGraphics.blit(SWORD_ICON, i + 80, j + 35, 0, 0, 16, 16, 16, 16);
-            if (this.menu.getSlot(6).getItem().isEmpty()) guiGraphics.blit(SHIELD_ICON, i + 80, j + 53, 0, 0, 16, 16, 16, 16);
+
+            if (mainSup) { if (this.menu.getSlot(5).getItem().isEmpty()) guiGraphics.blit(SWORD_ICON, i + 80, j + 35, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 80, j + 35, 0, 0, 16, 16, 16, 16); }
+
+            if (offSup) { if (this.menu.getSlot(6).getItem().isEmpty()) guiGraphics.blit(SHIELD_ICON, i + 80, j + 53, 0, 0, 16, 16, 16, 16); }
+            else { guiGraphics.blit(BARRIER_ICON, i + 80, j + 53, 0, 0, 16, 16, 16, 16); }
         } else {
             // Darken equipment slots if not a Mob
             guiGraphics.fill(i + 7, j + 16, i + 43, j + 52, 0xAA000000); // 2x2 grid
