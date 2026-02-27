@@ -63,12 +63,6 @@ public class PettingConfig {
     // --- Controls & Feedback Settings ---
     public static final ForgeConfigSpec.BooleanValue ENABLE_PARTICLES;
     public static final ForgeConfigSpec.IntValue INTERACTION_COOLDOWN;
-    public enum ControlScheme {
-        RIGHT_CLICK_SIT_SHIFT_WAIT,
-        RIGHT_CLICK_CYCLE,
-        SHIFT_RIGHT_CLICK_CYCLE
-    }
-    public static final ForgeConfigSpec.EnumValue<ControlScheme> CONTROL_SCHEME;
     public enum FeedbackStyle {
         ACTION_BAR,
         CHAT,
@@ -187,9 +181,6 @@ public class PettingConfig {
                 .define("enableParticles", true);
         INTERACTION_COOLDOWN = BUILDER.comment("Wait time (ticks) required before you can pet the same mob again.")
                 .defineInRange("interactionCooldown", 20, 0, 1000000);
-        CONTROL_SCHEME = BUILDER.comment("Defines how pet commands are issued.",
-                "Options: RIGHT_CLICK_SIT_SHIFT_WAIT, RIGHT_CLICK_CYCLE, SHIFT_RIGHT_CLICK_CYCLE")
-                .defineEnum("controlScheme", ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT);
         COMMAND_FEEDBACK_STYLE = BUILDER.comment("Defines how the mod communicates state changes to you.",
                 "Options: ACTION_BAR (text above hotbar), CHAT (normal chat), NONE (silent)")
                 .defineEnum("commandFeedbackStyle", FeedbackStyle.ACTION_BAR);

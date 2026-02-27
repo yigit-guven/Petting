@@ -39,25 +39,92 @@ public class OwnerRightclicksPetProcedure {
         if (isOwner(entity, player)) {
             net.minecraft.world.item.ItemStack heldItem = player.getMainHandItem();
             net.minecraft.world.item.Item item = heldItem.getItem();
+            boolean isShift = player.isShiftKeyDown();
             
-            // DETECTION for Name Tag usage to clear "automatic" flag
-            if (item == net.minecraft.world.item.Items.NAME_TAG) {
-                if (!isClient) data.remove("isNameGenerated");
-                // Don't cancel here, let vanilla handle name tagging if they wish, 
-                // OR cancel if we want to manage it. For now, let's just detect it.
+            // 0. EMPTY HAND (Ride / Inv / Sit / Stand)
+            if (heldItem.isEmpty()) {
+                if (!isClient) {
+                    if (isShift) {
+                        // SHIFT + RIGHT CLICK: OPEN PET INVENTORY
+                        final Entity target = entity;
+                        net.minecraftforge.network.NetworkHooks.openScreen((net.minecraft.server.level.ServerPlayer) player, new net.minecraft.world.SimpleMenuProvider(
+                            (id, inv, p) -> new net.yigitguven.petting.world.inventory.PetInventoryMenu(id, inv, target),
+                            target.getDisplayName()
+                        ), buf -> buf.writeInt(target.getId()));
+                    } else {
+                        // SIMPLE RIGHT CLICK: Stand up -> Ride -> Sit down
+                        boolean isSitting = data.getBoolean("sitstill");
+                        boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
+                        boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
+                        
+                        if (isSitting) {
+                            // STAND UP
+                            data.putBoolean("sitstill", false);
+                            data.putBoolean("waiting", false);
+                            entity.setShiftKeyDown(false);
+                            sendFeedback(player, petName + " is now wandering.");
+                            playStateChangeFeedback(entity, false);
+                        } else if (hasSaddle && isRideable) {
+                            // RIDE
+                            player.startRiding(entity, true);
+                            if (net.yigitguven.petting.config.PettingConfig.MOUNT_REQUIRE_SADDLE.get()) {
+                                sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ". (Saddle Active)");
+                            } else {
+                                sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ".");
+                            }
+                        } else {
+                            // SIT DOWN
+                            data.putBoolean("sitstill", true);
+                            data.putBoolean("waiting", false);
+                            entity.setShiftKeyDown(true);
+                            sendFeedback(player, petName + " is now sitting and relaxing.");
+                            playStateChangeFeedback(entity, true);
+                        }
+                    }
+                    player.swing(InteractionHand.MAIN_HAND, true);
+                }
+                cancelInteraction(event);
+                return;
             }
 
-            // 1. STICK (Status Report)
+            // 1. STICK (Mode Cycling & Status)
             if (item == net.minecraft.world.item.Items.STICK && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_STATUS.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    player.sendSystemMessage(Component.literal("§6--- Pet Status: §f" + petName + " §6---"));
-                    player.sendSystemMessage(Component.literal("§eAggressive Mode: " + (data.getBoolean("attackifownerattacks") ? "§aON" : "§cOFF")));
-                    player.sendSystemMessage(Component.literal("§eGuard Owner: " + (data.getBoolean("attackifownerattacked") ? "§aON" : "§cOFF")));
-                    player.sendSystemMessage(Component.literal("§eRetaliate (Self): " + (data.getBoolean("attackifselfattacked") ? "§aON" : "§cOFF")));
-                    player.sendSystemMessage(Component.literal("§eFollow Distance: §f" + data.getInt("followdistance")));
-                    player.sendSystemMessage(Component.literal("§eTeleport Distance: §f" + data.getInt("teleportdistance")));
-                    player.sendSystemMessage(Component.literal("§eWhistle Response: " + (data.getBoolean("ignoreWhistle") ? "§cIgnored" : "§aNormal")));
+                    if (isShift) {
+                        // SHIFT + STICK: Status Report
+                        player.sendSystemMessage(Component.literal("§6--- Pet Status: §f" + petName + " §6---"));
+                        player.sendSystemMessage(Component.literal("§eAggressive Mode: " + (data.getBoolean("attackifownerattacks") ? "§aON" : "§cOFF")));
+                        player.sendSystemMessage(Component.literal("§eGuard Owner: " + (data.getBoolean("attackifownerattacked") ? "§aON" : "§cOFF")));
+                        player.sendSystemMessage(Component.literal("§eRetaliate (Self): " + (data.getBoolean("attackifselfattacked") ? "§aON" : "§cOFF")));
+                        player.sendSystemMessage(Component.literal("§eFollow Distance: §f" + data.getInt("followdistance")));
+                        player.sendSystemMessage(Component.literal("§eTeleport Distance: §f" + data.getInt("teleportdistance")));
+                        player.sendSystemMessage(Component.literal("§eWhistle Response: " + (data.getBoolean("ignoreWhistle") ? "§cIgnored" : "§aNormal")));
+                    } else {
+                        // STICK CLICK: Cycle AI Mode (Wander -> Sit -> Wait)
+                        boolean isSitting = data.getBoolean("sitstill");
+                        boolean isWaiting = data.getBoolean("waiting");
+                        
+                        if (!isSitting && !isWaiting) { // Currently Wandering
+                            data.putBoolean("sitstill", true);
+                            data.putBoolean("waiting", false);
+                            entity.setShiftKeyDown(true);
+                            sendFeedback(player, "§6[Mode] §f" + petName + " is now §eSitting§f.");
+                            playStateChangeFeedback(entity, true);
+                        } else if (isSitting) { // Currently Sitting
+                            data.putBoolean("sitstill", false);
+                            data.putBoolean("waiting", true);
+                            entity.setShiftKeyDown(false);
+                            sendFeedback(player, "§6[Mode] §f" + petName + " is now §eWaiting§f.");
+                            playStateChangeFeedback(entity, true);
+                        } else { // Currently Waiting
+                            data.putBoolean("sitstill", false);
+                            data.putBoolean("waiting", false);
+                            entity.setShiftKeyDown(false);
+                            sendFeedback(player, "§6[Mode] §f" + petName + " is now §eWandering§f.");
+                            playStateChangeFeedback(entity, false);
+                        }
+                    }
                 }
                 cancelInteraction(event);
                 return;
@@ -217,110 +284,9 @@ public class OwnerRightclicksPetProcedure {
                 return;
             }
 
-            // HANDLE SIT/WAIT states
-            net.yigitguven.petting.config.PettingConfig.ControlScheme scheme = net.yigitguven.petting.config.PettingConfig.CONTROL_SCHEME.get();
-            boolean isShift = player.isShiftKeyDown();
-            
-            boolean shouldHandle = (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT)
-                    || (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.RIGHT_CLICK_CYCLE && !isShift)
-                    || (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.SHIFT_RIGHT_CLICK_CYCLE && isShift);
-
-            if (shouldHandle) {
-                if (!isClient) {
-                    player.swing(InteractionHand.MAIN_HAND, true);
-                    boolean isSitting = data.getBoolean("sitstill");
-                    boolean isWaiting = data.getBoolean("waiting");
-                    
-                    if (scheme == net.yigitguven.petting.config.PettingConfig.ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT) {
-                        if (isShift) { // Stand up / Wait toggle
-                            boolean targetWander = isSitting; // If sitting, standing up means wandering
-                            if (isSitting) {
-                                data.putBoolean("sitstill", false);
-                                entity.setShiftKeyDown(false);
-                                sendFeedback(player, petName + " is now wandering.");
-                                playStateChangeFeedback(entity, false);
-                            } else {
-                                // Original Wait toggle
-                                data.putBoolean("sitstill", false);
-                                boolean targetWait = !isWaiting;
-                                data.putBoolean("waiting", targetWait);
-                                entity.setShiftKeyDown(false);
-                                sendFeedback(player, petName + (targetWait ? " is now waiting." : " is now wandering."));
-                                playStateChangeFeedback(entity, targetWait);
-                            }
-                        } else { // Sit / Ride logic
-                            boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
-                            boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
-                            boolean canRide;
-                            
-                            if (net.yigitguven.petting.config.PettingConfig.MOUNT_REQUIRE_SADDLE.get()) {
-                                canRide = hasSaddle && isRideable;
-                            } else {
-                                canRide = (isSitting || hasSaddle) && isRideable;
-                            }
-
-                            if (canRide && heldItem.isEmpty()) {
-                                // RIDE if sitting OR saddled, and hand is empty
-                                player.startRiding(entity, true);
-                                if (net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity)) {
-                                    sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ". (Saddle Control Active)");
-                                } else {
-                                    sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ". (No Saddle)");
-                                }
-                            } else {
-                                // Original Sit toggle
-                                data.putBoolean("waiting", false);
-                                boolean targetSit = !isSitting;
-                                data.putBoolean("sitstill", targetSit);
-                                entity.setShiftKeyDown(targetSit);
-                                sendFeedback(player, petName + (targetSit ? " is now sitting and relaxing." : " is now wandering."));
-                                playStateChangeFeedback(entity, targetSit);
-                            }
-                        }
-                    } else { // CYCLE
-                        if (!isSitting && !isWaiting) {
-                            data.putBoolean("sitstill", true);
-                            data.putBoolean("waiting", false);
-                            entity.setShiftKeyDown(true);
-                            sendFeedback(player, petName + " is now sitting and relaxing.");
-                            playStateChangeFeedback(entity, true);
-                        } else if (isSitting) {
-                            boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
-                            boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
-                            boolean canRide;
-                            
-                            if (net.yigitguven.petting.config.PettingConfig.MOUNT_REQUIRE_SADDLE.get()) {
-                                canRide = hasSaddle && isRideable;
-                            } else {
-                                canRide = (isSitting || hasSaddle) && isRideable;
-                            }
-
-                            if (canRide && heldItem.isEmpty()) {
-                                player.startRiding(entity, true);
-                                sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ".");
-                            } else {
-                                data.putBoolean("sitstill", false);
-                                data.putBoolean("waiting", true);
-                                entity.setShiftKeyDown(false);
-                                sendFeedback(player, petName + " is now waiting.");
-                                playStateChangeFeedback(entity, true);
-                            }
-                        } else {
-                            data.putBoolean("sitstill", false);
-                            data.putBoolean("waiting", false);
-                            entity.setShiftKeyDown(false);
-                            sendFeedback(player, petName + " is now wandering.");
-                            playStateChangeFeedback(entity, false);
-                        }
-                    }
-                }
-            
-            // CATCH-ALL: If we are here and own the pet, and held item is something that would be used (like Ender Pearl),
-            // we should probably cancel the interaction anyway if it's meant for petting controls.
-            // Items like Ender Pearls, Goat Horns, etc. often trigger right-click actions.
-                if (heldItem.isEdible() || item == net.minecraft.world.item.Items.ENDER_PEARL || item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() || item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get() || item instanceof net.minecraft.world.item.ChorusFruitItem) {
-                    cancelInteraction(event);
-                }
+            // 2. OTHER ITEM CATCH-ALL (Ender Pearl, Fruit, etc.)
+            if (heldItem.isEdible() || item == net.minecraft.world.item.Items.ENDER_PEARL || item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() || item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get() || item instanceof net.minecraft.world.item.ChorusFruitItem) {
+                cancelInteraction(event);
             }
         }
     }
