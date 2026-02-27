@@ -88,7 +88,7 @@ public class FollowOwnerOrTeleport {
                 PETTING_STOP_UUID, "Petting Stop", -1.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL);
 
             // --- SIT LOGIC ---
-            if (data.contains("sitstill") && data.getBoolean("sitstill")) {
+            if (data.contains("sitstill") && data.getBoolean("sitstill") && !mob.isVehicle()) {
                 mob.getNavigation().stop();
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
                 
@@ -123,7 +123,7 @@ public class FollowOwnerOrTeleport {
             }
 
             // --- WAITING LOGIC ---
-            if (data.contains("waiting") && data.getBoolean("waiting")) {
+            if (data.contains("waiting") && data.getBoolean("waiting") && !mob.isVehicle()) {
                 mob.getNavigation().stop();
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
 

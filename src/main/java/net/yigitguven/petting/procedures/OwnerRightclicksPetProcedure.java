@@ -249,10 +249,15 @@ public class OwnerRightclicksPetProcedure {
                                 playStateChangeFeedback(entity, targetWait);
                             }
                         } else { // Sit / Ride logic
-                            if (isSitting && heldItem.isEmpty() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get()) {
-                                // RIDE if sitting and hand is empty
+                            boolean canRide = (isSitting || net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get();
+                            if (canRide && heldItem.isEmpty()) {
+                                // RIDE if sitting OR saddled, and hand is empty
                                 player.startRiding(entity, true);
-                                sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ".");
+                                if (net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity)) {
+                                    sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ". (Saddle Control Active)");
+                                } else {
+                                    sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ". (No Saddle)");
+                                }
                             } else {
                                 // Original Sit toggle
                                 data.putBoolean("waiting", false);
@@ -263,7 +268,7 @@ public class OwnerRightclicksPetProcedure {
                                 playStateChangeFeedback(entity, targetSit);
                             }
                         }
-                    } else { // CYCLE (Keep as is for now, riding only integrated into default scheme)
+                    } else { // CYCLE
                         if (!isSitting && !isWaiting) {
                             data.putBoolean("sitstill", true);
                             data.putBoolean("waiting", false);
@@ -271,7 +276,8 @@ public class OwnerRightclicksPetProcedure {
                             sendFeedback(player, petName + " is now sitting and relaxing.");
                             playStateChangeFeedback(entity, true);
                         } else if (isSitting) {
-                            if (heldItem.isEmpty() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get()) {
+                            boolean canRide = (isSitting || net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get();
+                            if (canRide && heldItem.isEmpty()) {
                                 player.startRiding(entity, true);
                                 sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ".");
                             } else {

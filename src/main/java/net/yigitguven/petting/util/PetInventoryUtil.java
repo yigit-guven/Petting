@@ -2,6 +2,7 @@ package net.yigitguven.petting.util;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -61,5 +62,30 @@ public class PetInventoryUtil {
         }
         
         return false;
+    }
+
+    public static boolean hasSaddle(Entity entity) {
+        if (!(entity instanceof LivingEntity living)) return false;
+        return living.getCapability(net.yigitguven.petting.capability.PetInventoryCapability.PET_INVENTORY).map(handler -> {
+            ItemStack stack = handler.getStackInSlot(0);
+            return !stack.isEmpty() && (stack.is(Items.SADDLE) || stack.getItem().getDescriptionId().contains("saddle"));
+        }).orElse(false);
+    }
+
+    public static boolean isFlyingMob(Entity entity) {
+        if (!(entity instanceof Mob mob)) return false;
+        
+        // 1. Direct interface check
+        if (mob instanceof net.minecraft.world.entity.animal.FlyingAnimal) return true;
+        
+        // 2. Navigation check
+        if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.FlyingPathNavigation) return true;
+        
+        // 3. Move Control check
+        if (mob.getMoveControl() instanceof net.minecraft.world.entity.ai.control.FlyingMoveControl) return true;
+        
+        // 4. Known flying mobs fallback
+        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        return name.contains("ghast") || name.contains("bat") || name.contains("bee") || name.contains("parrot") || name.contains("vex");
     }
 }
