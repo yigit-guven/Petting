@@ -8,6 +8,7 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.util.PetInventoryUtil;
+import net.yigitguven.petting.config.PettingConfig;
 
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import java.lang.reflect.Field;
@@ -67,8 +68,8 @@ public class PetRidingHandler {
         }
 
         if (player != null) {
-            // Check for saddle
-            if (PetInventoryUtil.hasSaddle(pet)) {
+            // Check for saddle and riding permission
+            if (PetInventoryUtil.hasSaddle(pet) && PetInventoryUtil.isRidingAllowed(pet)) {
                 handleRidingControl(pet, player);
             }
         }
@@ -128,8 +129,8 @@ public class PetRidingHandler {
         // Horizontal Movement (Only apply forward if W is pressed, or if only strafing)
         float horizontalForward = Math.max(0, forward); 
         if (horizontalForward != 0 || strafe != 0) {
-            // Flight speed multiplier (1.5x feels smooth and controllable)
-            Vec3 moveVec = new Vec3(strafe, 0, horizontalForward).yRot(-player.getYRot() * ((float)Math.PI / 180F)).normalize().scale(speed * 1.5);
+            // Flight speed multiplier from config
+            Vec3 moveVec = new Vec3(strafe, 0, horizontalForward).yRot(-player.getYRot() * ((float)Math.PI / 180F)).normalize().scale(speed * PettingConfig.FLYING_RIDING_SPEED_MULTIPLIER.get());
             vx = moveVec.x;
             vz = moveVec.z;
         }
@@ -151,7 +152,7 @@ public class PetRidingHandler {
         }
 
         // Apply WASD movement via DeltaMovement
-        float moveSpeed = speed;
+        float moveSpeed = speed * PettingConfig.LAND_RIDING_SPEED_MULTIPLIER.get().floatValue();
         if (forward < 0) moveSpeed *= 0.5F; // Slower backing up
         if (player.isSprinting()) moveSpeed *= 1.3F;
 

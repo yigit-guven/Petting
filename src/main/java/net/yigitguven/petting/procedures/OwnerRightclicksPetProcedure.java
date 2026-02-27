@@ -249,7 +249,16 @@ public class OwnerRightclicksPetProcedure {
                                 playStateChangeFeedback(entity, targetWait);
                             }
                         } else { // Sit / Ride logic
-                            boolean canRide = (isSitting || net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get();
+                            boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
+                            boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
+                            boolean canRide;
+                            
+                            if (net.yigitguven.petting.config.PettingConfig.MOUNT_REQUIRE_SADDLE.get()) {
+                                canRide = hasSaddle && isRideable;
+                            } else {
+                                canRide = (isSitting || hasSaddle) && isRideable;
+                            }
+
                             if (canRide && heldItem.isEmpty()) {
                                 // RIDE if sitting OR saddled, and hand is empty
                                 player.startRiding(entity, true);
@@ -276,7 +285,16 @@ public class OwnerRightclicksPetProcedure {
                             sendFeedback(player, petName + " is now sitting and relaxing.");
                             playStateChangeFeedback(entity, true);
                         } else if (isSitting) {
-                            boolean canRide = (isSitting || net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get();
+                            boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
+                            boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
+                            boolean canRide;
+                            
+                            if (net.yigitguven.petting.config.PettingConfig.MOUNT_REQUIRE_SADDLE.get()) {
+                                canRide = hasSaddle && isRideable;
+                            } else {
+                                canRide = (isSitting || hasSaddle) && isRideable;
+                            }
+
                             if (canRide && heldItem.isEmpty()) {
                                 player.startRiding(entity, true);
                                 sendFeedback(player, "§6[Riding] §fYou are now riding " + petName + ".");

@@ -31,6 +31,15 @@ public class EntityTickUpdateProcedure {
                 if (!mob.isPersistenceRequired()) {
                     mob.setPersistenceRequired();
                 }
+
+                // Sitting Regeneration
+                if (net.yigitguven.petting.config.PettingConfig.SIT_HEAL_ENABLED.get() && entity.getPersistentData().getBoolean("sitstill") && !entity.isVehicle()) {
+                    if (entity.tickCount % net.yigitguven.petting.config.PettingConfig.SIT_HEAL_INTERVAL.get() == 0) {
+                        if (mob.getHealth() < mob.getMaxHealth()) {
+                            mob.heal(net.yigitguven.petting.config.PettingConfig.SIT_HEAL_AMOUNT.get().floatValue());
+                        }
+                    }
+                }
             }
         }
     }

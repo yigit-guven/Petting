@@ -12,6 +12,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
 import net.yigitguven.petting.world.inventory.PetInventoryMenu;
 import net.yigitguven.petting.util.PetInventoryUtil;
+import net.yigitguven.petting.config.PettingConfig;
 
 
 public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu> {
@@ -82,7 +83,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         if (pet instanceof LivingEntity living) {
             float bbWidth = living.getBbWidth();
             float bbHeight = living.getBbHeight();
-            float scale = 45.0F / Math.max(1.0F, Math.max(bbWidth, bbHeight));
+            float scale = PettingConfig.PET_PORTRAIT_RENDER_SCALE.get().floatValue() / Math.max(1.0F, Math.max(bbWidth, bbHeight));
             InventoryScreen.renderEntityInInventoryFollowsMouse(guiGraphics, portraitX + (portraitWidth / 2), portraitY + portraitHeight - 5, (int)scale, (float)(portraitX + (portraitWidth / 2)) - mouseX, (float)(portraitY + portraitHeight / 2 - 30) - mouseY, living);
         }
 

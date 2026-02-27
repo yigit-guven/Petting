@@ -28,6 +28,7 @@ public class PetInventoryUtil {
     }
 
     public static boolean isSlotSupported(Entity entity, EquipmentSlot slotType) {
+        if (!isInventoryAllowed(entity)) return false;
         if (slotType == null) return true; // Saddle
         
         // Check Config Override first
@@ -62,6 +63,44 @@ public class PetInventoryUtil {
         }
         
         return false;
+    }
+
+    public static boolean isInventoryAllowed(Entity entity) {
+        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        
+        // 1. Blacklist check (highest priority)
+        if (net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST_ENABLED.get()) {
+            if (net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST.get().contains(name)) {
+                return false;
+            }
+        }
+        
+        // 2. Whitelist check
+        if (net.yigitguven.petting.config.PettingConfig.INVENTORY_WHITELIST_ONLY.get()) {
+            return net.yigitguven.petting.config.PettingConfig.INVENTORY_WHITELIST.get().contains(name);
+        }
+        
+        return true;
+    }
+
+    public static boolean isRidingAllowed(Entity entity) {
+        if (!net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get()) return false;
+        
+        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        
+        // 1. Blacklist check
+        if (net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST_ENABLED.get()) {
+            if (net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST.get().contains(name)) {
+                return false;
+            }
+        }
+        
+        // 2. Whitelist check
+        if (net.yigitguven.petting.config.PettingConfig.RIDING_WHITELIST_ONLY.get()) {
+            return net.yigitguven.petting.config.PettingConfig.RIDING_WHITELIST.get().contains(name);
+        }
+        
+        return true;
     }
 
     public static boolean hasSaddle(Entity entity) {
