@@ -114,25 +114,27 @@ public class PetRidingHandler {
         double vy = 0;
         double vz = 0;
 
-        // Vertical Movement (Creative-like)
+        // Vertical Movement
         if (isJumping(player)) {
-            vy = 0.4; // Responsive climbing
-        } else if (player.isShiftKeyDown()) {
-            vy = -0.4; // Responsive diving
+            vy = 0.25; // Gentle climb
+        } else if (forward < 0) { // S key to Fly Down
+            vy = -0.25;
         } else {
             // Neutral buoyancy for flyers
             vy = 0;
             pet.setNoGravity(true);
         }
 
-        // Horizontal Movement
-        if (forward != 0 || strafe != 0) {
-            // Flight speed multiplier (3.0x feels high-end but controllable)
-            Vec3 moveVec = new Vec3(strafe, 0, forward).yRot(-player.getYRot() * ((float)Math.PI / 180F)).normalize().scale(speed * 3.0);
+        // Horizontal Movement (Only apply forward if W is pressed, or if only strafing)
+        float horizontalForward = Math.max(0, forward); 
+        if (horizontalForward != 0 || strafe != 0) {
+            // Flight speed multiplier (1.5x feels smooth and controllable)
+            Vec3 moveVec = new Vec3(strafe, 0, horizontalForward).yRot(-player.getYRot() * ((float)Math.PI / 180F)).normalize().scale(speed * 1.5);
             vx = moveVec.x;
             vz = moveVec.z;
         }
 
+        // In flight, we use DeltaMovement for full 3D freedom
         pet.setDeltaMovement(vx, vy, vz);
         
         // Ensure it doesn't just fall when we stop riding
