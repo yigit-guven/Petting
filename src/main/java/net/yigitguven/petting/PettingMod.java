@@ -53,6 +53,7 @@ public class PettingMod {
 		net.yigitguven.petting.init.PettingModAttributes.REGISTRY.register(bus);
 		// Start of user code block mod init
         addNetworkMessage(OpenPetInventoryPacket.class, OpenPetInventoryPacket::toBytes, OpenPetInventoryPacket::new, OpenPetInventoryPacket::handle);
+        addNetworkMessage(net.yigitguven.petting.network.PetAttackPacket.class, net.yigitguven.petting.network.PetAttackPacket::toBytes, net.yigitguven.petting.network.PetAttackPacket::new, net.yigitguven.petting.network.PetAttackPacket::handle);
 		// End of user code block mod init
 	}
 

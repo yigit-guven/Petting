@@ -24,4 +24,18 @@ public class ClientEvents {
             }
         }
     }
+
+    @SubscribeEvent
+    public static void onMouseClick(net.minecraftforge.client.event.InputEvent.MouseButton.Pre event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.screen == null && event.getButton() == 0 && event.getAction() == 1) { // Left-click, Pressed
+            if (mc.player != null && mc.player.getVehicle() != null) {
+                net.minecraft.world.entity.Entity vehicle = mc.player.getVehicle();
+                if (vehicle instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon || 
+                    vehicle instanceof net.minecraft.world.entity.boss.wither.WitherBoss) {
+                    PettingMod.PACKET_HANDLER.sendToServer(new net.yigitguven.petting.network.PetAttackPacket());
+                }
+            }
+        }
+    }
 }
