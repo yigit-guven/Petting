@@ -30,6 +30,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue WHISTLE_TELEPORTS_TETHERED;
     public static final ForgeConfigSpec.BooleanValue HIDE_TAMED_BOSSBARS;
     public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> MANUAL_FLYING_MOBS;
 
     // --- Pet Riding Settings ---
     public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RIDING;
@@ -119,6 +120,8 @@ public class PettingConfig {
                 .define("hideTamedBossBars", true);
         MAX_PETS_PER_PLAYER = BUILDER.comment("The base limit of pets a player can own. (-1 for infinite). Can be modified by attributes.")
                 .defineInRange("maxPetsPerPlayer", -1, -1, 10000);
+        MANUAL_FLYING_MOBS = BUILDER.comment("List of entity IDs that should be manually treated as flying mobs. Use this to enable 3D flight controls (Space/S) for mobs the mod doesn't automatically detect.")
+                .defineListAllowEmpty("manualFlyingMobs", List.of(), obj -> obj instanceof String);
         BUILDER.pop();
 
         BUILDER.push("Pet Riding Settings");

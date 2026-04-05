@@ -123,8 +123,14 @@ public class PetInventoryUtil {
         // 3. Move Control check
         if (mob.getMoveControl() instanceof net.minecraft.world.entity.ai.control.FlyingMoveControl) return true;
         
-        // 4. Known flying mobs fallback
+        // 4. Known flying mobs fallback (including Ender Dragon and Phantom)
         String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
-        return name.contains("ghast") || name.contains("bat") || name.contains("bee") || name.contains("parrot") || name.contains("vex");
+        
+        if (net.yigitguven.petting.config.PettingConfig.MANUAL_FLYING_MOBS.get().contains(name)) {
+            return true;
+        }
+
+        return name.contains("ghast") || name.contains("bat") || name.contains("bee") || name.contains("parrot") || name.contains("vex") || 
+               name.contains("ender_dragon") || name.contains("phantom");
     }
 }

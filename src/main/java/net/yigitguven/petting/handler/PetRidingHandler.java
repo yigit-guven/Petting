@@ -85,7 +85,11 @@ public class PetRidingHandler {
         }
 
         // 1. Sync Rotation
-        pet.setYRot(player.getYRot());
+        float yaw = player.getYRot();
+        if (pet instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
+            yaw += 180.0F;
+        }
+        pet.setYRot(yaw);
         pet.yRotO = pet.getYRot();
         pet.setXRot(player.getXRot() * 0.5F); // Look up/down slightly
         pet.setYBodyRot(pet.getYRot());
