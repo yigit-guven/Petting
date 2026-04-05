@@ -16,7 +16,11 @@ public class PlayerRightclicksEntitzProcedure {
 	public static void onRightClickEntity(PlayerInteractEvent.EntityInteract event) {
 		if (event.getHand() != InteractionHand.MAIN_HAND)
 			return;
-		execute(event, event.getTarget(), event.getEntity());
+        Entity target = event.getTarget();
+        if (target instanceof net.minecraftforge.entity.PartEntity<?> part) {
+            target = part.getParent();
+        }
+		execute(event, target, event.getEntity());
 	}
 
 	public static void execute(Entity entity, Entity sourceentity) {
