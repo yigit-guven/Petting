@@ -1,28 +1,10 @@
-- Reworked pet interaction system with smarter empty-hand right-click behavior (Stand → Mount if saddled → Sit).
-- Shift + Right-Click now consistently opens pet inventory.
-- Introduced Command Stick as the dedicated AI controller.
-- Stick now cycles AI modes: Wander → Sit → Wait.
-- Added Action Bar feedback displaying current AI mode.
-- Shift + Stick now provides a full pet status report.
-- Introduced Pet Riding system with optional saddle requirement.
-- Added allowPetRiding configuration toggle.
-- Added mountRequireSaddle configuration option.
-- Balanced default flying riding speed to 1.0x for more natural control.
-- Added persistent Pet Inventory (Saddle slot, Armor slot, 14 storage slots).
-- Press E while riding to access pet inventory.
-- Improved shift-click behavior and manual item placement logic.
-- Added hand slot ghost icons (Sword/Shield) for better UI clarity.
-- Implemented Universal Smart Slot system using reflection for dynamic mob equipment detection.
-- Added barrier icons and interaction locks for unsupported equipment slots.
-- Added extraEquippableMobs configuration list for manual slot overrides.
-- Fully reorganized petting-common.toml into structured categories.
-- Added detailed comments, valid options, and usage examples to all config entries.
-- Added sitHealEnabled option to control sitting regeneration.
-- Added petPortraitRenderScale option for inventory UI scaling.
-- Removed deprecated controlScheme system.
-- Fixed dedicated server crash caused by client-only class loading.
-- Isolated client/server registrations to prevent future dedicated server issues.
-- Fixed startup crash related to pet data capability initialization.
-- Fixed inventory desync issues under lag conditions.
-- Fixed mounted flying speed inconsistencies.
-- Fixed AI state updates not syncing correctly during name tag interactions.
+- **Special Attacks while Riding**: Players can now left-click while riding an Ender Dragon to fire projectiles (Dragon Fireballs).
+- **Mount Protection (Anti-Kick)**: Players can no longer accidentally attack (kick) the pet they are currently riding.
+- **Improved Damage Prevention**: Added comprehensive protection logic to prevent pets from damaging their owners and to shield both from their own special attack explosions.
+- **Warden Darkness Suppression**: The Darkness effect is now automatically removed for players near their owned tamed Wardens.
+- **Manual Flying Mobs Config**: Added `manualFlyingMobs` configuration to allow users to manually enable 3D flight controls for any other compatible mobs.
+- **Robust Entity Identification**: Updated both client and server logic to use Registry IDs for identifying boss mobs, ensuring consistent behavior across all environments.
+- **Taming Improvements**: Optimized the taming process to ensure all boss-level NBT data is correctly injected and synchronized.
+- **PartEntity Redirection**: Interaction with multi-part entities (like the Ender Dragon) is now correctly redirected to the main entity, enabling taming and mounting on any part of the body.
+- **Sit State Synchronization**: Fixed a bug where a pet's sitting state would occasionally desync when interactin with other items.
+- **Interaction Catch-all**: Narrowed the interaction logic to prevent the mod from overriding vanilla behavior for other edible items.
