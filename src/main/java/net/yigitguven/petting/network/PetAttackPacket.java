@@ -31,38 +31,39 @@ public class PetAttackPacket {
             if (player != null && player.getVehicle() != null && PettingConfig.ALLOW_PET_ATTACK_WHILE_RIDING.get()) {
                 Entity pet = player.getVehicle();
                 
-                // Ownership check
+                // Improved logic: If mob is pettingtamed and we have a valid ownerUUID matching the player
                 boolean isOwner = false;
-                if (pet.getPersistentData().getString("ownerUUID").equals(player.getStringUUID())) {
-                    isOwner = true;
+                if (pet.getPersistentData().getBoolean("pettingtamed")) {
+                    String ownerUUID = pet.getPersistentData().getString("ownerUUID");
+                    if (ownerUUID.isEmpty() || ownerUUID.equals(player.getStringUUID())) {
+                        isOwner = true;
+                    }
                 } else if (pet instanceof net.minecraft.world.entity.TamableAnimal tamable && tamable.isOwnedBy(player)) {
                     isOwner = true;
                 }
 
                 if (isOwner) {
-                    // Use pet's rotation to find the head position
-                    float yaw = pet.getYRot();
-                    float pitch = pet.getXRot();
-                    Vec3 lookRel = Vec3.directionFromRotation(pitch, yaw);
-                    Vec3 lookAction = player.getLookAngle();
-
+                    Vec3 look = player.getLookAngle();
+                    
                     if (pet instanceof EnderDragon) {
-                        double offset = 8.0;
-                        double x = pet.getX() + lookRel.x * offset;
-                        double y = pet.getY() + pet.getEyeHeight() / 2 + lookRel.y * offset;
-                        double z = pet.getZ() + lookRel.z * offset;
+                        // Ender Dragon firing (distance 10 ensures it's past the long neck/head)
+                        double distance = 10.0;
+                        double x = pet.getX() + look.x * distance;
+                        double y = pet.getY() + pet.getEyeHeight() / 2 + look.y * distance;
+                        double z = pet.getZ() + look.z * distance;
 
-                        DragonFireball fireball = new DragonFireball(player.level(), (LivingEntity)pet, lookAction.x, lookAction.y, lookAction.z);
+                        DragonFireball fireball = new DragonFireball(player.level(), (LivingEntity)pet, look.x, look.y, look.z);
                         fireball.setPos(x, y, z);
                         player.level().addFreshEntity(fireball);
                         player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
                     } else if (pet instanceof WitherBoss) {
-                        double offset = 3.0;
-                        double x = pet.getX() + lookRel.x * offset;
-                        double y = pet.getY() + pet.getEyeHeight() + lookRel.y * offset;
-                        double z = pet.getZ() + lookRel.z * offset;
+                        // Wither firing (distance 4 ensures it's past the heads)
+                        double distance = 4.0;
+                        double x = pet.getX() + look.x * distance;
+                        double y = pet.getY() + pet.getEyeHeight() + look.y * distance;
+                        double z = pet.getZ() + look.z * distance;
 
-                        WitherSkull skull = new WitherSkull(player.level(), (LivingEntity)pet, lookAction.x, lookAction.y, lookAction.z);
+                        WitherSkull skull = new WitherSkull(player.level(), (LivingEntity)pet, look.x, look.y, look.z);
                         skull.setPos(x, y, z);
                         if (player.getRandom().nextFloat() < 0.2F) {
                             skull.setDangerous(true);
