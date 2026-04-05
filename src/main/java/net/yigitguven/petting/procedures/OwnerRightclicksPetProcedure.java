@@ -61,6 +61,9 @@ public class OwnerRightclicksPetProcedure {
                             // STAND UP
                             data.putBoolean("sitstill", false);
                             data.putBoolean("waiting", false);
+                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                                tamable.setOrderedToSit(false);
+                            }
                             entity.setShiftKeyDown(false);
                             sendFeedback(player, petName + " is now wandering.");
                             playStateChangeFeedback(entity, false);
@@ -76,6 +79,9 @@ public class OwnerRightclicksPetProcedure {
                             // SIT DOWN
                             data.putBoolean("sitstill", true);
                             data.putBoolean("waiting", false);
+                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                                tamable.setOrderedToSit(true);
+                            }
                             entity.setShiftKeyDown(true);
                             sendFeedback(player, petName + " is now sitting and relaxing.");
                             playStateChangeFeedback(entity, true);
@@ -108,18 +114,27 @@ public class OwnerRightclicksPetProcedure {
                         if (!isSitting && !isWaiting) { // Currently Wandering
                             data.putBoolean("sitstill", true);
                             data.putBoolean("waiting", false);
+                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                                tamable.setOrderedToSit(true);
+                            }
                             entity.setShiftKeyDown(true);
                             sendFeedback(player, "§6[Mode] §f" + petName + " is now §eSitting§f.");
                             playStateChangeFeedback(entity, true);
                         } else if (isSitting) { // Currently Sitting
                             data.putBoolean("sitstill", false);
                             data.putBoolean("waiting", true);
+                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                                tamable.setOrderedToSit(false);
+                            }
                             entity.setShiftKeyDown(false);
                             sendFeedback(player, "§6[Mode] §f" + petName + " is now §eWaiting§f.");
                             playStateChangeFeedback(entity, true);
                         } else { // Currently Waiting
                             data.putBoolean("sitstill", false);
                             data.putBoolean("waiting", false);
+                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                                tamable.setOrderedToSit(false);
+                            }
                             entity.setShiftKeyDown(false);
                             sendFeedback(player, "§6[Mode] §f" + petName + " is now §eWandering§f.");
                             playStateChangeFeedback(entity, false);
@@ -284,8 +299,8 @@ public class OwnerRightclicksPetProcedure {
                 return;
             }
 
-            // 2. OTHER ITEM CATCH-ALL (Ender Pearl, Fruit, etc.)
-            if (heldItem.isEdible() || item == net.minecraft.world.item.Items.ENDER_PEARL || item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() || item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get() || item instanceof net.minecraft.world.item.ChorusFruitItem) {
+            // 2. OTHER ITEM CATCH-ALL (Taming Items, Special Mod Items)
+            if (item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() || item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get()) {
                 cancelInteraction(event);
             }
         }
