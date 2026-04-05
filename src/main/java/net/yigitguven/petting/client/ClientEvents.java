@@ -31,9 +31,12 @@ public class ClientEvents {
         if (mc.screen == null && event.getButton() == 0 && event.getAction() == 1) { // Left-click, Pressed
             if (mc.player != null && mc.player.getVehicle() != null) {
                 net.minecraft.world.entity.Entity vehicle = mc.player.getVehicle();
-                if (vehicle instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon || 
-                    vehicle instanceof net.minecraft.world.entity.boss.wither.WitherBoss) {
-                    PettingMod.PACKET_HANDLER.sendToServer(new net.yigitguven.petting.network.PetAttackPacket());
+                net.minecraft.resources.ResourceLocation vehicleType = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(vehicle.getType());
+                if (vehicleType != null) {
+                    String vehicleId = vehicleType.toString();
+                    if (vehicleId.equals("minecraft:ender_dragon") || vehicleId.equals("minecraft:wither")) {
+                        PettingMod.PACKET_HANDLER.sendToServer(new net.yigitguven.petting.network.PetAttackPacket());
+                    }
                 }
             }
         }

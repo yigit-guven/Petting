@@ -44,9 +44,11 @@ public class PetAttackPacket {
 
                 if (isOwner) {
                     Vec3 look = player.getLookAngle();
-                    
-                    if (pet instanceof EnderDragon) {
-                        // Ender Dragon firing (distance 10 ensures it's past the long neck/head)
+                    net.minecraft.resources.ResourceLocation petType = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(pet.getType());
+                    if (petType == null) return;
+                    String petId = petType.toString();
+
+                    if (petId.equals("minecraft:ender_dragon")) {
                         double distance = 10.0;
                         double x = pet.getX() + look.x * distance;
                         double y = pet.getY() + pet.getEyeHeight() / 2 + look.y * distance;
@@ -56,9 +58,9 @@ public class PetAttackPacket {
                         fireball.setPos(x, y, z);
                         player.level().addFreshEntity(fireball);
                         player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true);
-                    } else if (pet instanceof WitherBoss) {
-                        // Wither firing (distance 4 ensures it's past the heads)
-                        double distance = 4.0;
+                    } else if (petId.equals("minecraft:wither")) {
+                        // Increased distance to 6.0 and improved y-offset
+                        double distance = 6.0;
                         double x = pet.getX() + look.x * distance;
                         double y = pet.getY() + pet.getEyeHeight() + look.y * distance;
                         double z = pet.getZ() + look.z * distance;
