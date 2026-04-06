@@ -193,38 +193,44 @@ public class PetAttackLogic {
                     warden.clearAnger(owner);
                 }
 
-                // --- WITHER BOSS PATCH ---
+                // --- BOSSBAR DELETION ---
+                if (PettingConfig.HIDE_TAMED_BOSSBARS.get()) {
+                    // 1. WITHER BOSS
                     if (pet instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
                         // Blast side-heads back to 0 (no target) actively
                         wither.setAlternativeTarget(1, 0);
                         wither.setAlternativeTarget(2, 0);
                         
-                        // BOSSBAR DELETION (Reflection)
-                        if (PettingConfig.HIDE_TAMED_BOSSBARS.get()) {
-                            try {
-                                Field bossEventField = net.minecraft.world.entity.boss.wither.WitherBoss.class.getDeclaredField("f_31427_"); // SRG name for 'bossEvent'
-                                bossEventField.setAccessible(true);
-                                ServerBossEvent bossEvent = (ServerBossEvent) bossEventField.get(wither);
-                                if (bossEvent != null) {
-                                    bossEvent.removeAllPlayers();
-                                    bossEvent.setVisible(false);
-                                }
-                            } catch (Exception ignored) {
-                                // Fallback reflection using standard Obfuscation naming just in case
+                        try {
+                            Field bossEventField = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.boss.wither.WitherBoss.class, "f_31427_"); // official name: bossEvent
+                            bossEventField.setAccessible(true);
+                            ServerBossEvent bossEvent = (ServerBossEvent) bossEventField.get(wither);
+                            if (bossEvent != null) {
+                                bossEvent.setVisible(false);
+                                bossEvent.removeAllPlayers();
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    // 2. ENDER DRAGON
+                    else if (pet instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
+                        if (dragon.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                            net.minecraft.world.level.dimension.end.EndDragonFight fight = serverLevel.getDragonFight();
+                            if (fight != null) {
                                 try {
-                                    Field bossEventField = net.minecraft.world.entity.boss.wither.WitherBoss.class.getDeclaredField("bossEvent");
-                                    bossEventField.setAccessible(true);
-                                    ServerBossEvent bossEvent = (ServerBossEvent) bossEventField.get(wither);
+                                    Field fightBossEventField = ObfuscationReflectionHelper.findField(net.minecraft.world.level.dimension.end.EndDragonFight.class, "f_64287_"); // official name: bossEvent
+                                    fightBossEventField.setAccessible(true);
+                                    ServerBossEvent bossEvent = (ServerBossEvent) fightBossEventField.get(fight);
                                     if (bossEvent != null) {
-                                        bossEvent.removeAllPlayers();
                                         bossEvent.setVisible(false);
+                                        bossEvent.removeAllPlayers();
                                     }
-                                } catch (Exception ignored2) {}
+                                } catch (Exception ignored) {}
                             }
                         }
                     }
                 }
             }
+        }
 
         @SubscribeEvent
         public static void onLivingDamage(LivingDamageEvent event) {
