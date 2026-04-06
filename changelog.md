@@ -2,3 +2,4 @@
 - Mode Cycle Update: Interacting with a Stick now cycles through: Following → Sitting → Waisting → Wandering.
 - Clearer Labels: Renamed the previous generic "Wandering" label to "Following" for better clarity.
 - Blacklist Interaction Block: Added a check at the start of the interaction handler (OwnerRightclicksPetProcedure.java) that immediately stops Petting from processing any action on blacklisted mobs. This ensures that even if you own a "Hybrid Pet" (like a vanilla Wolf), Petting will completely ignore it and let the original mod's interactions work or remain vanilla.
+- Implemented the Global Blacklist system, which allows you to completely disable the Petting mod for specific entities. This ensures that complex entities are entirely ignored by the mod's AI, inventory, and interaction systems.

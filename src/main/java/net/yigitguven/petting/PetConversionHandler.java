@@ -18,6 +18,10 @@ public class PetConversionHandler {
         if (original == null || converted == null) {
             return;
         }
+        
+        // --- GLOBAL BLACKLIST CHECK ---
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(original) || 
+            net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(converted)) return;
 
         CompoundTag originalData = original.getPersistentData();
         if (originalData.getBoolean("pettingtamed")) {

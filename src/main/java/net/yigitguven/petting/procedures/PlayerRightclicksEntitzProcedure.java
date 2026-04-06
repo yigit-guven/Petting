@@ -30,6 +30,10 @@ public class PlayerRightclicksEntitzProcedure {
 	private static void execute(@Nullable Event event, Entity entity, Entity sourceentity) {
 		if (entity == null || sourceentity == null)
 			return;
+		
+        // --- GLOBAL BLACKLIST CHECK ---
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
+
 		if (GoldenWheatRightclickedProcedure.execute(entity, sourceentity)) {
 			if (event instanceof PlayerInteractEvent.EntityInteract interactEvent) {
 				interactEvent.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);

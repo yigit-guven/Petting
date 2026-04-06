@@ -56,6 +56,9 @@ public class PetRidingHandler {
         LivingEntity pet = event.getEntity();
         if (pet.level().isClientSide()) return;
 
+        // --- GLOBAL BLACKLIST CHECK ---
+        if (PetInventoryUtil.isBlacklisted(pet)) return;
+
         // Check if there is a player passenger
         if (pet.getPassengers().isEmpty()) return;
         

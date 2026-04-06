@@ -22,6 +22,9 @@ public class PetDamageHandler {
         Player player = event.getEntity();
         Entity target = event.getTarget();
         
+        // --- GLOBAL BLACKLIST CHECK ---
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
+        
         if (player.getVehicle() != null) {
             Entity vehicle = player.getVehicle();
             // Cancel if attacking the vehicle or its parts
@@ -38,6 +41,10 @@ public class PetDamageHandler {
         if (!PettingConfig.PREVENT_PET_TO_OWNER_DAMAGE.get()) return;
 
         LivingEntity target = event.getEntity();
+        
+        // --- GLOBAL BLACKLIST CHECK ---
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
+
         DamageSource source = event.getSource();
         Entity attacker = source.getEntity();
         Entity directEntity = source.getDirectEntity();

@@ -35,7 +35,11 @@ public class PetAttackLogic {
 
         @SubscribeEvent
         public static void onTargetChange(LivingChangeTargetEvent event) {
-            if (!(event.getEntity() instanceof Mob attacker)) return;
+            Entity attackerEntity = event.getEntity();
+            if (!(attackerEntity instanceof Mob attacker)) return;
+            
+            // --- GLOBAL BLACKLIST CHECK ---
+            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(attackerEntity)) return;
             
             LivingEntity newTarget = event.getNewTarget();
             if (newTarget == null) return;
@@ -69,6 +73,9 @@ public class PetAttackLogic {
             if (event.getLevel().isClientSide()) return;
             Entity spawned = event.getEntity();
             
+            // --- GLOBAL BLACKLIST CHECK ---
+            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(spawned)) return;
+            
             // --- IDLE WITHER PROJECTILE INTERCEPT ---
             if (spawned instanceof net.minecraft.world.entity.projectile.WitherSkull skull) {
                 Entity shooter = skull.getOwner();
@@ -95,6 +102,9 @@ public class PetAttackLogic {
             Entity entity = event.getEntity();
             
             if (entity.level().isClientSide() || !(entity instanceof Mob pet)) return;
+
+            // --- GLOBAL BLACKLIST CHECK ---
+            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
 
             if (isCustomPet(pet)) {
                 Player owner = getOwner(pet);
@@ -222,6 +232,9 @@ public class PetAttackLogic {
 
             if (victim == null || victim.level().isClientSide()) return;
 
+            // --- GLOBAL BLACKLIST CHECK ---
+            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(victim)) return;
+
             if (victim instanceof Mob petMob && isCustomPet(petMob)) {
                 // QUALITY OF LIFE INVULNERABILITIES
                 // Prevent tamed pets from taking silly environmental damage to preserve them better
@@ -287,6 +300,7 @@ public class PetAttackLogic {
 
         private static boolean isCustomPet(Entity entity) {
             if (!(entity instanceof Mob)) return false;
+            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return false; // ADDED BLACKLIST CHECK
             return entity.getPersistentData().getBoolean("pettingtamed");
         }
 

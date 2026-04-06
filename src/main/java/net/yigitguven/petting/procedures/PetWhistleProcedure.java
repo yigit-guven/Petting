@@ -31,6 +31,9 @@ public class PetWhistleProcedure {
 
                 for (Entity entity : serverLevel.getAllEntities()) {
                     if (entity instanceof Mob pet) {
+                        // --- GLOBAL BLACKLIST CHECK ---
+                        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(pet)) continue;
+
                         if (pet.getPersistentData().getBoolean("pettingtamed")) {
                             String ownerUUID = pet.getPersistentData().getString("ownerUUID");
                             if (ownerUUID.equals(playerUUID)) {

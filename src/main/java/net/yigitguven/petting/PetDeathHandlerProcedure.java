@@ -31,6 +31,9 @@ public class PetDeathHandlerProcedure {
         
         if (!(entity instanceof Mob mob)) return;
 
+        // --- GLOBAL BLACKLIST CHECK ---
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(mob)) return;
+
         CompoundTag data = mob.getPersistentData();
         
         if (!data.getBoolean("pettingtamed")) {

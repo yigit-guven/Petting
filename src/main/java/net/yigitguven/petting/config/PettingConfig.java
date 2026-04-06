@@ -93,9 +93,9 @@ public class PettingConfig {
                 .define("whitelistOnly", false);
         TAMING_WHITELIST = BUILDER.comment("List of entity IDs allowed for taming. Example: [\"minecraft:zombie\", \"minecraft:creeper\"]")
                 .defineListAllowEmpty("tamingWhitelist", List.of(), obj -> obj instanceof String);
-        BLACKLIST_ENABLED = BUILDER.comment("If true, mobs listed in 'tamingBlacklist' cannot be tamed.")
+        BLACKLIST_ENABLED = BUILDER.comment("If true, mobs listed in 'tamingBlacklist' are COMPLETELY ignored by the mod. (Disables taming, AI, interactions, inventory, and riding).")
                 .define("blacklistEnabled", false);
-        TAMING_BLACKLIST = BUILDER.comment("List of entity IDs forbidden from taming. Example: [\"minecraft:wither\"]")
+        TAMING_BLACKLIST = BUILDER.comment("Global Mod Blacklist. List of entity IDs that should never be affected by Petting. Example: [\"minecraft:wither\", \"touhou_little_maid:maid\"]")
                 .defineListAllowEmpty("tamingBlacklist", List.of(), obj -> obj instanceof String);
         ALLOW_GOLDEN_WHEAT = BUILDER.comment("If true, the Golden Wheat item can be used to tame any tamable mob.")
                 .define("allowGoldenWheat", true);

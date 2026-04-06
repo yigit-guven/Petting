@@ -34,6 +34,9 @@ public class PlayerTickUpdateProcedure {
             java.util.List<net.minecraft.world.entity.monster.warden.Warden> wardens = player.level().getEntitiesOfClass(net.minecraft.world.entity.monster.warden.Warden.class, area);
             
             for (net.minecraft.world.entity.monster.warden.Warden warden : wardens) {
+                // --- GLOBAL BLACKLIST CHECK ---
+                if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(warden)) continue;
+
                 if (warden.getPersistentData().getBoolean("pettingtamed")) {
                     String ownerUUID = warden.getPersistentData().getString("ownerUUID");
                     if (ownerUUID.equals(player.getStringUUID())) {

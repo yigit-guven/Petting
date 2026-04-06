@@ -46,6 +46,9 @@ public class FollowOwnerOrTeleport {
 
             // Safety checks
             if (world.isClientSide() || !(entity instanceof Mob mob)) return;
+            
+            // --- GLOBAL BLACKLIST CHECK ---
+            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
 
             CompoundTag data = entity.getPersistentData();
 

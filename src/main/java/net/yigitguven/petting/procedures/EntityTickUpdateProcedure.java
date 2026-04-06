@@ -25,6 +25,9 @@ public class EntityTickUpdateProcedure {
 
     private static void execute(@Nullable Event event, Entity entity) {
         if (entity == null) return;
+        
+        // --- GLOBAL BLACKLIST CHECK ---
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
             
         if (entity.getPersistentData().getBoolean("pettingtamed")) {
             if (entity instanceof Mob mob) {
