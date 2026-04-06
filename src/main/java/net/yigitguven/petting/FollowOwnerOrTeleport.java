@@ -166,6 +166,11 @@ public class FollowOwnerOrTeleport {
                 flyingSpeedAttribute.removeModifier(PETTING_STOP_UUID);
             }
 
+            // --- FREE WANDER LOGIC ---
+            if (data.getBoolean("freewander")) {
+                return; // Skip follow logic and let the natural AI wander
+            }
+
             if (!data.contains("ownerUUID")) return;
             
             String ownerUUIDStr = data.getString("ownerUUID");

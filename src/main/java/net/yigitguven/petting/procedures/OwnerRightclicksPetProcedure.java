@@ -58,18 +58,21 @@ public class OwnerRightclicksPetProcedure {
                     } else {
                         // SIMPLE RIGHT CLICK: Stand up -> Ride -> Sit down
                         boolean isSitting = data.getBoolean("sitstill");
+                        boolean isWaiting = data.getBoolean("waiting");
+                        boolean isFreewander = data.getBoolean("freewander");
                         boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
                         boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
                         
-                        if (isSitting) {
-                            // STAND UP
+                        if (isSitting || isWaiting || isFreewander) {
+                            // STAND UP / RESUME FOLLOWING
                             data.putBoolean("sitstill", false);
                             data.putBoolean("waiting", false);
+                            data.putBoolean("freewander", false);
                             if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
                                 tamable.setOrderedToSit(false);
                             }
                             entity.setShiftKeyDown(false);
-                            sendFeedback(player, petName + " is now wandering.");
+                            sendFeedback(player, petName + " is now following you.");
                             playStateChangeFeedback(entity, false);
                         } else if (hasSaddle && isRideable) {
                             // RIDE
@@ -83,6 +86,7 @@ public class OwnerRightclicksPetProcedure {
                             // SIT DOWN
                             data.putBoolean("sitstill", true);
                             data.putBoolean("waiting", false);
+                            data.putBoolean("freewander", false);
                             if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
                                 tamable.setOrderedToSit(true);
                             }
@@ -103,7 +107,13 @@ public class OwnerRightclicksPetProcedure {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     if (isShift) {
                         // SHIFT + STICK: Status Report
+                        String mode = "§eFollowing";
+                        if (data.getBoolean("sitstill")) mode = "§eSitting";
+                        else if (data.getBoolean("waiting")) mode = "§eWaiting";
+                        else if (data.getBoolean("freewander")) mode = "§eWandering (Free)";
+
                         player.sendSystemMessage(Component.literal("§6--- Pet Status: §f" + petName + " §6---"));
+                        player.sendSystemMessage(Component.literal("§eAI Mode: " + mode));
                         player.sendSystemMessage(Component.literal("§eAggressive Mode: " + (data.getBoolean("attackifownerattacks") ? "§aON" : "§cOFF")));
                         player.sendSystemMessage(Component.literal("§eGuard Owner: " + (data.getBoolean("attackifownerattacked") ? "§aON" : "§cOFF")));
                         player.sendSystemMessage(Component.literal("§eRetaliate (Self): " + (data.getBoolean("attackifselfattacked") ? "§aON" : "§cOFF")));
@@ -111,13 +121,15 @@ public class OwnerRightclicksPetProcedure {
                         player.sendSystemMessage(Component.literal("§eTeleport Distance: §f" + data.getInt("teleportdistance")));
                         player.sendSystemMessage(Component.literal("§eWhistle Response: " + (data.getBoolean("ignoreWhistle") ? "§cIgnored" : "§aNormal")));
                     } else {
-                        // STICK CLICK: Cycle AI Mode (Wander -> Sit -> Wait)
+                        // STICK CLICK: Cycle AI Mode (Follow -> Sit -> Wait -> Wander)
                         boolean isSitting = data.getBoolean("sitstill");
                         boolean isWaiting = data.getBoolean("waiting");
+                        boolean isFreewander = data.getBoolean("freewander");
                         
-                        if (!isSitting && !isWaiting) { // Currently Wandering
+                        if (!isSitting && !isWaiting && !isFreewander) { // Currently Following
                             data.putBoolean("sitstill", true);
                             data.putBoolean("waiting", false);
+                            data.putBoolean("freewander", false);
                             if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
                                 tamable.setOrderedToSit(true);
                             }
@@ -127,20 +139,32 @@ public class OwnerRightclicksPetProcedure {
                         } else if (isSitting) { // Currently Sitting
                             data.putBoolean("sitstill", false);
                             data.putBoolean("waiting", true);
+                            data.putBoolean("freewander", false);
                             if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
                                 tamable.setOrderedToSit(false);
                             }
                             entity.setShiftKeyDown(false);
                             sendFeedback(player, "§6[Mode] §f" + petName + " is now §eWaiting§f.");
                             playStateChangeFeedback(entity, true);
-                        } else { // Currently Waiting
+                        } else if (isWaiting) { // Currently Waiting
                             data.putBoolean("sitstill", false);
                             data.putBoolean("waiting", false);
+                            data.putBoolean("freewander", true);
                             if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
                                 tamable.setOrderedToSit(false);
                             }
                             entity.setShiftKeyDown(false);
                             sendFeedback(player, "§6[Mode] §f" + petName + " is now §eWandering§f.");
+                            playStateChangeFeedback(entity, false);
+                        } else { // Currently Wandering
+                            data.putBoolean("sitstill", false);
+                            data.putBoolean("waiting", false);
+                            data.putBoolean("freewander", false);
+                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                                tamable.setOrderedToSit(false);
+                            }
+                            entity.setShiftKeyDown(false);
+                            sendFeedback(player, "§6[Mode] §f" + petName + " is now §eFollowing§f.");
                             playStateChangeFeedback(entity, false);
                         }
                     }
@@ -283,6 +307,7 @@ public class OwnerRightclicksPetProcedure {
                     data.remove("isNameGenerated");
                     data.remove("sitstill");
                     data.remove("waiting");
+                    data.remove("freewander");
                     data.remove("pettingbound");
                     data.remove("boundX");
                     data.remove("boundY");
