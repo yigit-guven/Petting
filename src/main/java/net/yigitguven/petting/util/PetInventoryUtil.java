@@ -6,8 +6,11 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.yigitguven.petting.config.PettingConfig;
 import java.lang.reflect.Method;
+import java.util.List;
 
 public class PetInventoryUtil {
     private static Method CAN_EQUIP_STACK_METHOD;

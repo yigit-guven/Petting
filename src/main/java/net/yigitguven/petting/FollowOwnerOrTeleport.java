@@ -63,6 +63,7 @@ public class FollowOwnerOrTeleport {
                 double bZ = data.getDouble("boundZ");
                 Vec3 boundPos = new Vec3(bX, bY, bZ);
                 double distToBound = mob.distanceToSqr(boundPos);
+                double roamRadius = net.yigitguven.petting.config.PettingConfig.BOUND_ROAM_RADIUS.get();
                 // --- DYNAMIC TELEPORT THRESHOLD ---
                 // If extremely far (e.g. owner teleported it away), teleport back
                 double teleportThresholdSq = Math.max(900.0, Math.pow(roamRadius * 1.5, 2)); // Minimum 30 blocks squared

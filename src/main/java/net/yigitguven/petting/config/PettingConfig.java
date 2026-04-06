@@ -194,6 +194,8 @@ public class PettingConfig {
                 .define("allowPerPetTeleportDist", true);
         ALLOW_PER_PET_WHISTLE_TOGGLE = BUILDER.comment("Allows toggling whistle response by Right-Clicking with a CLOCK.")
                 .define("allowPerPetWhistleToggle", true);
+        ALLOW_PET_TETHERING = BUILDER.comment("Allows binding a pet to its current location using a PET TETHER.")
+                .define("allowPetTethering", true);
         ALLOW_PET_RELEASING = BUILDER.comment("Allows releasing a pet to the wild via Crouch + Right-Click with SHEARS.")
                 .define("allowPetReleasing", true);
         BUILDER.pop();
