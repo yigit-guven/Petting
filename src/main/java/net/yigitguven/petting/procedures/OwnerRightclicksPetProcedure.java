@@ -36,6 +36,10 @@ public class OwnerRightclicksPetProcedure {
             return;
             
         if (!(sourceentity instanceof Player player)) return;
+        
+        // --- BLACKLIST CHECK ---
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
+
         boolean isClient = entity.level().isClientSide();
         CompoundTag data = entity.getPersistentData();
         String petName = entity.hasCustomName() ? entity.getCustomName().getString() : entity.getType().getDescription().getString();
@@ -50,6 +54,8 @@ public class OwnerRightclicksPetProcedure {
                 if (!isClient) {
                     if (isShift) {
                         // SHIFT + RIGHT CLICK: OPEN PET INVENTORY
+                        if (!net.yigitguven.petting.util.PetInventoryUtil.isInventoryAllowed(entity)) return;
+
                         final Entity target = entity;
                         net.minecraftforge.network.NetworkHooks.openScreen((net.minecraft.server.level.ServerPlayer) player, new net.minecraft.world.SimpleMenuProvider(
                             (id, inv, p) -> new net.yigitguven.petting.world.inventory.PetInventoryMenu(id, inv, target),

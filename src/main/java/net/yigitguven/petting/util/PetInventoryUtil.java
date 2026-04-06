@@ -26,6 +26,13 @@ public class PetInventoryUtil {
             }
         }
     }
+    
+    public static boolean isBlacklisted(Entity entity) {
+        if (!net.yigitguven.petting.config.PettingConfig.BLACKLIST_ENABLED.get()) return false;
+        ResourceLocation key = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
+        if (key == null) return false;
+        return net.yigitguven.petting.config.PettingConfig.TAMING_BLACKLIST.get().contains(key.toString());
+    }
 
     public static boolean isSlotSupported(Entity entity, EquipmentSlot slotType) {
         if (!isInventoryAllowed(entity)) return false;

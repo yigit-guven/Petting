@@ -60,7 +60,11 @@ public class PettingMod {
 	// Start of user code block mod methods
     @SubscribeEvent
     public void onAttachCapabilities(net.minecraftforge.event.AttachCapabilitiesEvent<net.minecraft.world.entity.Entity> event) {
-        if (event.getObject() instanceof net.minecraft.world.entity.LivingEntity) {
+        net.minecraft.world.entity.Entity entity = event.getObject();
+        if (entity instanceof net.minecraft.world.entity.LivingEntity) {
+            // Skip blacklisted mobs
+            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
+
             event.addCapability(new net.minecraft.resources.ResourceLocation(MODID, "pet_inventory"), new net.yigitguven.petting.capability.PetInventoryProvider());
         }
     }
