@@ -64,6 +64,19 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_WHISTLE_TOGGLE;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PET_TETHERING;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RELEASING;
+    
+    // --- Tool Settings ---
+    public static final ForgeConfigSpec.ConfigValue<String> STATUS_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> AGGRESSION_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> DEFENSE_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> GUARD_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> FOLLOW_DIST_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> TELEPORT_DIST_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> WHISTLE_RESPONSE_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> TETHER_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> RELEASE_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> GLOBAL_WHISTLE_TOOL_ID;
+    public static final ForgeConfigSpec.ConfigValue<String> TAMING_ITEM_ID;
 
     // --- Controls & Feedback Settings ---
     public static final ForgeConfigSpec.BooleanValue ENABLE_PARTICLES;
@@ -181,10 +194,33 @@ public class PettingConfig {
                 .define("allowPerPetTeleportDist", true);
         ALLOW_PER_PET_WHISTLE_TOGGLE = BUILDER.comment("Allows toggling whistle response by Right-Clicking with a CLOCK.")
                 .define("allowPerPetWhistleToggle", true);
-        ALLOW_PET_TETHERING = BUILDER.comment("Allows binding a pet to its current location using a PET TETHER.")
-                .define("allowPetTethering", true);
         ALLOW_PET_RELEASING = BUILDER.comment("Allows releasing a pet to the wild via Crouch + Right-Click with SHEARS.")
                 .define("allowPetReleasing", true);
+        BUILDER.pop();
+
+        BUILDER.push("Tool Settings");
+        STATUS_TOOL_ID = BUILDER.comment("Item ID for Status/AI Mode cycling. Default: minecraft:stick")
+                .define("statusTool", "minecraft:stick");
+        AGGRESSION_TOOL_ID = BUILDER.comment("Item ID for Aggressive Mode toggling. Default: minecraft:iron_sword")
+                .define("aggressionTool", "minecraft:iron_sword");
+        DEFENSE_TOOL_ID = BUILDER.comment("Item ID for Self-Defense toggling. Default: minecraft:shield")
+                .define("defenseTool", "minecraft:shield");
+        GUARD_TOOL_ID = BUILDER.comment("Item ID for Guard Mode toggling. Default: minecraft:cookie")
+                .define("guardTool", "minecraft:cookie");
+        FOLLOW_DIST_TOOL_ID = BUILDER.comment("Item ID for Follow Distance cycling. Default: petting:follow_whistle")
+                .define("followDistTool", "petting:follow_whistle");
+        TELEPORT_DIST_TOOL_ID = BUILDER.comment("Item ID for Teleport Distance cycling. Default: petting:teleport_orb")
+                .define("teleportDistTool", "petting:teleport_orb");
+        WHISTLE_RESPONSE_TOOL_ID = BUILDER.comment("Item ID for Whistle Response toggling. Default: minecraft:clock")
+                .define("whistleTool", "minecraft:clock");
+        TETHER_TOOL_ID = BUILDER.comment("Item ID for Tethering/Binding. Default: petting:pet_tether")
+                .define("tetherTool", "petting:pet_tether");
+        RELEASE_TOOL_ID = BUILDER.comment("Item ID for Releasing pets. Default: minecraft:shears")
+                .define("releaseTool", "minecraft:shears");
+        GLOBAL_WHISTLE_TOOL_ID = BUILDER.comment("Item ID for the Global Follow Whistle. Default: minecraft:goat_horn")
+                .define("globalWhistleTool", "minecraft:goat_horn");
+        TAMING_ITEM_ID = BUILDER.comment("Item ID for the primary Taming Item. Default: petting:golden_wheat")
+                .define("tamingItem", "petting:golden_wheat");
         BUILDER.pop();
 
         BUILDER.push("Controls & Feedback Settings");

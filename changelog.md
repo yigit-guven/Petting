@@ -5,3 +5,4 @@
 - Implemented the Global Blacklist system, which allows you to completely disable the Petting mod for specific entities. This ensures that complex entities are entirely ignored by the mod's AI, inventory, and interaction systems.
 - Bound Roam Radius Fix: The pet was snapping back to its bound spot prematurely because of a hardcoded 20-block limit (400.0 squared).
 - Improved the boss bar hiding logic.
+- Implemented a Configurable Tool ID system that allows you to remap all of the mod's interaction items (like the Stick, Sword, or Shield) to any other item registry ID.

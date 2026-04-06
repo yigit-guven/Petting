@@ -28,10 +28,24 @@ public class PetInventoryUtil {
     }
     
     public static boolean isBlacklisted(Entity entity) {
-        if (!net.yigitguven.petting.config.PettingConfig.BLACKLIST_ENABLED.get()) return false;
-        ResourceLocation key = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        if (key == null) return false;
-        return net.yigitguven.petting.config.PettingConfig.TAMING_BLACKLIST.get().contains(key.toString());
+        if (entity == null || !PettingConfig.BLACKLIST_ENABLED.get()) return false;
+        String id = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        List<? extends String> blacklist = PettingConfig.TAMING_BLACKLIST.get();
+        return blacklist.contains(id);
+    }
+
+    /**
+     * Resolves an item from a registry ID string. Fallback to default if invalid.
+     */
+    public static net.minecraft.world.item.Item getItemFromID(String id, net.minecraft.world.item.Item fallback) {
+        if (id == null || id.isEmpty()) return fallback;
+        try {
+            net.minecraft.world.item.Item item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new ResourceLocation(id));
+            if (item != null && item != Items.AIR) {
+                return item;
+            }
+        } catch (Exception ignored) {}
+        return fallback;
     }
 
     public static boolean isSlotSupported(Entity entity, EquipmentSlot slotType) {

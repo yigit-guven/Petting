@@ -63,8 +63,9 @@ public class GoldenWheatRightclickedProcedure {
         if (hasCustomItem) {
             if (!customItemMatch) return false; // Entity strictly requires the mapped item
         } else {
-            if (!itemName.equals("petting:golden_wheat")) return false; // Must be holding Wheat
-            if (!PettingConfig.ALLOW_GOLDEN_WHEAT.get()) return false; // Wheat must be globally enabled
+            String targetTamingItem = PettingConfig.TAMING_ITEM_ID.get();
+            if (!itemName.equals(targetTamingItem)) return false; // Must be holding the configured taming item
+            if (!PettingConfig.ALLOW_GOLDEN_WHEAT.get() && targetTamingItem.equals("petting:golden_wheat")) return false; // Wheat check specifically if using default
         }
 
         // Interaction handled beyond this point

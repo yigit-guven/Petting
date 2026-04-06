@@ -108,7 +108,7 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 1. STICK (Mode Cycling & Status)
-            if (item == net.minecraft.world.item.Items.STICK && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_STATUS.get()) {
+            if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.STATUS_TOOL_ID.get(), net.minecraft.world.item.Items.STICK) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_STATUS.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     if (isShift) {
@@ -180,7 +180,8 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 2. SWORD (Toggle Aggressive Mode)
-            if (item instanceof net.minecraft.world.item.SwordItem && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_AGGRESSION.get()) {
+            net.minecraft.world.item.Item aggressionTool = net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.AGGRESSION_TOOL_ID.get(), net.minecraft.world.item.Items.IRON_SWORD);
+            if ((item == aggressionTool || (net.yigitguven.petting.config.PettingConfig.AGGRESSION_TOOL_ID.get().equals("minecraft:iron_sword") && item instanceof net.minecraft.world.item.SwordItem)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_AGGRESSION.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifownerattacks");
@@ -194,7 +195,8 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 3. SHIELD (Toggle Retaliation)
-            if (item instanceof net.minecraft.world.item.ShieldItem && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_SELF_DEFENSE.get()) {
+            net.minecraft.world.item.Item defenseTool = net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.DEFENSE_TOOL_ID.get(), net.minecraft.world.item.Items.SHIELD);
+            if ((item == defenseTool || (net.yigitguven.petting.config.PettingConfig.DEFENSE_TOOL_ID.get().equals("minecraft:shield") && item instanceof net.minecraft.world.item.ShieldItem)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_SELF_DEFENSE.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifselfattacked");
@@ -208,7 +210,7 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 4. COOKIE (Toggle Guard Owner)
-            if (item == net.minecraft.world.item.Items.COOKIE && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_GUARD.get()) {
+            if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.GUARD_TOOL_ID.get(), net.minecraft.world.item.Items.COOKIE) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_GUARD.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifownerattacked");
@@ -222,7 +224,7 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 5. FOLLOW WHISTLE (Cycle Follow Distance)
-            if (item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get() && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_FOLLOW_DIST.get()) {
+            if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.FOLLOW_DIST_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get()) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_FOLLOW_DIST.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("followdistance");
@@ -243,7 +245,7 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 6. TELEPORT ORB (Cycle Teleport Distance)
-            if (item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_TELEPORT_DIST.get()) {
+            if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.TELEPORT_DIST_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get()) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_TELEPORT_DIST.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("teleportdistance");
@@ -264,7 +266,7 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 7. CLOCK (Toggle Whistle Response)
-            if (item == net.minecraft.world.item.Items.CLOCK && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_WHISTLE_TOGGLE.get()) {
+            if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.WHISTLE_RESPONSE_TOOL_ID.get(), net.minecraft.world.item.Items.CLOCK) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_WHISTLE_TOGGLE.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("ignoreWhistle");
@@ -278,7 +280,7 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 8. PET TETHER (Toggle Binding)
-            if (item == net.yigitguven.petting.init.PettingModItems.PET_TETHER.get() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_TETHERING.get()) {
+            if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.TETHER_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.PET_TETHER.get()) && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_TETHERING.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean isBound = data.getBoolean("pettingbound");
@@ -300,7 +302,8 @@ public class OwnerRightclicksPetProcedure {
             }
 
             // 9. SHEARS (Release Pet - Crouch REQUIRED)
-            if (item instanceof net.minecraft.world.item.ShearsItem && player.isShiftKeyDown() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RELEASING.get()) {
+            net.minecraft.world.item.Item releaseTool = net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.RELEASE_TOOL_ID.get(), net.minecraft.world.item.Items.SHEARS);
+            if ((item == releaseTool || (net.yigitguven.petting.config.PettingConfig.RELEASE_TOOL_ID.get().equals("minecraft:shears") && item instanceof net.minecraft.world.item.ShearsItem)) && player.isShiftKeyDown() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RELEASING.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     
@@ -334,8 +337,9 @@ public class OwnerRightclicksPetProcedure {
                 return;
             }
 
-            // 2. OTHER ITEM CATCH-ALL (Taming Items, Special Mod Items)
-            if (item == net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get() || item == net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get()) {
+            // 10. OTHER ITEM CATCH-ALL (Taming Items, Special Mod Items)
+            if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.TELEPORT_DIST_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get()) ||
+                item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.FOLLOW_DIST_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get())) {
                 cancelInteraction(event);
             }
         }
