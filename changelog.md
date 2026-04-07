@@ -1,0 +1,1 @@
+- **Fixed Mod Loading Crash**: Resolved an issue where an extra `pop()` call in `PettingConfig` caused an `IllegalArgumentException` during initialization.

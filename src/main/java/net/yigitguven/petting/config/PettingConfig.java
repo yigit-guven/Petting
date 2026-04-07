@@ -169,8 +169,6 @@ public class PettingConfig {
                 .define("allowPetAttackWhileRiding", true);
         BUILDER.pop();
 
-        BUILDER.pop();
-
         BUILDER.push("Pet Stat Settings");
         PET_BASE_ARMOR = BUILDER.comment("Flat armor bonus applied to all tamed pets, even if not wearing armor.")
                 .defineInRange("petBaseArmor", 0.0, 0.0, 100.0);
