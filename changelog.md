@@ -1,0 +1,5 @@
+- **Configurable Pet Armor**: Added `petBaseArmor` and `petBaseArmorToughness` to allow pets to have increased defense even without wearing armor.
+- **Forced Equipment Slots**: Added `alwaysShowEquipmentSlots` config option which, when enabled, allows any tamed mob to use Armor and Hand slots in their inventory UI.
+- Implemented a transient attribute modifier system for pets that updates in real-time as configuration changes.
+- Improved `PetInventoryUtil` to support forced inventory layouts.
+- Centralized pet attribute updates within the entity tick procedure for better reliability.

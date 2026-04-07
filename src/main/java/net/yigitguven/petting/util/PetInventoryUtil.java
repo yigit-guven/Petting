@@ -55,9 +55,13 @@ public class PetInventoryUtil {
         if (!isInventoryAllowed(entity)) return false;
         if (slotType == null) return true; // Saddle
         
-        // Check Config Override first
+        // Check Config Overrides
         String registryName = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
         if (net.yigitguven.petting.config.PettingConfig.EXTRA_EQUIPPABLE_MOBS.get().contains(registryName)) {
+            return true;
+        }
+
+        if (net.yigitguven.petting.config.PettingConfig.ALWAYS_SHOW_EQUIPMENT_SLOTS.get() && entity.getPersistentData().getBoolean("pettingtamed")) {
             return true;
         }
 

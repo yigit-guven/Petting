@@ -46,9 +46,14 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue ALLOW_PET_ATTACK_WHILE_RIDING;
 
 
+    // --- Pet Stat Settings ---
+    public static final ForgeConfigSpec.DoubleValue PET_BASE_ARMOR;
+    public static final ForgeConfigSpec.DoubleValue PET_BASE_ARMOR_TOUGHNESS;
+
     // --- Pet Inventory Settings ---
     public static final ForgeConfigSpec.DoubleValue PET_PORTRAIT_RENDER_SCALE;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> EXTRA_EQUIPPABLE_MOBS;
+    public static final ForgeConfigSpec.BooleanValue ALWAYS_SHOW_EQUIPMENT_SLOTS;
     public static final ForgeConfigSpec.BooleanValue INVENTORY_WHITELIST_ONLY;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INVENTORY_WHITELIST;
     public static final ForgeConfigSpec.BooleanValue INVENTORY_BLACKLIST_ENABLED;
@@ -164,11 +169,22 @@ public class PettingConfig {
                 .define("allowPetAttackWhileRiding", true);
         BUILDER.pop();
 
+        BUILDER.pop();
+
+        BUILDER.push("Pet Stat Settings");
+        PET_BASE_ARMOR = BUILDER.comment("Flat armor bonus applied to all tamed pets, even if not wearing armor.")
+                .defineInRange("petBaseArmor", 0.0, 0.0, 100.0);
+        PET_BASE_ARMOR_TOUGHNESS = BUILDER.comment("Flat armor toughness bonus applied to all tamed pets.")
+                .defineInRange("petBaseArmorToughness", 0.0, 0.0, 100.0);
+        BUILDER.pop();
+
         BUILDER.push("Pet Inventory Settings");
         PET_PORTRAIT_RENDER_SCALE = BUILDER.comment("Scales the size of the 3D model preview inside the Pet Inventory UI.")
                 .defineInRange("petPortraitRenderScale", 45.0, 1.0, 500.0);
         EXTRA_EQUIPPABLE_MOBS = BUILDER.comment("Force specific mobs to always have Armor/Hand slots visible. Example: [\"minecraft:ghast\"]")
                 .defineListAllowEmpty("extraEquippableMobs", List.of(), obj -> obj instanceof String);
+        ALWAYS_SHOW_EQUIPMENT_SLOTS = BUILDER.comment("If true, all tamed pets will show equipment slots (Armor/Hands) in their inventory, even if the mob doesn't 'natively' support them.")
+                .define("alwaysShowEquipmentSlots", false);
         INVENTORY_WHITELIST_ONLY = BUILDER.comment("If enabled, only mobs in the 'inventoryWhitelist' will have equipment slots.")
                 .define("inventoryWhitelistOnly", false);
         INVENTORY_WHITELIST = BUILDER.comment("List of entity IDs allowed to have a Pet Inventory. Example: [\"minecraft:skeleton\"]")
