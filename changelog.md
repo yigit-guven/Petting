@@ -1,1 +1,4 @@
-- **Fixed Mod Loading Crash**: Resolved an issue where an extra `pop()` call in `PettingConfig` caused an `IllegalArgumentException` during initialization.
+- Fixed `NoSuchFieldError: CREATIVE_MODE_TAB` by switching to more robust registry key referencing in `PettingModTabs.java`.
+- Verified and fixed `PoseStack` rendering imbalance in `PetInventoryScreen.java` by validating 1.20.1-compatible signatures.
+- Implemented `hideTamedBossBars` config option to correctly hide boss bars for tamed pets.
+- Improved overall mod stability during startup and screen transitions.
