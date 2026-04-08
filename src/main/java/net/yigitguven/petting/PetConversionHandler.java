@@ -69,6 +69,10 @@ public class PetConversionHandler {
                 converted.setCustomName(original.getCustomName());
                 converted.setCustomNameVisible(original.isCustomNameVisible());
             }
+
+            // Sync to client for boss bar hiding and other client-side checks
+            net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> converted), 
+                new net.yigitguven.petting.network.SyncPetStatusPacket(converted.getId(), true));
         }
     }
 

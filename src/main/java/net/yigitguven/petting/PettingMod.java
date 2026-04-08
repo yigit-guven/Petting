@@ -54,6 +54,7 @@ public class PettingMod {
 		// Start of user code block mod init
         addNetworkMessage(OpenPetInventoryPacket.class, OpenPetInventoryPacket::toBytes, OpenPetInventoryPacket::new, OpenPetInventoryPacket::handle);
         addNetworkMessage(net.yigitguven.petting.network.PetAttackPacket.class, net.yigitguven.petting.network.PetAttackPacket::toBytes, net.yigitguven.petting.network.PetAttackPacket::new, net.yigitguven.petting.network.PetAttackPacket::handle);
+        addNetworkMessage(net.yigitguven.petting.network.SyncPetStatusPacket.class, net.yigitguven.petting.network.SyncPetStatusPacket::toBytes, net.yigitguven.petting.network.SyncPetStatusPacket::new, net.yigitguven.petting.network.SyncPetStatusPacket::handle);
 		// End of user code block mod init
 	}
 
@@ -78,6 +79,23 @@ public class PettingMod {
                 }
             }
         });
+    }
+
+    @SubscribeEvent
+    public void onStartTracking(net.minecraftforge.event.entity.player.PlayerEvent.StartTracking event) {
+        net.minecraft.world.entity.Entity target = event.getTarget();
+        if (target != null && target.getPersistentData().getBoolean("pettingtamed")) {
+            PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.PLAYER.with(() -> (net.minecraft.server.level.ServerPlayer) event.getEntity()), 
+                new net.yigitguven.petting.network.SyncPetStatusPacket(target.getId(), true));
+        }
+    }
+
+    @SubscribeEvent
+    public void onEntityJoin(net.minecraftforge.event.entity.EntityJoinLevelEvent event) {
+        if (!event.getLevel().isClientSide && event.getEntity().getPersistentData().getBoolean("pettingtamed")) {
+            PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> event.getEntity()), 
+                new net.yigitguven.petting.network.SyncPetStatusPacket(event.getEntity().getId(), true));
+        }
     }
 	// End of user code block mod methods
 	private static final String PROTOCOL_VERSION = "1";

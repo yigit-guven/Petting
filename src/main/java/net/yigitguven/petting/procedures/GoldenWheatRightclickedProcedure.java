@@ -279,6 +279,10 @@ public class GoldenWheatRightclickedProcedure {
         data.putBoolean("sitstill", false);
         data.putInt("followdistance", 10);
         data.putInt("teleportdistance", 20);
+
+        // Sync to client for boss bar hiding and other client-side checks
+        net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entity), 
+            new net.yigitguven.petting.network.SyncPetStatusPacket(entity.getId(), true));
     }
 
     private static net.minecraft.world.entity.ai.attributes.Attribute getCategoryAttribute(int slot) {

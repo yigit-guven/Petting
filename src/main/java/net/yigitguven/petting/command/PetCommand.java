@@ -114,6 +114,10 @@ public class PetCommand {
                     newData.putInt("followdistance", 10);
                     newData.putInt("teleportdistance", 20);
 
+                    // Sync to client for boss bar hiding and other client-side checks
+                    net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> newMob), 
+                        new net.yigitguven.petting.network.SyncPetStatusPacket(newMob.getId(), true));
+
                     newMob.setTarget(null);
                     world.addFreshEntity(newMob);
                     entity.discard();

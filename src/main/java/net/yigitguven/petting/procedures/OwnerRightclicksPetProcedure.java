@@ -312,6 +312,9 @@ public class OwnerRightclicksPetProcedure {
                     }
 
                     data.remove("pettingtamed");
+                    // Sync to client to re-enable boss bar if applicable
+                    net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entity), 
+                        new net.yigitguven.petting.network.SyncPetStatusPacket(entity.getId(), false));
                     data.remove("ownerUUID");
                     data.remove("isNameGenerated");
                     data.remove("sitstill");
