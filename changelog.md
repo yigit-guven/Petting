@@ -1,5 +1,0 @@
-- Fixed `NoSuchFieldError: CREATIVE_MODE_TAB` by switching to more robust registry key referencing in `PettingModTabs.java`.
-- Verified and fixed `PoseStack` rendering imbalance in `PetInventoryScreen.java` by validating 1.20.1-compatible signatures.
-- Implemented `hideTamedBossBars` config option to correctly hide boss bars for tamed pets.
-- Fixed an issue where boss bars would reappear after a relog by implementing a tamed status synchronization system.
-- Improved overall mod stability during startup and screen transitions.
