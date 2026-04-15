@@ -161,4 +161,24 @@ public class PetInventoryUtil {
         return name.contains("ghast") || name.contains("bat") || name.contains("bee") || name.contains("parrot") || name.contains("vex") || 
                name.contains("ender_dragon") || name.contains("phantom");
     }
+
+    public static boolean isSwimmingMob(Entity entity) {
+        if (!(entity instanceof Mob mob)) return false;
+        
+        // 1. Navigation check
+        if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation) return true;
+        
+        // 2. Entity type check
+        if (mob instanceof net.minecraft.world.entity.animal.WaterAnimal) return true;
+        
+        // 3. Known aquatic mobs fallback
+        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        
+        if (net.yigitguven.petting.config.PettingConfig.MANUAL_SWIMMING_MOBS.get().contains(name)) {
+            return true;
+        }
+
+        return name.contains("fish") || name.contains("squid") || name.contains("dolphin") || name.contains("guardian") || 
+               name.contains("turtle") || name.contains("drowned") || name.contains("axolotl") || name.contains("glow_squid");
+    }
 }

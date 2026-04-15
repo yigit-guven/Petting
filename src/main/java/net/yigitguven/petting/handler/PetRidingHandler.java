@@ -109,12 +109,45 @@ public class PetRidingHandler {
         }
 
         boolean isFlying = PetInventoryUtil.isFlyingMob(pet);
+        boolean isSwimming = PetInventoryUtil.isSwimmingMob(pet) && pet.isInWater();
         
         if (isFlying) {
             handleFlightMovement(pet, player, forward, strafe, speed);
+        } else if (isSwimming) {
+            handleSwimmingMovement(pet, player, forward, strafe, speed);
         } else {
             handleLandMovement(pet, player, forward, strafe, speed);
         }
+    }
+
+    private static void handleSwimmingMovement(LivingEntity pet, Player player, float forward, float strafe, float speed) {
+        double vx = 0;
+        double vy = 0;
+        double vz = 0;
+
+        // 1. Vertical Movement (Space to Swim Up, S to Swim Down)
+        if (isJumping(player)) {
+            vy = 0.2; // Gentle swim up
+        } else if (forward < 0) {
+            vy = -0.2; // Gentle swim down
+        } else {
+            // Neutral buoyancy-ish: keep some downward momentum but slow it
+            vy = pet.getDeltaMovement().y * 0.5;
+        }
+
+        // 2. Horizontal Movement
+        float horizontalForward = Math.max(0, forward); 
+        if (horizontalForward != 0 || strafe != 0) {
+            Vec3 moveVec = new Vec3(strafe, 0, horizontalForward).yRot(-player.getYRot() * ((float)Math.PI / 180F)).normalize().scale(speed * PettingConfig.SWIMMING_RIDING_SPEED_MULTIPLIER.get());
+            vx = moveVec.x;
+            vz = moveVec.z;
+        } else {
+            // Slow down horizontally when no input
+            vx = pet.getDeltaMovement().x * 0.8;
+            vz = pet.getDeltaMovement().z * 0.8;
+        }
+
+        pet.setDeltaMovement(vx, vy, vz);
     }
 
     private static void handleFlightMovement(LivingEntity pet, Player player, float forward, float strafe, float speed) {

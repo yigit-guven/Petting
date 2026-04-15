@@ -31,6 +31,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue HIDE_TAMED_BOSSBARS;
     public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> MANUAL_FLYING_MOBS;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> MANUAL_SWIMMING_MOBS;
     public static final ForgeConfigSpec.BooleanValue PREVENT_PET_TO_OWNER_DAMAGE;
 
 
@@ -39,6 +40,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue MOUNT_REQUIRE_SADDLE;
     public static final ForgeConfigSpec.DoubleValue LAND_RIDING_SPEED_MULTIPLIER;
     public static final ForgeConfigSpec.DoubleValue FLYING_RIDING_SPEED_MULTIPLIER;
+    public static final ForgeConfigSpec.DoubleValue SWIMMING_RIDING_SPEED_MULTIPLIER;
     public static final ForgeConfigSpec.BooleanValue RIDING_WHITELIST_ONLY;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> RIDING_WHITELIST;
     public static final ForgeConfigSpec.BooleanValue RIDING_BLACKLIST_ENABLED;
@@ -144,6 +146,8 @@ public class PettingConfig {
                 .defineInRange("maxPetsPerPlayer", -1, -1, 10000);
         MANUAL_FLYING_MOBS = BUILDER.comment("List of entity IDs that should be manually treated as flying mobs. Use this to enable 3D flight controls (Space/S) for mobs the mod doesn't automatically detect.")
                 .defineListAllowEmpty("manualFlyingMobs", List.of(), obj -> obj instanceof String);
+        MANUAL_SWIMMING_MOBS = BUILDER.comment("List of entity IDs that should be manually treated as swimming mobs. Use this to enable 3D swimming controls (Space/S) for mobs the mod doesn't automatically detect.")
+                .defineListAllowEmpty("manualSwimmingMobs", List.of(), obj -> obj instanceof String);
         PREVENT_PET_TO_OWNER_DAMAGE = BUILDER.comment("If true, tamed pets cannot damage their owners (including accidental projectile damage).")
                 .define("preventPetToOwnerDamage", true);
         BUILDER.pop();
@@ -157,6 +161,8 @@ public class PettingConfig {
                 .defineInRange("landRidingSpeedMultiplier", 1.0, 0.0, 10.0);
         FLYING_RIDING_SPEED_MULTIPLIER = BUILDER.comment("Multiplier for movement speed while riding flying mobs. 1.0 is default.")
                 .defineInRange("flyingRidingSpeedMultiplier", 1.0, 0.0, 10.0);
+        SWIMMING_RIDING_SPEED_MULTIPLIER = BUILDER.comment("Multiplier for movement speed while riding swimming mobs. 1.0 is default.")
+                .defineInRange("swimmingRidingSpeedMultiplier", 1.0, 0.0, 10.0);
         RIDING_WHITELIST_ONLY = BUILDER.comment("If true, only mobs in 'ridingWhitelist' can be ridden by players.")
                 .define("ridingWhitelistOnly", false);
         RIDING_WHITELIST = BUILDER.comment("List of entity IDs specifically allowed to be ridden. Example: [\"minecraft:ravager\"]")

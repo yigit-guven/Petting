@@ -1,0 +1,1 @@
+- Added 3D swimming movement support for ridden aquatic pets (Space to swim up, S to swim down).
