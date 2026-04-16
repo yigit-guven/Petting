@@ -22,6 +22,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraftforge.eventbus.api.Event;
+import net.yigitguven.petting.PettingMod;
+import net.yigitguven.petting.network.CancelBindingPacket;
 
 import java.util.UUID;
 
@@ -104,7 +106,7 @@ public class PetBedBindingHandler {
     }
 
     /**
-     * EVENT 2: AIR CLICK (Cancel)
+     * EVENT 2: AIR CLICK (Item in hand)
      */
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
@@ -112,9 +114,38 @@ public class PetBedBindingHandler {
         if (player.isSecondaryUseActive()) return;
         
         // If clicking air while binding, cancel it
+        if (event.getLevel().isClientSide()) {
+            // Client sends packet because it can't see the binding NBT
+            PettingMod.PACKET_HANDLER.sendToServer(new CancelBindingPacket());
+        } else if (player.getPersistentData().getBoolean(TAG_BINDING_MODE)) {
+            // Server handles it directly if it's the one receiving the event
+            handleMenuCancellation(player);
+        }
+    }
+
+    /**
+     * EVENT 4: EMPTY AIR CLICK (Empty hand, Client Side Only)
+     */
+    @SubscribeEvent
+    public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
+        Player player = event.getEntity();
+        if (player.isSecondaryUseActive()) return;
+
+        // Since we can't easily check NBT on Client, we just send the packet 
+        // whenever the player right-clicks air. The server will ignore it if not in binding mode.
+        PettingMod.PACKET_HANDLER.sendToServer(new CancelBindingPacket());
+    }
+
+    /**
+     * Public helper to safely clear state and sync from both Packet and Event handlers
+     */
+    public static void handleMenuCancellation(Player player) {
         if (player.getPersistentData().getBoolean(TAG_BINDING_MODE)) {
             clearBindingState(player);
-            player.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
+                serverPlayer.containerMenu.broadcastFullState();
+            }
         }
     }
 

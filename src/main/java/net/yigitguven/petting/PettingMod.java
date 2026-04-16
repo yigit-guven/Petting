@@ -20,6 +20,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.yigitguven.petting.config.PettingConfig;
 import net.yigitguven.petting.network.OpenPetInventoryPacket;
+import net.yigitguven.petting.network.CancelBindingPacket;
 import net.yigitguven.petting.init.PettingModMenus;
 
 import net.minecraft.resources.ResourceLocation;
@@ -56,6 +57,7 @@ public class PettingMod {
         addNetworkMessage(OpenPetInventoryPacket.class, OpenPetInventoryPacket::toBytes, OpenPetInventoryPacket::new, OpenPetInventoryPacket::handle);
         addNetworkMessage(net.yigitguven.petting.network.PetAttackPacket.class, net.yigitguven.petting.network.PetAttackPacket::toBytes, net.yigitguven.petting.network.PetAttackPacket::new, net.yigitguven.petting.network.PetAttackPacket::handle);
         addNetworkMessage(net.yigitguven.petting.network.SyncPetStatusPacket.class, net.yigitguven.petting.network.SyncPetStatusPacket::toBytes, net.yigitguven.petting.network.SyncPetStatusPacket::new, net.yigitguven.petting.network.SyncPetStatusPacket::handle);
+        addNetworkMessage(CancelBindingPacket.class, CancelBindingPacket::toBytes, CancelBindingPacket::new, CancelBindingPacket::handle);
 		// End of user code block mod init
 	}
 
