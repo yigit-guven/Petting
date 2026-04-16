@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "petting:block/pet_bed" },
+    "facing=east": { "model": "petting:block/pet_bed", "y": 90 },
+    "facing=south": { "model": "petting:block/pet_bed", "y": 180 },
+    "facing=west": { "model": "petting:block/pet_bed", "y": 270 }
+  }
+}

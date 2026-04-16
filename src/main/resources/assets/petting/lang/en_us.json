@@ -7,5 +7,6 @@
   "item.petting.teleport_orb": "Teleport Orb",
   "item.petting.teleport_orb.tooltip": "Right-click an owned pet to cycle teleportation distance (10-100 blocks).",
   "item.petting.follow_whistle": "Follow Whistle",
-  "item.petting.follow_whistle.tooltip": "Right-click an owned pet to cycle follow distance (5-50 blocks)."
+  "item.petting.follow_whistle.tooltip": "Right-click an owned pet to cycle follow distance (5-50 blocks).",
+  "block.petting.pet_bed": "Pet Bed"
 }

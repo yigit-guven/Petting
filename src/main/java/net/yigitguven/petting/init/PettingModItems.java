@@ -19,11 +19,13 @@ public class PettingModItems {
 	public static final RegistryObject<Item> PET_TETHER;
 	public static final RegistryObject<Item> TELEPORT_ORB;
 	public static final RegistryObject<Item> FOLLOW_WHISTLE;
+	public static final RegistryObject<Item> PET_BED;
 
 	static {
 		GOLDEN_WHEAT = REGISTRY.register("golden_wheat", GoldenWheatItem::new);
 		PET_TETHER = REGISTRY.register("pet_tether", PetTetherItem::new);
 		TELEPORT_ORB = REGISTRY.register("teleport_orb", net.yigitguven.petting.item.TeleportOrbItem::new);
 		FOLLOW_WHISTLE = REGISTRY.register("follow_whistle", net.yigitguven.petting.item.FollowWhistleItem::new);
+		PET_BED = REGISTRY.register("pet_bed", () -> new net.minecraft.world.item.BlockItem(net.yigitguven.petting.init.PettingModBlocks.PET_BED.get(), new net.minecraft.world.item.Item.Properties()));
 	}
 }

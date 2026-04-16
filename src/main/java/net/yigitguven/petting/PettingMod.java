@@ -48,6 +48,7 @@ public class PettingMod {
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus bus = context.getModEventBus();
 		PettingModItems.REGISTRY.register(bus);
+		net.yigitguven.petting.init.PettingModBlocks.REGISTRY.register(bus);
 		PettingModTabs.REGISTRY.register(bus);
 		PettingModMenus.REGISTRY.register(bus);
 		net.yigitguven.petting.init.PettingModAttributes.REGISTRY.register(bus);
