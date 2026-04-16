@@ -22,6 +22,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.yigitguven.petting.PettingMod;
 import net.yigitguven.petting.network.CancelBindingPacket;
 
@@ -152,7 +153,7 @@ public class PetBedBindingHandler {
     /**
      * EVENT 3: ENTITY CLICK (The Binding Logic)
      */
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (event.getLevel().isClientSide()) return;
         if (event.getHand() != InteractionHand.MAIN_HAND) return;

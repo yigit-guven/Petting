@@ -281,6 +281,9 @@ public class PetAttackLogic {
 
             Player owner = getOwner(petMob);
             if (attacker == owner) { 
+                if (PettingConfig.ALLOW_OWNER_TO_HURT_PETS.get()) {
+                    return; // Allow damage to proceed
+                }
                 petMob.setTarget(null);
                 petMob.setLastHurtByMob(null);
                 event.setCanceled(true); // Also cancel owner damaging their own pet

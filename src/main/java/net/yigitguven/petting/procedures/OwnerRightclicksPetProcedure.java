@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
 public class OwnerRightclicksPetProcedure {
     @SubscribeEvent
     public static void onRightClickEntity(PlayerInteractEvent.EntityInteract event) {
+        if (event.isCanceled())
+            return;
         if (event.getHand() != InteractionHand.MAIN_HAND)
             return;
         Entity target = event.getTarget();

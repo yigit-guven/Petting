@@ -33,6 +33,7 @@ public class PettingConfig {
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> MANUAL_FLYING_MOBS;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> MANUAL_SWIMMING_MOBS;
     public static final ForgeConfigSpec.BooleanValue PREVENT_PET_TO_OWNER_DAMAGE;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_OWNER_TO_HURT_PETS;
 
 
     // --- Pet Riding Settings ---
@@ -150,6 +151,8 @@ public class PettingConfig {
                 .defineListAllowEmpty("manualSwimmingMobs", List.of(), obj -> obj instanceof String);
         PREVENT_PET_TO_OWNER_DAMAGE = BUILDER.comment("If true, tamed pets cannot damage their owners (including accidental projectile damage).")
                 .define("preventPetToOwnerDamage", true);
+        ALLOW_OWNER_TO_HURT_PETS = BUILDER.comment("If true, players can damage and kill their own pets. If false, pets are protected from their owner's attacks.")
+                .define("allowOwnerToHurtPets", false);
         BUILDER.pop();
 
         BUILDER.push("Pet Riding Settings");
