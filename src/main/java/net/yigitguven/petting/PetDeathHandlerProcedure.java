@@ -57,15 +57,25 @@ public class PetDeathHandlerProcedure {
                 // A. Cancel Death
                 event.setCanceled(true);
 
-                // B. Heal Fully
+                // B. Heal Fully & Reset Combat State
                 mob.setHealth(mob.getMaxHealth());
                 mob.removeAllEffects(); 
+                mob.setTarget(null);
+                mob.setLastHurtByMob(null);
 
                 // C. Teleport to Bed
                 mob.teleportTo(respawnPos.getX() + 0.5, respawnPos.getY(), respawnPos.getZ() + 0.5);
                 
-                // D. Force Sit
+                // D. Force Sit & Refresh AI State
                 data.putBoolean("sitstill", true);
+                data.putBoolean("waiting", false);
+                data.putBoolean("freewander", false);
+                
+                if (mob instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                    tamable.setOrderedToSit(true);
+                }
+                
+                mob.setShiftKeyDown(true); // Visual sitting for non-vanilla mobs
                 mob.getNavigation().stop();
                 mob.setDeltaMovement(0, 0, 0);
 
