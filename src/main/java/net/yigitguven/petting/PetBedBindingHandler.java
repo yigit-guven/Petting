@@ -19,6 +19,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraftforge.eventbus.api.Event;
+
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -51,11 +55,18 @@ public class PetBedBindingHandler {
 
         // SCENARIO A: Clicking a Pet Bed (Start Binding)
         if (blockId.contains("pet_bed")) {
-            // Cancel event on both sides to prevent placement prediction
+            // Cancel and deny on both sides to prevent placement prediction
             event.setCanceled(true); 
+            event.setUseItem(Event.Result.DENY);
+            event.setUseBlock(Event.Result.DENY);
 
             if (world.isClientSide()) return;
             
+            // Force inventory sync to be safe
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.containerMenu.broadcastFullState();
+            }
+
             // Save Coordinates to Player
             playerNBT.putBoolean(TAG_BINDING_MODE, true);
             playerNBT.putDouble(TAG_BED_X, pos.getX());
@@ -75,10 +86,17 @@ public class PetBedBindingHandler {
         }
 
         if (isBinding) {
-            // Cancel event on both sides to prevent placement prediction
+            // Cancel and deny on both sides to prevent placement prediction
             event.setCanceled(true); 
+            event.setUseItem(Event.Result.DENY);
+            event.setUseBlock(Event.Result.DENY);
 
             if (world.isClientSide()) return;
+
+            // Force immediate inventory sync to clear ghost items on client
+            if (player instanceof ServerPlayer serverPlayer) {
+                serverPlayer.containerMenu.broadcastFullState();
+            }
 
             clearBindingState(player);
             player.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
