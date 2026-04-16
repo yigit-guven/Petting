@@ -34,10 +34,11 @@ public class PetBedBindingHandler {
      */
     @SubscribeEvent
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getLevel().isClientSide()) return;
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
 
         Player player = event.getEntity();
+        if (player.isSecondaryUseActive()) return;
+
         Level world = event.getLevel();
         BlockPos pos = event.getPos();
         
@@ -50,6 +51,11 @@ public class PetBedBindingHandler {
 
         // SCENARIO A: Clicking a Pet Bed (Start Binding)
         if (blockId.contains("pet_bed")) {
+            // Cancel event on both sides to prevent placement prediction
+            event.setCanceled(true); 
+
+            if (world.isClientSide()) return;
+            
             // Save Coordinates to Player
             playerNBT.putBoolean(TAG_BINDING_MODE, true);
             playerNBT.putDouble(TAG_BED_X, pos.getX());
@@ -68,8 +74,12 @@ public class PetBedBindingHandler {
             return;
         }
 
-        // SCENARIO B: Clicking any OTHER block while Binding is active (Cancel)
         if (isBinding) {
+            // Cancel event on both sides to prevent placement prediction
+            event.setCanceled(true); 
+
+            if (world.isClientSide()) return;
+
             clearBindingState(player);
             player.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
         }
@@ -80,8 +90,8 @@ public class PetBedBindingHandler {
      */
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
-        if (event.getLevel().isClientSide()) return;
         Player player = event.getEntity();
+        if (player.isSecondaryUseActive()) return;
         
         // If clicking air while binding, cancel it
         if (player.getPersistentData().getBoolean(TAG_BINDING_MODE)) {
