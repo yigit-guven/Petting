@@ -15,6 +15,7 @@ public class PettingModItems {
 	public static final DeferredItem<Item> PET_TETHER = REGISTRY.register("pet_tether", () -> new PetTetherItem());
 	public static final DeferredItem<Item> TELEPORT_ORB = REGISTRY.register("teleport_orb", () -> new net.yigitguven.petting.item.TeleportOrbItem());
 	public static final DeferredItem<Item> FOLLOW_WHISTLE = REGISTRY.register("follow_whistle", () -> new net.yigitguven.petting.item.FollowWhistleItem());
+	public static final DeferredItem<Item> PET_BED = REGISTRY.register("pet_bed", () -> new net.minecraft.world.item.BlockItem(net.yigitguven.petting.init.PettingModBlocks.PET_BED.get(), new Item.Properties()));
 }
 
 

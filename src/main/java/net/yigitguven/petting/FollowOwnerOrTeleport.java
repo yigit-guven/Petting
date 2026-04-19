@@ -34,8 +34,8 @@ public class FollowOwnerOrTeleport {
     @SubscribeEvent
     public static void clientLoad(FMLClientSetupEvent event) {}
 
-    @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)
-    private static class FollowOwnerOrTeleportForgeBusEvents {
+    @EventBusSubscriber
+    public static class FollowOwnerOrTeleportForgeBusEvents {
         
         @SubscribeEvent
         public static void serverLoad(ServerStartingEvent event) {}

@@ -42,11 +42,51 @@ public class PettingConfig {
     public static final ModConfigSpec.DoubleValue TAME_CHANCE;
     public static final ModConfigSpec.BooleanValue HEALTH_SCALES_TAMING_CHANCE;
 
+    public static final ModConfigSpec.BooleanValue SIT_HEAL_ENABLED;
     public static final ModConfigSpec.DoubleValue SIT_HEAL_AMOUNT;
     public static final ModConfigSpec.IntValue SIT_HEAL_INTERVAL;
     public static final ModConfigSpec.DoubleValue FOLLOW_DISTANCE;
     public static final ModConfigSpec.DoubleValue TELEPORT_DISTANCE;
     public static final ModConfigSpec.DoubleValue BOUND_ROAM_RADIUS;
+
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> MANUAL_FLYING_MOBS;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> MANUAL_SWIMMING_MOBS;
+    public static final ModConfigSpec.BooleanValue PREVENT_PET_TO_OWNER_DAMAGE;
+    public static final ModConfigSpec.BooleanValue ALLOW_OWNER_TO_HURT_PETS;
+
+    public static final ModConfigSpec.BooleanValue ALLOW_PET_RIDING;
+    public static final ModConfigSpec.BooleanValue MOUNT_REQUIRE_SADDLE;
+    public static final ModConfigSpec.DoubleValue LAND_RIDING_SPEED_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue FLYING_RIDING_SPEED_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue SWIMMING_RIDING_SPEED_MULTIPLIER;
+    public static final ModConfigSpec.BooleanValue RIDING_WHITELIST_ONLY;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> RIDING_WHITELIST;
+    public static final ModConfigSpec.BooleanValue RIDING_BLACKLIST_ENABLED;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> RIDING_BLACKLIST;
+    public static final ModConfigSpec.BooleanValue ALLOW_PET_ATTACK_WHILE_RIDING;
+
+    public static final ModConfigSpec.DoubleValue PET_BASE_ARMOR;
+    public static final ModConfigSpec.DoubleValue PET_BASE_ARMOR_TOUGHNESS;
+
+    public static final ModConfigSpec.DoubleValue PET_PORTRAIT_RENDER_SCALE;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> EXTRA_EQUIPPABLE_MOBS;
+    public static final ModConfigSpec.BooleanValue ALWAYS_SHOW_EQUIPMENT_SLOTS;
+    public static final ModConfigSpec.BooleanValue INVENTORY_WHITELIST_ONLY;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> INVENTORY_WHITELIST;
+    public static final ModConfigSpec.BooleanValue INVENTORY_BLACKLIST_ENABLED;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> INVENTORY_BLACKLIST;
+
+    public static final ModConfigSpec.ConfigValue<String> STATUS_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> AGGRESSION_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> DEFENSE_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> GUARD_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> FOLLOW_DIST_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> TELEPORT_DIST_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> WHISTLE_RESPONSE_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> TETHER_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> RELEASE_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> GLOBAL_WHISTLE_TOOL_ID;
+    public static final ModConfigSpec.ConfigValue<String> TAMING_ITEM_ID;
 
     public enum ControlScheme {
         RIGHT_CLICK_SIT_SHIFT_WAIT,
@@ -117,6 +157,10 @@ public class PettingConfig {
 
         BUILDER.push("Behavior & AI Settings");
 
+        SIT_HEAL_ENABLED = BUILDER
+                .comment("If true, sitting pets will slowly regenerate health.")
+                .define("sitHealEnabled", true);
+
         SIT_HEAL_AMOUNT = BUILDER
                 .comment("Amount of health (in half-hearts) a sitting pet regenerates.")
                 .defineInRange("sitHealAmount", 1.0, 0.0, 100.0);
@@ -136,6 +180,99 @@ public class PettingConfig {
         BOUND_ROAM_RADIUS = BUILDER
                 .comment("Radius (in blocks) the pet will roam around its bound coordinate.")
                 .defineInRange("boundRoamRadius", 10.0, 1.0, 100.0);
+
+        MANUAL_FLYING_MOBS = BUILDER
+                .comment("List of entity ids to manually treat as flying mobs for 3D flight control.")
+                .defineListAllowEmpty("manualFlyingMobs", List.of(), obj -> obj instanceof String);
+
+        MANUAL_SWIMMING_MOBS = BUILDER
+                .comment("List of entity ids to manually treat as swimming mobs for 3D swimming control.")
+                .defineListAllowEmpty("manualSwimmingMobs", List.of(), obj -> obj instanceof String);
+
+        PREVENT_PET_TO_OWNER_DAMAGE = BUILDER
+                .comment("If true, pets cannot damage their owners.")
+                .define("preventPetToOwnerDamage", true);
+
+        ALLOW_OWNER_TO_HURT_PETS = BUILDER
+                .comment("If false, owners cannot damage their own pets.")
+                .define("allowOwnerToHurtPets", false);
+
+        BUILDER.pop();
+
+        BUILDER.push("Pet Riding Settings");
+
+        ALLOW_PET_RIDING = BUILDER
+                .comment("If true, players can ride their pets.")
+                .define("allowPetRiding", true);
+
+        MOUNT_REQUIRE_SADDLE = BUILDER
+                .comment("If true, a saddle in the pet inventory is required to ride.")
+                .define("mountRequireSaddle", false);
+
+        LAND_RIDING_SPEED_MULTIPLIER = BUILDER
+                .comment("Speed multiplier while riding ground pets.")
+                .defineInRange("landRidingSpeedMultiplier", 1.0, 0.0, 10.0);
+
+        FLYING_RIDING_SPEED_MULTIPLIER = BUILDER
+                .comment("Speed multiplier while riding flying pets.")
+                .defineInRange("flyingRidingSpeedMultiplier", 1.0, 0.0, 10.0);
+
+        SWIMMING_RIDING_SPEED_MULTIPLIER = BUILDER
+                .comment("Speed multiplier while riding swimming pets.")
+                .defineInRange("swimmingRidingSpeedMultiplier", 1.0, 0.0, 10.0);
+
+        RIDING_WHITELIST_ONLY = BUILDER
+                .comment("If true, only whitelisted mobs can be ridden.")
+                .define("ridingWhitelistOnly", false);
+
+        RIDING_WHITELIST = BUILDER
+                .defineListAllowEmpty("ridingWhitelist", List.of(), obj -> obj instanceof String);
+
+        RIDING_BLACKLIST_ENABLED = BUILDER
+                .define("ridingBlacklistEnabled", false);
+
+        RIDING_BLACKLIST = BUILDER
+                .defineListAllowEmpty("ridingBlacklist", List.of(), obj -> obj instanceof String);
+
+        ALLOW_PET_ATTACK_WHILE_RIDING = BUILDER
+                .comment("If true, pets can perform attacks (like fireballs) while being ridden via left-click.")
+                .define("allowPetAttackWhileRiding", true);
+
+        BUILDER.pop();
+
+        BUILDER.push("Pet Stat Settings");
+
+        PET_BASE_ARMOR = BUILDER
+                .defineInRange("petBaseArmor", 0.0, 0.0, 100.0);
+
+        PET_BASE_ARMOR_TOUGHNESS = BUILDER
+                .defineInRange("petBaseArmorToughness", 0.0, 0.0, 100.0);
+
+        BUILDER.pop();
+
+        BUILDER.push("Pet Inventory Settings");
+
+        PET_PORTRAIT_RENDER_SCALE = BUILDER
+                .defineInRange("petPortraitRenderScale", 45.0, 1.0, 500.0);
+
+        EXTRA_EQUIPPABLE_MOBS = BUILDER
+                .comment("Force these mobs to show armor/hand slots.")
+                .defineListAllowEmpty("extraEquippableMobs", List.of(), obj -> obj instanceof String);
+
+        ALWAYS_SHOW_EQUIPMENT_SLOTS = BUILDER
+                .define("alwaysShowEquipmentSlots", false);
+
+        INVENTORY_WHITELIST_ONLY = BUILDER
+                .define("inventoryWhitelistOnly", false);
+
+        INVENTORY_WHITELIST = BUILDER
+                .defineListAllowEmpty("inventoryWhitelist", List.of(), obj -> obj instanceof String);
+
+        INVENTORY_BLACKLIST_ENABLED = BUILDER
+                .define("inventoryBlacklistEnabled", false);
+
+        INVENTORY_BLACKLIST = BUILDER
+                .defineListAllowEmpty("inventoryBlacklist", List.of(), obj -> obj instanceof String);
 
         BUILDER.pop();
 
@@ -197,6 +334,31 @@ public class PettingConfig {
 
         BUILDER.pop();
 
+        BUILDER.push("Tool Settings");
+        STATUS_TOOL_ID = BUILDER.comment("Item ID for Status/AI Mode cycling. Default: minecraft:stick")
+                .define("statusTool", "minecraft:stick");
+        AGGRESSION_TOOL_ID = BUILDER.comment("Item ID for Aggressive Mode toggling. Default: minecraft:iron_sword")
+                .define("aggressionTool", "minecraft:iron_sword");
+        DEFENSE_TOOL_ID = BUILDER.comment("Item ID for Self-Defense toggling. Default: minecraft:shield")
+                .define("defenseTool", "minecraft:shield");
+        GUARD_TOOL_ID = BUILDER.comment("Item ID for Guard Mode toggling. Default: minecraft:cookie")
+                .define("guardTool", "minecraft:cookie");
+        FOLLOW_DIST_TOOL_ID = BUILDER.comment("Item ID for Follow Distance cycling. Default: petting:follow_whistle")
+                .define("followDistTool", "petting:follow_whistle");
+        TELEPORT_DIST_TOOL_ID = BUILDER.comment("Item ID for Teleport Distance cycling. Default: petting:teleport_orb")
+                .define("teleportDistTool", "petting:teleport_orb");
+        WHISTLE_RESPONSE_TOOL_ID = BUILDER.comment("Item ID for Whistle Response toggling. Default: minecraft:clock")
+                .define("whistleTool", "minecraft:clock");
+        TETHER_TOOL_ID = BUILDER.comment("Item ID for Tethering/Binding. Default: petting:pet_tether")
+                .define("tetherTool", "petting:pet_tether");
+        RELEASE_TOOL_ID = BUILDER.comment("Item ID for Releasing pets. Default: minecraft:shears")
+                .define("releaseTool", "minecraft:shears");
+        GLOBAL_WHISTLE_TOOL_ID = BUILDER.comment("Item ID for the Global Follow Whistle. Default: minecraft:goat_horn")
+                .define("globalWhistleTool", "minecraft:goat_horn");
+        TAMING_ITEM_ID = BUILDER.comment("Item ID for the primary Taming Item. Default: petting:golden_wheat")
+                .define("tamingItem", "petting:golden_wheat");
+        BUILDER.pop();
+
         BUILDER.push("Whitelist Settings");
 
         WHITELIST_ONLY = BUILDER
@@ -221,7 +383,7 @@ public class PettingConfig {
 
         BUILDER.pop();
 
-        BUILDER.push("Custom Item Settings");
+        BUILDER.push("Custom Taming Settings");
 
         CUSTOM_TAMING_ITEMS = BUILDER
                 .comment("Map custom taming items to specific mobs. Format: entity_registry|item_registry. Example: [\"minecraft:zombie|minecraft:bone\"]")
@@ -242,7 +404,3 @@ public class PettingConfig {
         SPEC = BUILDER.build();
     }
 }
-
-
-
-

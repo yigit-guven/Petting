@@ -1,2 +1,5 @@
-- Fixed a server-side crash during mod loading (`ClassNotFoundException: Screen`). This was caused by client-only GUI registration in the mod constructor. The fix now properly isolates client-side code in a separate registration class.
-- Fixed all crafting recipes (Pet Tether, Golden Wheat, etc.) failing to load on 1.21.1 due to the new `result.id` JSON format requirements.
+- **Critical Crash**: Resolved a `NullPointerException` when opening the Creative Inventory caused by a registration race condition between blocks and items.
+- **Improved Stability**: Added defensive checks to the creative tab to ensure the game doesn't crash if an item fails to register for any reason.
+- **Internal**: Reordered mod registry initialization to follow Forge best practices for block-item dependency.
+
+**Full Changelog**: https://github.com/yigit-guven/Petting/compare/4.2.1...4.2.2

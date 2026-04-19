@@ -30,8 +30,8 @@ public class PetAttackLogic {
     @SubscribeEvent
     public static void init(FMLCommonSetupEvent event) { new PetAttackLogic(); }
 
-    @EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)
-    private static class PetAttackLogicForgeBusEvents {
+    @EventBusSubscriber
+    public static class PetAttackLogicForgeBusEvents {
 
         @SubscribeEvent
         public static void onTargetChange(LivingChangeTargetEvent event) {
@@ -191,25 +191,14 @@ public class PetAttackLogic {
                         // BOSSBAR DELETION (Reflection)
                         if (PettingConfig.HIDE_TAMED_BOSSBARS.get()) {
                             try {
-                                Field bossEventField = net.minecraft.world.entity.boss.wither.WitherBoss.class.getDeclaredField("f_31427_"); // SRG name for 'bossEvent'
+                                java.lang.reflect.Field bossEventField = net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.boss.wither.WitherBoss.class, "bossEvent");
                                 bossEventField.setAccessible(true);
-                                ServerBossEvent bossEvent = (ServerBossEvent) bossEventField.get(wither);
+                                net.minecraft.server.level.ServerBossEvent bossEvent = (net.minecraft.server.level.ServerBossEvent) bossEventField.get(wither);
                                 if (bossEvent != null) {
                                     bossEvent.removeAllPlayers();
                                     bossEvent.setVisible(false);
                                 }
-                            } catch (Exception ignored) {
-                                // Fallback reflection using standard Obfuscation naming just in case
-                                try {
-                                    Field bossEventField = net.minecraft.world.entity.boss.wither.WitherBoss.class.getDeclaredField("bossEvent");
-                                    bossEventField.setAccessible(true);
-                                    ServerBossEvent bossEvent = (ServerBossEvent) bossEventField.get(wither);
-                                    if (bossEvent != null) {
-                                        bossEvent.removeAllPlayers();
-                                        bossEvent.setVisible(false);
-                                    }
-                                } catch (Exception ignored2) {}
-                            }
+                            } catch (Exception ignored) {}
                         }
                     }
                 }
@@ -261,10 +250,12 @@ public class PetAttackLogic {
 
             Player owner = getOwner(petMob);
             if (attacker == owner) { 
-                petMob.setTarget(null);
-                petMob.setLastHurtByMob(null);
-                event.setNewDamage(0.0f); // Also cancel owner damaging their own pet
-                return; 
+                if (!net.yigitguven.petting.config.PettingConfig.ALLOW_OWNER_TO_HURT_PETS.get()) {
+                    petMob.setTarget(null);
+                    petMob.setLastHurtByMob(null);
+                    event.setNewDamage(0.0f);
+                    return; 
+                }
             }
 
             boolean attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked");

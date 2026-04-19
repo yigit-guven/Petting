@@ -1,0 +1,27 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "wi ",
+        "ili",
+        " g "
+    ],
+    "key": {
+        "i": {
+            "item": "minecraft:iron_ingot"
+        },
+        "l": {
+            "item": "minecraft:lead"
+        },
+        "g": {
+            "item": "minecraft:glowstone_dust"
+        },
+        "w": {
+            "item": "minecraft:blue_wool"
+        }
+    },
+    "result": {
+        "item": "petting:pet_tether",
+        "count": 1
+    }
+}

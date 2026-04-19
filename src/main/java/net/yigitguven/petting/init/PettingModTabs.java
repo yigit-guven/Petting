@@ -18,6 +18,7 @@ public class PettingModTabs {
 				tabData.accept(PettingModItems.PET_TETHER.get());
 				tabData.accept(PettingModItems.TELEPORT_ORB.get());
 				tabData.accept(PettingModItems.FOLLOW_WHISTLE.get());
+				tabData.accept(PettingModItems.PET_BED.get());
 			}).withSearchBar().build());
 }
 

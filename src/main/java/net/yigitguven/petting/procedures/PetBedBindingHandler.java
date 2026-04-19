@@ -33,7 +33,7 @@ public class PetBedBindingHandler {
     /**
      * EVENT 1: BLOCK CLICK (Trigger Binding Mode OR Cancel)
      */
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         if (event.getLevel().isClientSide()) return;
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
@@ -94,7 +94,7 @@ public class PetBedBindingHandler {
     /**
      * EVENT 3: ENTITY CLICK (The Binding Logic)
      */
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST)
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (event.getLevel().isClientSide()) return;
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
@@ -154,6 +154,11 @@ public class PetBedBindingHandler {
         // Always clear state and consume the click so we don't sit on the pet
         clearBindingState(player);
         event.setCanceled(true); 
+    }
+
+    public static void handleMenuCancellation(Player player) {
+        clearBindingState(player);
+        player.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
     }
 
     private static void clearBindingState(Player player) {

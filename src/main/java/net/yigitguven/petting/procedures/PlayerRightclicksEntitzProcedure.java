@@ -1,15 +1,12 @@
 package net.yigitguven.petting.procedures;
 
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.bus.api.Event;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.InteractionHand;
-
-import javax.annotation.Nullable;
+import net.minecraft.world.InteractionResult;
 
 @EventBusSubscriber
 public class PlayerRightclicksEntitzProcedure {
@@ -17,25 +14,17 @@ public class PlayerRightclicksEntitzProcedure {
 	public static void onRightClickEntity(PlayerInteractEvent.EntityInteract event) {
 		if (event.getHand() != InteractionHand.MAIN_HAND)
 			return;
-		execute(event, event.getTarget(), event.getEntity());
-	}
+        
+        Entity target = event.getTarget();
+        if (target instanceof net.neoforged.neoforge.entity.PartEntity<?> part) {
+            target = part.getParent();
+        }
+		
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
 
-	public static void execute(Entity entity, Entity sourceentity) {
-		execute(null, entity, sourceentity);
-	}
-
-	private static void execute(@Nullable Event event, Entity entity, Entity sourceentity) {
-		if (entity == null || sourceentity == null)
-			return;
-		if (GoldenWheatRightclickedProcedure.execute(entity, sourceentity)) {
-			if (event instanceof PlayerInteractEvent.EntityInteract interactEvent) {
-				interactEvent.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
-				if (event instanceof net.neoforged.bus.api.ICancellableEvent _c) _c.setCanceled(true);
-			} else if (event instanceof net.neoforged.bus.api.ICancellableEvent _cx) _cx.setCanceled(true);
+		if (GoldenWheatRightclickedProcedure.execute(target, event.getEntity())) {
+			event.setCancellationResult(InteractionResult.SUCCESS);
+			event.setCanceled(true);
 		}
 	}
 }
-
-
-
-

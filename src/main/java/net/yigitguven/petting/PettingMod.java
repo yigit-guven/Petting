@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 
 import net.yigitguven.petting.init.PettingModTabs;
 import net.yigitguven.petting.init.PettingModItems;
+import net.yigitguven.petting.init.PettingModBlocks;
 import net.yigitguven.petting.init.PettingModAttributes;
 
 import net.neoforged.fml.common.Mod;
@@ -38,8 +39,29 @@ public class PettingMod {
 		}
 
 		PettingModItems.REGISTRY.register(modEventBus);
+		PettingModBlocks.REGISTRY.register(modEventBus);
+		net.yigitguven.petting.init.PettingModMenus.REGISTRY.register(modEventBus);
+		net.yigitguven.petting.init.PettingModAttachments.REGISTRY.register(modEventBus);
 		PettingModTabs.REGISTRY.register(modEventBus);
 		PettingModAttributes.REGISTRY.register(modEventBus);
+
+		modEventBus.addListener(this::registerPayloads);
+
+		if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+			net.yigitguven.petting.client.PettingClientRegistration.register(modEventBus);
+		}
+
+		// Register to NeoForge event bus for ServerTickEvent
+		net.neoforged.neoforge.common.NeoForge.EVENT_BUS.register(this);
+	}
+
+	private void registerPayloads(final net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent event) {
+		final net.neoforged.neoforge.network.registration.PayloadRegistrar registrar = event.registrar(PettingMod.MODID).versioned("1.0");
+		
+		registrar.playToClient(net.yigitguven.petting.network.SyncPetStatusPayload.TYPE, net.yigitguven.petting.network.SyncPetStatusPayload.STREAM_CODEC, net.yigitguven.petting.network.SyncPetStatusPayload::handle);
+		registrar.playToServer(net.yigitguven.petting.network.OpenPetInventoryPayload.TYPE, net.yigitguven.petting.network.OpenPetInventoryPayload.STREAM_CODEC, net.yigitguven.petting.network.OpenPetInventoryPayload::handle);
+		registrar.playToServer(net.yigitguven.petting.network.PetAttackPayload.TYPE, net.yigitguven.petting.network.PetAttackPayload.STREAM_CODEC, net.yigitguven.petting.network.PetAttackPayload::handle);
+		registrar.playToServer(net.yigitguven.petting.network.CancelBindingPayload.TYPE, net.yigitguven.petting.network.CancelBindingPayload.STREAM_CODEC, net.yigitguven.petting.network.CancelBindingPayload::handle);
 	}
 
 	private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();
