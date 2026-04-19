@@ -1,10 +1,3 @@
-- **Pet Bed Block**: A fully functional custom block for your pets!
-    - **Pet Binding**: Right-click a Pet Bed to enter "Binding Mode," then right-click your pet to link them to that bed.
-    - **Respawn System**: Bound pets will now respawn at their bed upon death, fully healed and safely sitting.
-    - **Custom 3D Model**: Realistic pet bed design with proper paw-print transparency support.
-- **Friendly Fire Toggle**: Added `allowOwnerToHurtPets` to the config, allowing you to choose whether owners can damage their own pets.
-- **Air-Click Cancellation**: Added the ability to cancel "Binding Mode" simply by right-clicking the air.
-- **Interaction Priority**: Binding now correctly overrides default pet behaviors like sitting or standing.
-- **Ghost Inventory Issues**: Fixed several desync bugs where right-clicking with blocks in hand would consume items without placing them.
-- **Respawn AI Persistence**: Fixed a bug where pets would lose their "Following" or "Attacking" AI after respawning at a bed.
-- Added 3D swimming movement support for ridden aquatic pets (Space to swim up, S to swim down).
+- **Critical Crash**: Resolved a `NullPointerException` when opening the Creative Inventory caused by a registration race condition between blocks and items.
+- **Improved Stability**: Added defensive checks to the creative tab to ensure the game doesn't crash if an item fails to register for any reason.
+- **Internal**: Reordered mod registry initialization to follow Forge best practices for block-item dependency.

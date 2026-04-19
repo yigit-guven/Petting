@@ -17,10 +17,10 @@ public class PettingModTabs {
 	public static final DeferredRegister<CreativeModeTab> REGISTRY = DeferredRegister.create(BuiltInRegistries.CREATIVE_MODE_TAB.key(), PettingMod.MODID);
 	public static final RegistryObject<CreativeModeTab> PETTING = REGISTRY.register("petting",
 			() -> CreativeModeTab.builder().title(Component.translatable("item_group.petting.petting")).icon(() -> new ItemStack(PettingModItems.GOLDEN_WHEAT.get())).displayItems((parameters, tabData) -> {
-				tabData.accept(PettingModItems.GOLDEN_WHEAT.get());
-				tabData.accept(PettingModItems.PET_TETHER.get());
-				tabData.accept(PettingModItems.TELEPORT_ORB.get());
-				tabData.accept(PettingModItems.FOLLOW_WHISTLE.get());
-				tabData.accept(PettingModItems.PET_BED.get());
+				if (PettingModItems.GOLDEN_WHEAT.isPresent()) tabData.accept(PettingModItems.GOLDEN_WHEAT.get());
+				if (PettingModItems.PET_TETHER.isPresent()) tabData.accept(PettingModItems.PET_TETHER.get());
+				if (PettingModItems.TELEPORT_ORB.isPresent()) tabData.accept(PettingModItems.TELEPORT_ORB.get());
+				if (PettingModItems.FOLLOW_WHISTLE.isPresent()) tabData.accept(PettingModItems.FOLLOW_WHISTLE.get());
+				if (PettingModItems.PET_BED.isPresent()) tabData.accept(PettingModItems.PET_BED.get());
 			}).withSearchBar().build());
 }
