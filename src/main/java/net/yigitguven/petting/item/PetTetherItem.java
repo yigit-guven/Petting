@@ -11,7 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
 
-import java.util.List;
+import java.util.function.Consumer;
 
 public class PetTetherItem extends Item {
 	public PetTetherItem() {
@@ -19,9 +19,9 @@ public class PetTetherItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack itemstack, Item.TooltipContext context, List<Component> list, TooltipFlag flag) {
+	public void appendHoverText(ItemStack itemstack, Item.TooltipContext context, Consumer<Component> list, TooltipFlag flag) {
 		super.appendHoverText(itemstack, context, list, flag);
-		list.add(Component.translatable("item.petting.pet_tether.tooltip").withStyle(ChatFormatting.GRAY));
+		list.accept(Component.translatable("item.petting.pet_tether.tooltip").withStyle(ChatFormatting.GRAY));
 	}
 
 

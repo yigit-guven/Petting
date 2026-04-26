@@ -25,7 +25,7 @@ public class GoldenWheatRightclickedProcedure {
         if (entity == null || player == null) return false;
 
         long currentTime = entity.level().getGameTime();
-        long lastInteracted = entity.getPersistentData().getLong("pettingLastInteracted");
+        long lastInteracted = entity.getPersistentData().getLongOr("pettingLastInteracted", 0L);
         if (currentTime - lastInteracted < PettingConfig.INTERACTION_COOLDOWN.get()) {
             return false;
         }
@@ -83,7 +83,7 @@ public class GoldenWheatRightclickedProcedure {
             int currentPets = 0;
             for (Entity e : serverLevel.getAllEntities()) {
                 if (e instanceof Mob m && isCustomPet(m)) {
-                    String ownerStr = m.getPersistentData().getString("ownerUUID");
+                    String ownerStr = m.getPersistentData().getStringOr("ownerUUID", "");
                     if (ownerStr.equals(player.getStringUUID())) {
                         currentPets++;
                     }
@@ -118,7 +118,7 @@ public class GoldenWheatRightclickedProcedure {
                             int currentCatPets = 0;
                             for (Entity e : serverLevel.getAllEntities()) {
                                 if (e instanceof Mob m && isCustomPet(m)) {
-                                    String ownerStr = m.getPersistentData().getString("ownerUUID");
+                                    String ownerStr = m.getPersistentData().getStringOr("ownerUUID", "");
                                     if (ownerStr.equals(player.getStringUUID())) {
                                         ResourceLocation eKey = BuiltInRegistries.ENTITY_TYPE.getKey(m.getType());
                                         if (eKey != null && catMobs.contains(eKey.toString())) {
@@ -174,7 +174,7 @@ public class GoldenWheatRightclickedProcedure {
         boolean needsRespawn = false;
 
         CompoundTag data = entity.getPersistentData();
-        boolean isAlreadyCustomTamed = data.getBoolean("pettingtamed");
+        boolean isAlreadyCustomTamed = data.getBooleanOr("pettingtamed", false);
 
         if (!isAlreadyCustomTamed && rngPass) {
             if (entity instanceof TamableAnimal tamable) {
@@ -208,7 +208,7 @@ public class GoldenWheatRightclickedProcedure {
             player.swing(InteractionHand.MAIN_HAND, true);
 
             if (needsRespawn && world instanceof ServerLevel serverLevel) {
-                Entity newEntity = entity.getType().create(world);
+                Entity newEntity = entity.getType().create(serverLevel, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                 if (newEntity instanceof Mob newMob) {
                     newMob.setPos(entity.getX(), entity.getY(), entity.getZ());
                     newMob.setYRot(entity.getYRot());
@@ -284,7 +284,7 @@ public class GoldenWheatRightclickedProcedure {
     }
 
     private static boolean isCustomPet(Mob entity) {
-        return entity.getPersistentData().getBoolean("pettingtamed");
+        return entity.getPersistentData().getBooleanOr("pettingtamed", false);
     }
     
     private static class PleasantryHelper {

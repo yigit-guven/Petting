@@ -18,13 +18,8 @@ public class PetInventoryUtil {
     private static Method CAN_EQUIP_STACK_METHOD;
 
     static {
-        try {
-            // In 1.21.1, we try to find the method for checking if a mob can equip a stack
-            CAN_EQUIP_STACK_METHOD = ObfuscationReflectionHelper.findMethod(Mob.class, "canEquipStack", ItemStack.class);
-            CAN_EQUIP_STACK_METHOD.setAccessible(true);
-        } catch (Exception e) {
-            // Silently fail
-        }
+        // canEquipStack was removed in 1.21.4/1.21.5. Using static checks instead.
+        CAN_EQUIP_STACK_METHOD = null;
     }
     
     public static boolean isBlacklisted(Entity entity) {
@@ -39,7 +34,7 @@ public class PetInventoryUtil {
     public static net.minecraft.world.item.Item getItemFromID(String id, net.minecraft.world.item.Item fallback) {
         if (id == null || id.isEmpty()) return fallback;
         try {
-            net.minecraft.world.item.Item item = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
+            net.minecraft.world.item.Item item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id)).map(h -> h.value()).orElse(null);
             if (item != null && item != Items.AIR) {
                 return item;
             }
@@ -59,7 +54,7 @@ public class PetInventoryUtil {
             return true;
         }
 
-        if (net.yigitguven.petting.config.PettingConfig.ALWAYS_SHOW_EQUIPMENT_SLOTS.get() && entity.getPersistentData().getBoolean("pettingtamed")) {
+        if (net.yigitguven.petting.config.PettingConfig.ALWAYS_SHOW_EQUIPMENT_SLOTS.get() && entity.getPersistentData().getBooleanOr("pettingtamed", false)) {
             return true;
         }
 

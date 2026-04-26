@@ -34,19 +34,19 @@ public class PetDeathHandlerProcedure {
 
         CompoundTag data = mob.getPersistentData();
         
-        if (!data.getBoolean("pettingtamed")) {
+        if (!data.getBooleanOr("pettingtamed", false)) {
             return;
         }
 
-        String ownerUUIDStr = data.getString("ownerUUID");
+        String ownerUUIDStr = data.getStringOr("ownerUUID", "");
         if (ownerUUIDStr.isEmpty()) return;
 
         // 3. CHECK FOR PET BED
         if (data.contains("pet_bed_loc_x") && data.contains("pet_bed_loc_y") && data.contains("pet_bed_loc_z")) {
             
-            double bedX = data.getDouble("pet_bed_loc_x");
-            double bedY = data.getDouble("pet_bed_loc_y");
-            double bedZ = data.getDouble("pet_bed_loc_z");
+            double bedX = data.getDoubleOr("pet_bed_loc_x", 0.0);
+            double bedY = data.getDoubleOr("pet_bed_loc_y", 0.0);
+            double bedZ = data.getDoubleOr("pet_bed_loc_z", 0.0);
 
             BlockPos bedPos = new BlockPos((int)bedX, (int)bedY, (int)bedZ);
             BlockPos respawnPos = findSafeRespawnLocation(entity.level(), bedPos);
@@ -101,7 +101,7 @@ public class PetDeathHandlerProcedure {
                 UUID uuid = UUID.fromString(uuidStr);
                 ServerPlayer owner = serverLevel.getServer().getPlayerList().getPlayer(uuid);
                 if (owner != null) {
-                    owner.sendSystemMessage(message);
+                    owner.displayClientMessage(message, false);
                 }
             } catch (Exception ignored) {}
         }

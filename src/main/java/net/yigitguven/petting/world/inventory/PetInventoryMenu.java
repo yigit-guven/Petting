@@ -110,19 +110,22 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     if (!this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                } else if (itemstack1.getItem() instanceof net.minecraft.world.item.ArmorItem armor) {
-                    int armorSlot = -1;
-                    EquipmentSlot type = armor.getType().getSlot();
-                    if (type == EquipmentSlot.HEAD) armorSlot = 1;
-                    else if (type == EquipmentSlot.CHEST) armorSlot = 2;
-                    else if (type == EquipmentSlot.LEGS) armorSlot = 3;
-                    else if (type == EquipmentSlot.FEET) armorSlot = 4;
-                    
-                    if (armorSlot == -1 || !this.moveItemStackTo(itemstack1, armorSlot, armorSlot + 1, false)) {
+                } else {
+                    net.minecraft.world.item.equipment.Equippable equippable = itemstack1.get(net.minecraft.core.component.DataComponents.EQUIPPABLE);
+                    if (equippable != null && equippable.slot().isArmor()) {
+                        int armorSlot = -1;
+                        EquipmentSlot type = equippable.slot();
+                        if (type == EquipmentSlot.HEAD) armorSlot = 1;
+                        else if (type == EquipmentSlot.CHEST) armorSlot = 2;
+                        else if (type == EquipmentSlot.LEGS) armorSlot = 3;
+                        else if (type == EquipmentSlot.FEET) armorSlot = 4;
+                        
+                        if (armorSlot == -1 || !this.moveItemStackTo(itemstack1, armorSlot, armorSlot + 1, false)) {
+                            return ItemStack.EMPTY;
+                        }
+                    } else {
                         return ItemStack.EMPTY;
                     }
-                } else {
-                    return ItemStack.EMPTY;
                 }
             }
 

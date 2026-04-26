@@ -23,15 +23,15 @@ public class PetConversionHandler {
             net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(converted)) return;
 
         CompoundTag originalData = original.getPersistentData();
-        if (originalData.getBoolean("pettingtamed")) {
+        if (originalData.getBooleanOr("pettingtamed", false)) {
             CompoundTag convertedData = converted.getPersistentData();
             
             convertedData.putBoolean("pettingtamed", true);
             if (originalData.contains("ownerUUID")) {
-                convertedData.putString("ownerUUID", originalData.getString("ownerUUID"));
+                convertedData.putString("ownerUUID", originalData.getStringOr("ownerUUID", ""));
             }
             if (originalData.contains("isNameGenerated")) {
-                convertedData.putBoolean("isNameGenerated", originalData.getBoolean("isNameGenerated"));
+                convertedData.putBoolean("isNameGenerated", originalData.getBooleanOr("isNameGenerated", false));
             }
 
             copyBoolean(originalData, convertedData, "attackifownerattacks");
@@ -72,19 +72,19 @@ public class PetConversionHandler {
 
     private static void copyBoolean(CompoundTag from, CompoundTag to, String key) {
         if (from.contains(key)) {
-            to.putBoolean(key, from.getBoolean(key));
+            to.putBoolean(key, from.getBooleanOr(key, false));
         }
     }
 
     private static void copyInt(CompoundTag from, CompoundTag to, String key) {
         if (from.contains(key)) {
-            to.putInt(key, from.getInt(key));
+            to.putInt(key, from.getIntOr(key, 0));
         }
     }
 
     private static void copyDouble(CompoundTag from, CompoundTag to, String key) {
         if (from.contains(key)) {
-            to.putDouble(key, from.getDouble(key));
+            to.putDouble(key, from.getDoubleOr(key, 0.0));
         }
     }
 }

@@ -23,7 +23,7 @@ import java.lang.reflect.Field;
 import java.util.UUID;
 import java.util.List;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber
 public class PetAttackLogic {
     public PetAttackLogic() {}
 
@@ -132,8 +132,8 @@ public class PetAttackLogic {
 
                 // Evaluate forced combat (owner instructed explicitly by being attacked, or attacking)
                 LivingEntity forcedTarget = null;
-                boolean attackWithOwner = pet.getPersistentData().getBoolean("attackifownerattacks");
-                boolean defendOwner = pet.getPersistentData().getBoolean("attackifownerattacked");
+                boolean attackWithOwner = pet.getPersistentData().getBooleanOr("attackifownerattacks", false);
+                boolean defendOwner = pet.getPersistentData().getBooleanOr("attackifownerattacked", false);
 
                 if (attackWithOwner && owner.getLastHurtMob() != null) {
                     forcedTarget = owner.getLastHurtMob();
@@ -258,7 +258,7 @@ public class PetAttackLogic {
                 }
             }
 
-            boolean attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked");
+            boolean attackSelf = petMob.getPersistentData().getBooleanOr("attackifselfattacked", false);
             if (!petMob.getPersistentData().contains("attackifselfattacked")) attackSelf = true;
 
             if (attackSelf) {
@@ -278,7 +278,7 @@ public class PetAttackLogic {
 
         private static boolean isCustomPet(Entity entity) {
             if (!(entity instanceof Mob)) return false;
-            return entity.getPersistentData().getBoolean("pettingtamed");
+            return entity.getPersistentData().getBooleanOr("pettingtamed", false);
         }
 
         private static boolean isValidCombatTarget(Mob pet, Player owner, LivingEntity potentialTarget) {
@@ -296,7 +296,7 @@ public class PetAttackLogic {
                 }
             }
 
-            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID");
+            String ownerUUIDStr = pet.getPersistentData().getStringOr("ownerUUID", "");
             if (ownerUUIDStr.isEmpty()) return null;
             try {
                 return pet.level().getPlayerByUUID(UUID.fromString(ownerUUIDStr));
@@ -312,7 +312,7 @@ public class PetAttackLogic {
                 }
             }
 
-            String ownerUUIDStr = pet.getPersistentData().getString("ownerUUID");
+            String ownerUUIDStr = pet.getPersistentData().getStringOr("ownerUUID", "");
             if (!ownerUUIDStr.isEmpty()) {
                 try {
                     return UUID.fromString(ownerUUIDStr).equals(potentialOwner.getUUID());

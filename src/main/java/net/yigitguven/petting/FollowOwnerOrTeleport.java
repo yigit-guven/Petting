@@ -22,7 +22,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.UUID;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber
 public class FollowOwnerOrTeleport {
     public FollowOwnerOrTeleport() {}
 
@@ -50,15 +50,15 @@ public class FollowOwnerOrTeleport {
 
             CompoundTag data = entity.getPersistentData();
 
-            if (!data.contains("pettingtamed") || !data.getBoolean("pettingtamed")) {
+            if (!data.contains("pettingtamed") || !data.getBooleanOr("pettingtamed", false)) {
                 return;
             }
 
             // --- BOUND ROAM LOGIC ---
-            if (data.getBoolean("pettingbound")) {
-                double bX = data.getDouble("boundX");
-                double bY = data.getDouble("boundY");
-                double bZ = data.getDouble("boundZ");
+            if (data.getBooleanOr("pettingbound", false)) {
+                double bX = data.getDoubleOr("boundX", 0.0);
+                double bY = data.getDoubleOr("boundY", 0.0);
+                double bZ = data.getDoubleOr("boundZ", 0.0);
                 Vec3 boundPos = new Vec3(bX, bY, bZ);
                 double distToBound = mob.distanceToSqr(boundPos);
                 double roamRadius = net.yigitguven.petting.config.PettingConfig.BOUND_ROAM_RADIUS.get();
@@ -89,7 +89,7 @@ public class FollowOwnerOrTeleport {
                 PETTING_STOP_ID, -1.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
             // --- SIT LOGIC ---
-            if (data.contains("sitstill") && data.getBoolean("sitstill")) {
+            if (data.contains("sitstill") && data.getBooleanOr("sitstill", false)) {
                 mob.getNavigation().stop();
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
                 
@@ -124,7 +124,7 @@ public class FollowOwnerOrTeleport {
             }
 
             // --- WAITING LOGIC ---
-            if (data.contains("waiting") && data.getBoolean("waiting")) {
+            if (data.contains("waiting") && data.getBooleanOr("waiting", false)) {
                 mob.getNavigation().stop();
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
 
@@ -169,7 +169,7 @@ public class FollowOwnerOrTeleport {
 
             if (!data.contains("ownerUUID")) return;
             
-            String ownerUUIDStr = data.getString("ownerUUID");
+            String ownerUUIDStr = data.getStringOr("ownerUUID", "");
             if (ownerUUIDStr.isEmpty()) return;
 
             UUID ownerUUID;
@@ -182,8 +182,8 @@ public class FollowOwnerOrTeleport {
 
             double distanceToOwner = mob.distanceTo(owner);
             
-            double followDist = data.contains("followdistance") ? data.getInt("followdistance") : net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get();
-            double teleportDist = data.contains("teleportdistance") ? data.getInt("teleportdistance") : net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get();
+            double followDist = data.contains("followdistance") ? data.getIntOr("followdistance", 0) : net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get();
+            double teleportDist = data.contains("teleportdistance") ? data.getIntOr("teleportdistance", 0) : net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get();
             if (followDist == 0) followDist = net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get();
             if (teleportDist == 0) teleportDist = net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get();
 
@@ -221,7 +221,7 @@ public class FollowOwnerOrTeleport {
         }
 
         private static boolean isUniversalFlyingMob(Mob mob, CompoundTag data) {
-            if (data.contains("force_flying") && data.getBoolean("force_flying")) return true;
+            if (data.contains("force_flying") && data.getBooleanOr("force_flying", false)) return true;
             if (mob instanceof FlyingAnimal) return true;
             if (mob.getNavigation() instanceof FlyingPathNavigation) return true;
             if (mob.isNoGravity()) return true;

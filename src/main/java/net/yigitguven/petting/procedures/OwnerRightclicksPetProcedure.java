@@ -57,9 +57,9 @@ public class OwnerRightclicksPetProcedure {
                             target.getDisplayName()
                         ), buf -> buf.writeInt(target.getId()));
                     } else {
-                        boolean isSitting = data.getBoolean("sitstill");
-                        boolean isWaiting = data.getBoolean("waiting");
-                        boolean isFreewander = data.getBoolean("freewander");
+                        boolean isSitting = data.getBooleanOr("sitstill", false);
+                        boolean isWaiting = data.getBooleanOr("waiting", false);
+                        boolean isFreewander = data.getBooleanOr("freewander", false);
                         boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
                         boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
                         
@@ -103,22 +103,22 @@ public class OwnerRightclicksPetProcedure {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     if (isShift) {
                         String mode = "§eFollowing";
-                        if (data.getBoolean("sitstill")) mode = "§eSitting";
-                        else if (data.getBoolean("waiting")) mode = "§eWaiting";
-                        else if (data.getBoolean("freewander")) mode = "§eWandering (Free)";
+                        if (data.getBooleanOr("sitstill", false)) mode = "§eSitting";
+                        else if (data.getBooleanOr("waiting", false)) mode = "§eWaiting";
+                        else if (data.getBooleanOr("freewander", false)) mode = "§eWandering (Free)";
 
-                        player.sendSystemMessage(Component.literal("§6--- Pet Status: §f" + petName + " §6---"));
-                        player.sendSystemMessage(Component.literal("§eAI Mode: " + mode));
-                        player.sendSystemMessage(Component.literal("§eAggressive Mode: " + (data.getBoolean("attackifownerattacks") ? "§aON" : "§cOFF")));
-                        player.sendSystemMessage(Component.literal("§eGuard Owner: " + (data.getBoolean("attackifownerattacked") ? "§aON" : "§cOFF")));
-                        player.sendSystemMessage(Component.literal("§eRetaliate (Self): " + (data.getBoolean("attackifselfattacked") ? "§aON" : "§cOFF")));
-                        player.sendSystemMessage(Component.literal("§eFollow Distance: §f" + data.getInt("followdistance")));
-                        player.sendSystemMessage(Component.literal("§eTeleport Distance: §f" + data.getInt("teleportdistance")));
-                        player.sendSystemMessage(Component.literal("§eWhistle Response: " + (data.getBoolean("ignoreWhistle") ? "§cIgnored" : "§aNormal")));
+                        player.displayClientMessage(Component.literal("§6--- Pet Status: §f" + petName + " §6---"), false);
+                        player.displayClientMessage(Component.literal("§eAI Mode: " + mode), false);
+                        player.displayClientMessage(Component.literal("§eAggressive Mode: " + (data.getBooleanOr("attackifownerattacks", false) ? "§aON" : "§cOFF")), false);
+                        player.displayClientMessage(Component.literal("§eGuard Owner: " + (data.getBooleanOr("attackifownerattacked", false) ? "§aON" : "§cOFF")), false);
+                        player.displayClientMessage(Component.literal("§eRetaliate (Self): " + (data.getBooleanOr("attackifselfattacked", false) ? "§aON" : "§cOFF")), false);
+                        player.displayClientMessage(Component.literal("§eFollow Distance: §f" + data.getIntOr("followdistance", 0)), false);
+                        player.displayClientMessage(Component.literal("§eTeleport Distance: §f" + data.getIntOr("teleportdistance", 0)), false);
+                        player.displayClientMessage(Component.literal("§eWhistle Response: " + (data.getBooleanOr("ignoreWhistle", false) ? "§cIgnored" : "§aNormal")), false);
                     } else {
-                        boolean isSitting = data.getBoolean("sitstill");
-                        boolean isWaiting = data.getBoolean("waiting");
-                        boolean isFreewander = data.getBoolean("freewander");
+                        boolean isSitting = data.getBooleanOr("sitstill", false);
+                        boolean isWaiting = data.getBooleanOr("waiting", false);
+                        boolean isFreewander = data.getBooleanOr("freewander", false);
                         
                         if (!isSitting && !isWaiting && !isFreewander) { 
                             data.putBoolean("sitstill", true);
@@ -168,10 +168,10 @@ public class OwnerRightclicksPetProcedure {
             }
 
             net.minecraft.world.item.Item aggressionTool = net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.AGGRESSION_TOOL_ID.get(), net.minecraft.world.item.Items.IRON_SWORD);
-            if ((item == aggressionTool || (net.yigitguven.petting.config.PettingConfig.AGGRESSION_TOOL_ID.get().equals("minecraft:iron_sword") && item instanceof net.minecraft.world.item.SwordItem)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_AGGRESSION.get()) {
+            if ((item == aggressionTool || (net.yigitguven.petting.config.PettingConfig.AGGRESSION_TOOL_ID.get().equals("minecraft:iron_sword") && heldItem.is(net.minecraft.tags.ItemTags.SWORDS))) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_AGGRESSION.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    boolean current = data.getBoolean("attackifownerattacks");
+                    boolean current = data.getBooleanOr("attackifownerattacks", false);
                     data.putBoolean("attackifownerattacks", !current);
                     sendFeedback(player, "§6[Aggression] §f" + petName + " will " + (!current ? "§anow" : "§cno longer") + " §fattack your targets.");
                     playStateChangeFeedback(entity, current);
@@ -182,10 +182,10 @@ public class OwnerRightclicksPetProcedure {
             }
 
             net.minecraft.world.item.Item defenseTool = net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.DEFENSE_TOOL_ID.get(), net.minecraft.world.item.Items.SHIELD);
-            if ((item == defenseTool || (net.yigitguven.petting.config.PettingConfig.DEFENSE_TOOL_ID.get().equals("minecraft:shield") && item instanceof net.minecraft.world.item.ShieldItem)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_SELF_DEFENSE.get()) {
+            if ((item == defenseTool || (net.yigitguven.petting.config.PettingConfig.DEFENSE_TOOL_ID.get().equals("minecraft:shield") && item == net.minecraft.world.item.Items.SHIELD)) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_SELF_DEFENSE.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    boolean current = data.getBoolean("attackifselfattacked");
+                    boolean current = data.getBooleanOr("attackifselfattacked", false);
                     data.putBoolean("attackifselfattacked", !current);
                     sendFeedback(player, "§6[Retaliation] §f" + petName + " will " + (!current ? "§anow" : "§cno longer") + " §fdefend itself.");
                     playStateChangeFeedback(entity, current);
@@ -198,7 +198,7 @@ public class OwnerRightclicksPetProcedure {
             if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.GUARD_TOOL_ID.get(), net.minecraft.world.item.Items.COOKIE) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_GUARD.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    boolean current = data.getBoolean("attackifownerattacked");
+                    boolean current = data.getBooleanOr("attackifownerattacked", false);
                     data.putBoolean("attackifownerattacked", !current);
                     sendFeedback(player, "§6[Guard] §f" + petName + " will " + (!current ? "§anow" : "§cno longer") + " §fprotect you from attackers.");
                     playStateChangeFeedback(entity, current);
@@ -211,7 +211,7 @@ public class OwnerRightclicksPetProcedure {
             if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.FOLLOW_DIST_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.FOLLOW_WHISTLE.get()) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_FOLLOW_DIST.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    int current = data.getInt("followdistance");
+                    int current = data.getIntOr("followdistance", 0);
                     if (current == 0) current = 5;
                     int next = switch (current) {
                         case 5 -> 10;
@@ -231,7 +231,7 @@ public class OwnerRightclicksPetProcedure {
             if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.TELEPORT_DIST_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.TELEPORT_ORB.get()) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_TELEPORT_DIST.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    int current = data.getInt("teleportdistance");
+                    int current = data.getIntOr("teleportdistance", 0);
                     if (current == 0) current = 20;
                     int next = switch (current) {
                         case 10 -> 20;
@@ -251,7 +251,7 @@ public class OwnerRightclicksPetProcedure {
             if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.WHISTLE_RESPONSE_TOOL_ID.get(), net.minecraft.world.item.Items.CLOCK) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_WHISTLE_TOGGLE.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    boolean current = data.getBoolean("ignoreWhistle");
+                    boolean current = data.getBooleanOr("ignoreWhistle", false);
                     data.putBoolean("ignoreWhistle", !current);
                     sendFeedback(player, "§6[Whistle] §f" + petName + " will now " + (!current ? "§cignore" : "§arespond to") + " §fwhistles.");
                     playStateChangeFeedback(entity, current);
@@ -264,7 +264,7 @@ public class OwnerRightclicksPetProcedure {
             if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.TETHER_TOOL_ID.get(), net.yigitguven.petting.init.PettingModItems.PET_TETHER.get()) && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_TETHERING.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
-                    boolean isBound = data.getBoolean("pettingbound");
+                    boolean isBound = data.getBooleanOr("pettingbound", false);
                     if (!isBound) {
                         data.putBoolean("pettingbound", true);
                         data.putDouble("boundX", entity.getX());
@@ -283,11 +283,11 @@ public class OwnerRightclicksPetProcedure {
             }
 
             net.minecraft.world.item.Item releaseTool = net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.RELEASE_TOOL_ID.get(), net.minecraft.world.item.Items.SHEARS);
-            if ((item == releaseTool || (net.yigitguven.petting.config.PettingConfig.RELEASE_TOOL_ID.get().equals("minecraft:shears") && item instanceof net.minecraft.world.item.ShearsItem)) && player.isShiftKeyDown() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RELEASING.get()) {
+            if ((item == releaseTool || (net.yigitguven.petting.config.PettingConfig.RELEASE_TOOL_ID.get().equals("minecraft:shears") && item == net.minecraft.world.item.Items.SHEARS)) && player.isShiftKeyDown() && net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RELEASING.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     
-                    if (data.getBoolean("isNameGenerated")) {
+                    if (data.getBooleanOr("isNameGenerated", false)) {
                         entity.setCustomName(null);
                     }
 
@@ -331,7 +331,7 @@ public class OwnerRightclicksPetProcedure {
         if (entity == null || player == null) return false;
         
         CompoundTag data = entity.getPersistentData();
-        if (data.contains("ownerUUID") && data.getString("ownerUUID").equals(player.getStringUUID())) {
+        if (data.contains("ownerUUID") && data.getStringOr("ownerUUID", "").equals(player.getStringUUID())) {
             return true;
         }
         
@@ -356,7 +356,7 @@ public class OwnerRightclicksPetProcedure {
     private static void sendFeedback(Player player, String message) {
         net.yigitguven.petting.config.PettingConfig.FeedbackStyle style = net.yigitguven.petting.config.PettingConfig.COMMAND_FEEDBACK_STYLE.get();
         if (style == net.yigitguven.petting.config.PettingConfig.FeedbackStyle.CHAT) {
-            player.sendSystemMessage(Component.literal(message));
+            player.displayClientMessage(Component.literal(message), false);
         } else if (style == net.yigitguven.petting.config.PettingConfig.FeedbackStyle.ACTION_BAR) {
             player.displayClientMessage(Component.literal(message), true);
         }

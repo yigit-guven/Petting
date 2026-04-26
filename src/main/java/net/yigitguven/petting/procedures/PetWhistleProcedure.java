@@ -32,15 +32,15 @@ public class PetWhistleProcedure {
                     if (entity instanceof Mob pet) {
                         if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(pet)) continue;
 
-                        if (pet.getPersistentData().getBoolean("pettingtamed")) {
-                            String ownerUUID = pet.getPersistentData().getString("ownerUUID");
+                        if (pet.getPersistentData().getBooleanOr("pettingtamed", false)) {
+                            String ownerUUID = pet.getPersistentData().getStringOr("ownerUUID", "");
                             if (ownerUUID.equals(playerUUID)) {
-                                boolean ignoreWhistle = pet.getPersistentData().getBoolean("ignoreWhistle");
+                                boolean ignoreWhistle = pet.getPersistentData().getBooleanOr("ignoreWhistle", false);
                                 if (ignoreWhistle) {
                                     continue;
                                 }
 
-                                boolean isBound = pet.getPersistentData().getBoolean("pettingbound");
+                                boolean isBound = pet.getPersistentData().getBooleanOr("pettingbound", false);
                                 if (isBound && !PettingConfig.WHISTLE_TELEPORTS_TETHERED.get()) {
                                     continue;
                                 }
