@@ -25,7 +25,7 @@ public class EntityTickUpdateProcedure {
         
         if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(living)) return;
             
-        if (living.getPersistentData().getBooleanOr("pettingtamed", false)) {
+        if (living.getPersistentData().getBoolean("pettingtamed")) {
             if (living instanceof Mob mob) {
                 if (!mob.isPersistenceRequired()) {
                     mob.setPersistenceRequired();
@@ -34,7 +34,7 @@ public class EntityTickUpdateProcedure {
                 updateAttribute(mob, Attributes.ARMOR, ARMOR_MODIFIER_ID, net.yigitguven.petting.config.PettingConfig.PET_BASE_ARMOR.get());
                 updateAttribute(mob, Attributes.ARMOR_TOUGHNESS, TOUGHNESS_MODIFIER_ID, net.yigitguven.petting.config.PettingConfig.PET_BASE_ARMOR_TOUGHNESS.get());
 
-                if (net.yigitguven.petting.config.PettingConfig.SIT_HEAL_ENABLED.get() && living.getPersistentData().getBooleanOr("sitstill", false) && !living.isVehicle()) {
+                if (net.yigitguven.petting.config.PettingConfig.SIT_HEAL_ENABLED.get() && living.getPersistentData().getBoolean("sitstill") && !living.isVehicle()) {
                     if (living.tickCount % net.yigitguven.petting.config.PettingConfig.SIT_HEAL_INTERVAL.get() == 0) {
                         if (mob.getHealth() < mob.getMaxHealth()) {
                             mob.heal(net.yigitguven.petting.config.PettingConfig.SIT_HEAL_AMOUNT.get().floatValue());

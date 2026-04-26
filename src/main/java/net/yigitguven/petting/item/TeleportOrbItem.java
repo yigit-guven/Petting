@@ -8,7 +8,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.network.chat.Component;
 import net.minecraft.ChatFormatting;
 
-import java.util.function.Consumer;
+import java.util.List;
 
 public class TeleportOrbItem extends Item {
 	public TeleportOrbItem() {
@@ -16,9 +16,9 @@ public class TeleportOrbItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack itemstack, Item.TooltipContext context, Consumer<Component> list, TooltipFlag flag) {
+	public void appendHoverText(ItemStack itemstack, Item.TooltipContext context, List<Component> list, TooltipFlag flag) {
 		super.appendHoverText(itemstack, context, list, flag);
-		list.accept(Component.translatable("item.petting.teleport_orb.tooltip").withStyle(ChatFormatting.GRAY));
+		list.add(Component.translatable("item.petting.teleport_orb.tooltip").withStyle(ChatFormatting.GRAY));
 	}
 }
 

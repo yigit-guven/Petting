@@ -4,9 +4,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.HolderLookup;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.common.util.INBTSerializable;
 import net.minecraft.world.entity.Entity;
 
-public class PetInventoryAttachment extends ItemStackHandler {
+public class PetInventoryAttachment extends ItemStackHandler implements INBTSerializable<CompoundTag> {
     private final Entity holder;
 
     public PetInventoryAttachment(IAttachmentHolder holder) {

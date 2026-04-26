@@ -47,7 +47,7 @@ public class PetBedBindingHandler {
         String blockId = (blockRegistryName != null) ? blockRegistryName.toString() : "";
 
         CompoundTag playerNBT = player.getPersistentData();
-        boolean isBinding = playerNBT.getBooleanOr(TAG_BINDING_MODE, false);
+        boolean isBinding = playerNBT.getBoolean(TAG_BINDING_MODE);
 
         // SCENARIO A: Clicking a Pet Bed (Start Binding)
         if (blockId.contains("pet_bed")) {
@@ -58,8 +58,8 @@ public class PetBedBindingHandler {
             playerNBT.putDouble(TAG_BED_Z, pos.getZ());
 
             player.displayClientMessage(Component.literal("§a[Petting] §fBinding Mode Active!"), true);
-            player.displayClientMessage(Component.literal("§eRight-click a tamed pet to bind it to this bed."), false);
-            player.displayClientMessage(Component.literal("§7(Right-click air or ground to cancel)"), false);
+            player.sendSystemMessage(Component.literal("§eRight-click a tamed pet to bind it to this bed."));
+            player.sendSystemMessage(Component.literal("§7(Right-click air or ground to cancel)"));
             
             // Play a "click" sound
             world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
@@ -85,7 +85,7 @@ public class PetBedBindingHandler {
         Player player = event.getEntity();
         
         // If clicking air while binding, cancel it
-        if (player.getPersistentData().getBooleanOr(TAG_BINDING_MODE, false)) {
+        if (player.getPersistentData().getBoolean(TAG_BINDING_MODE)) {
             clearBindingState(player);
             player.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
         }
@@ -104,7 +104,7 @@ public class PetBedBindingHandler {
         CompoundTag playerNBT = player.getPersistentData();
 
         // Check if player is trying to bind
-        if (!playerNBT.getBooleanOr(TAG_BINDING_MODE, false)) {
+        if (!playerNBT.getBoolean(TAG_BINDING_MODE)) {
             return;
         }
 
@@ -115,9 +115,9 @@ public class PetBedBindingHandler {
             CompoundTag petNBT = mob.getPersistentData();
             
             // Check 1: Is it from Petting Mod?
-            if (petNBT.getBooleanOr("pettingtamed", false)) {
+            if (petNBT.getBoolean("pettingtamed")) {
                 // Check 2: Is the clicker the owner?
-                String ownerUUIDStr = petNBT.getStringOr("ownerUUID", "");
+                String ownerUUIDStr = petNBT.getString("ownerUUID");
                 if (!ownerUUIDStr.isEmpty() && ownerUUIDStr.equals(player.getStringUUID())) {
                     validPet = true;
                 }
@@ -128,9 +128,9 @@ public class PetBedBindingHandler {
             // --- SUCCESSFUL BINDING ---
             
             // 1. Transfer Coords from Player -> Pet
-            double bedX = playerNBT.getDoubleOr(TAG_BED_X, 0.0);
-            double bedY = playerNBT.getDoubleOr(TAG_BED_Y, 0.0);
-            double bedZ = playerNBT.getDoubleOr(TAG_BED_Z, 0.0);
+            double bedX = playerNBT.getDouble(TAG_BED_X);
+            double bedY = playerNBT.getDouble(TAG_BED_Y);
+            double bedZ = playerNBT.getDouble(TAG_BED_Z);
 
             CompoundTag petNBT = target.getPersistentData();
             petNBT.putDouble("pet_bed_loc_x", bedX);
@@ -138,7 +138,7 @@ public class PetBedBindingHandler {
             petNBT.putDouble("pet_bed_loc_z", bedZ);
 
             // 2. Feedback
-            player.displayClientMessage(Component.literal("§a[Petting] §fSuccessfully bound " + target.getName().getString() + " to the bed!"), false);
+            player.sendSystemMessage(Component.literal("§a[Petting] §fSuccessfully bound " + target.getName().getString() + " to the bed!"));
             player.level().playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f);
 
             if (player.level() instanceof ServerLevel serverLevel) {
@@ -148,7 +148,7 @@ public class PetBedBindingHandler {
             }
         } else {
             // --- INVALID TARGET (Cancel) ---
-            player.displayClientMessage(Component.literal("§c[Petting] Cancelled. That is not your custom pet!"), false);
+            player.sendSystemMessage(Component.literal("§c[Petting] Cancelled. That is not your custom pet!"));
         }
 
         // Always clear state and consume the click so we don't sit on the pet

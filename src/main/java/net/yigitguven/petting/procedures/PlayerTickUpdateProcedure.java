@@ -25,8 +25,8 @@ public class PlayerTickUpdateProcedure {
             for (Warden warden : wardens) {
                 if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(warden)) continue;
 
-                if (warden.getPersistentData().getBooleanOr("pettingtamed", false)) {
-                    String ownerUUID = warden.getPersistentData().getStringOr("ownerUUID", "");
+                if (warden.getPersistentData().getBoolean("pettingtamed")) {
+                    String ownerUUID = warden.getPersistentData().getString("ownerUUID");
                     if (ownerUUID.equals(player.getStringUUID())) {
                         player.removeEffect(MobEffects.DARKNESS);
                         break;

@@ -7,7 +7,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.yigitguven.petting.init.PettingModAttributes;
 
-@EventBusSubscriber
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class AttributeEventHandler {
     @SubscribeEvent
     public static void onAttributeModification(EntityAttributeModificationEvent event) {

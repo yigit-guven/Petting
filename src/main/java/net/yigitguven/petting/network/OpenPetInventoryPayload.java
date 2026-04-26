@@ -27,13 +27,13 @@ public record OpenPetInventoryPayload() implements CustomPacketPayload {
                 if (player.getVehicle() != null) {
                     Entity pet = player.getVehicle();
                     boolean isOwner = false;
-                    if (pet.getPersistentData().contains("ownerUUID") && pet.getPersistentData().getStringOr("ownerUUID", "").equals(player.getStringUUID())) {
+                    if (pet.getPersistentData().contains("ownerUUID") && pet.getPersistentData().getString("ownerUUID").equals(player.getStringUUID())) {
                         isOwner = true;
                     } else if (pet instanceof net.minecraft.world.entity.TamableAnimal tamable) {
                         if (tamable.isOwnedBy(player)) isOwner = true;
                     }
 
-                    if (isOwner || pet.getPersistentData().getBooleanOr("pettingtamed", false)) {
+                    if (isOwner || pet.getPersistentData().getBoolean("pettingtamed")) {
                         player.openMenu(new SimpleMenuProvider(
                             (id, inv, p) -> new PetInventoryMenu(id, inv, pet),
                             pet.getDisplayName()

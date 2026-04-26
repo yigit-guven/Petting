@@ -4,7 +4,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
-
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.SimpleContainer;
 
@@ -35,8 +35,7 @@ public class EquipmentSlotHandler extends Slot {
     public boolean mayPlace(ItemStack stack) {
         if (!active) return false;
         if (slot.isArmor()) {
-            net.minecraft.world.item.equipment.Equippable equippable = stack.get(net.minecraft.core.component.DataComponents.EQUIPPABLE);
-            return equippable != null && equippable.slot() == slot;
+            return stack.getItem() instanceof ArmorItem armor && armor.getType().getSlot() == slot;
         }
         return true; 
     }

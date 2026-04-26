@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.server.level.ServerLevel;
@@ -68,7 +68,7 @@ public class PetCommand {
         }
         else if (entity instanceof Mob oldMob) {
             CompoundTag data = oldMob.getPersistentData();
-            boolean isAlreadyCustomTamed = data.getBooleanOr("pettingtamed", false);
+            boolean isAlreadyCustomTamed = data.getBoolean("pettingtamed");
 
             if (!isAlreadyCustomTamed) {
                 actionSuccessful = true;
@@ -89,7 +89,7 @@ public class PetCommand {
 
             if (needsRespawn && world instanceof ServerLevel serverLevel) {
                 // FIXED: Use simple create(world) for 1.20.1
-                Entity newEntity = entity.getType().create(serverLevel, EntitySpawnReason.COMMAND);
+                Entity newEntity = entity.getType().create(world);
 
                 if (newEntity instanceof Mob newMob) {
                     newMob.setPos(entity.getX(), entity.getY(), entity.getZ());

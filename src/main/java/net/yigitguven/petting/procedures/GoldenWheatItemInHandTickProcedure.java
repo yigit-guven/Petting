@@ -34,7 +34,7 @@ public class GoldenWheatItemInHandTickProcedure {
                 Animal.class, 
                 player.getBoundingBox().inflate(searchRadius, 4.0, searchRadius), 
                 mob -> {
-                    boolean isAlreadyCustomTamed = mob.getPersistentData().getBooleanOr("pettingtamed", false);
+                    boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed");
                     if (isAlreadyCustomTamed) return false;
                     if (mob instanceof TamableAnimal tamable && tamable.isTame()) return false;
                     if (mob instanceof AbstractHorse horse && horse.isTamed()) return false;

@@ -4,7 +4,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.core.Direction;
@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 
 public class Pet_BedBlock extends Block {
-	public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
+	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 	protected static final VoxelShape SHAPE = Block.box(0, 0, 0, 16, 3, 16);
 
 	public Pet_BedBlock(Block.Properties properties) {

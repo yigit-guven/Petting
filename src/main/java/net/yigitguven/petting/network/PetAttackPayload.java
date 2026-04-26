@@ -31,8 +31,8 @@ public record PetAttackPayload() implements CustomPacketPayload {
                 Entity pet = player.getVehicle();
                 
                 boolean isOwner = false;
-                if (pet.getPersistentData().getBooleanOr("pettingtamed", false)) {
-                    String ownerUUID = pet.getPersistentData().getStringOr("ownerUUID", "");
+                if (pet.getPersistentData().getBoolean("pettingtamed")) {
+                    String ownerUUID = pet.getPersistentData().getString("ownerUUID");
                     if (ownerUUID.isEmpty() || ownerUUID.equals(player.getStringUUID())) {
                         isOwner = true;
                     }

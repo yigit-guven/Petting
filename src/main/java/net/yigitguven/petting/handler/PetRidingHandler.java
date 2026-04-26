@@ -77,7 +77,7 @@ public class PetRidingHandler {
 
     private static void handleRidingControl(LivingEntity pet, Player player) {
         net.minecraft.nbt.CompoundTag data = pet.getPersistentData();
-        if (data.getBooleanOr("sitstill", false) || data.getBooleanOr("waiting", false) || pet.isShiftKeyDown()) {
+        if (data.getBoolean("sitstill") || data.getBoolean("waiting") || pet.isShiftKeyDown()) {
             data.putBoolean("sitstill", false);
             data.putBoolean("waiting", false);
             pet.setShiftKeyDown(false);

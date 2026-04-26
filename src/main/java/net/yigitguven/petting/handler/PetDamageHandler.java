@@ -39,8 +39,8 @@ public class PetDamageHandler {
         Entity directEntity = source.getDirectEntity();
 
         // 1. Pet to owner damage prevention
-        if (attacker != null && attacker.getPersistentData().getBooleanOr("pettingtamed", false)) {
-            String ownerUUID = attacker.getPersistentData().getStringOr("ownerUUID", "");
+        if (attacker != null && attacker.getPersistentData().getBoolean("pettingtamed")) {
+            String ownerUUID = attacker.getPersistentData().getString("ownerUUID");
             if (ownerUUID.equals(target.getStringUUID())) {
                 event.setCanceled(true);
                 return;
@@ -50,8 +50,8 @@ public class PetDamageHandler {
         // 2. Projectile protection
         if (directEntity instanceof net.minecraft.world.entity.projectile.Projectile projectile) {
             Entity shooter = projectile.getOwner();
-            if (shooter != null && shooter.getPersistentData().getBooleanOr("pettingtamed", false)) {
-                String ownerUUID = shooter.getPersistentData().getStringOr("ownerUUID", "");
+            if (shooter != null && shooter.getPersistentData().getBoolean("pettingtamed")) {
+                String ownerUUID = shooter.getPersistentData().getString("ownerUUID");
                 
                 if (target.equals(shooter)) {
                     event.setCanceled(true);
