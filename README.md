@@ -49,9 +49,11 @@
 
 ## Taming
 
-Taming is how you acquire a pet. By default, **crouch and right-click** a mob while holding **Golden Wheat** (`petting:golden_wheat`) to attempt taming it. Heart particles appear on success; the taming item is configurable via `tamingItem`.
+Taming is how you acquire a pet. By default, **right-click** a mob while holding **Golden Wheat** (`petting:golden_wheat`) to attempt taming it. The item is consumed on every attempt. Heart particles appear on success; smoke particles appear on failure. The taming item is fully configurable via `tamingItem`.
 
-While holding Golden Wheat, nearby animals will follow you at increased speed.
+When tamed, all three combat modes — Aggressive, Guard, and Defensive — are **enabled by default**. The pet is also automatically named `"[YourName]'s [mob type]"` with the name tag hidden above their head.
+
+Holding Golden Wheat in either hand (main or offhand) causes nearby untamed **animals** within 12 blocks to follow you.
 
 ### Success Factors
 
@@ -141,8 +143,8 @@ Riding works across all movement types — land, flying, and swimming.
 
 | Input | Action |
 | :--- | :--- |
-| Space | Fly / swim upward |
-| S | Move backward / fly / swim downward |
+| Space | Jump (on land) / fly upward / swim upward |
+| S | Move backward / fly downward / swim downward |
 | Sprint (Ctrl) | 1.3x speed boost |
 
 Flying and swimming mobs maintain their current altitude or depth when you stop moving. The pet's rotation is always synced with your view. Use the `RIDE\|SADDLE` control mapping to require a saddle before mounting.
@@ -216,7 +218,7 @@ Beds work across dimensions. The dimension is stored at binding time so pets can
 
 | Boss | Special Behavior |
 | :--- | :--- |
-| **Wither** | Does not fire skulls while idle |
+| **Wither** | Side heads permanently suppressed; center head skull attacks cancelled when idle (no target) |
 | **Ender Dragon** | Supports mounted combat; health bar hidden after taming |
 | **Warden** | Anger levels towards owner and other pets are continuously cleared |
 
