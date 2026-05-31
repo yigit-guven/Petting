@@ -242,9 +242,14 @@ public class PettingConfig {
                 .defineListAllowEmpty("ridingWhitelist", List.of(), obj -> obj instanceof String);
 
         RIDING_BLACKLIST_ENABLED = BUILDER
+                .comment("If true, mobs listed in 'ridingBlacklist' cannot be ridden.")
                 .define("ridingBlacklistEnabled", false);
 
         RIDING_BLACKLIST = BUILDER
+                .comment(
+                    "Mobs that cannot be ridden. Supports exact IDs, whole mod namespaces, and wildcards.",
+                    "Examples: \"create\", \"minecraft:ravager\", \"create:mechanical*\"",
+                    "Syntax: ridingBlacklist = [\"entry1\", \"entry2\", ...]")
                 .defineListAllowEmpty("ridingBlacklist", List.of(), obj -> obj instanceof String);
 
         ALLOW_PET_ATTACK_WHILE_RIDING = BUILDER
@@ -282,9 +287,14 @@ public class PettingConfig {
                 .defineListAllowEmpty("inventoryWhitelist", List.of(), obj -> obj instanceof String);
 
         INVENTORY_BLACKLIST_ENABLED = BUILDER
+                .comment("If true, mobs listed in 'inventoryBlacklist' will not have the pet inventory UI.")
                 .define("inventoryBlacklistEnabled", false);
 
         INVENTORY_BLACKLIST = BUILDER
+                .comment(
+                    "Mobs that cannot have a pet inventory. Supports exact IDs, whole mod namespaces, and wildcards.",
+                    "Examples: \"create\", \"minecraft:blaze\", \"alexsmobs:*\"",
+                    "Syntax: inventoryBlacklist = [\"entry1\", \"entry2\", ...]")
                 .defineListAllowEmpty("inventoryBlacklist", List.of(), obj -> obj instanceof String);
 
         BUILDER.pop();
@@ -391,7 +401,15 @@ public class PettingConfig {
                 .define("blacklistEnabled", true);
 
         TAMING_BLACKLIST = BUILDER
-                .comment("List of entity registry names that are forbidden from taming. (e.g. [\"minecraft:wither\"])")
+                .comment(
+                    "List of entities or entire mods that CANNOT be tamed.",
+                    "Each entry is a string in the list. Supported formats:",
+                    "  Exact entity:   \"minecraft:wither\"   (blocks only that entity)",
+                    "  Whole mod:      \"create\"              (blocks ALL entities from mod 'create')",
+                    "  Mod wildcard:   \"create:*\"            (same as above, explicit wildcard)",
+                    "  Prefix:         \"create:mechanical*\"  (blocks any entity whose ID starts with 'create:mechanical')",
+                    "Syntax: tamingBlacklist = [\"entry1\", \"entry2\", ...]",
+                    "Example: tamingBlacklist = [\"create\", \"minecraft:wither\", \"alexsmobs:void_worm\"]")
                 .defineListAllowEmpty("tamingBlacklist", List.of(), obj -> obj instanceof String);
 
         BUILDER.pop();

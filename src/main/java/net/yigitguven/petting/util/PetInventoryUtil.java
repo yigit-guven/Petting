@@ -29,11 +29,29 @@ public class PetInventoryUtil {
     
     public static boolean isBlacklisted(Entity entity) {
         if (entity == null || !PettingConfig.BLACKLIST_ENABLED.get()) return false;
+        return matchesBlacklistEntry(entity, PettingConfig.TAMING_BLACKLIST.get());
+    }
+
+    /**
+     * Returns true if the entity's registry ID matches any entry in the given list.
+     * Supported formats:
+     *   "create:mechanical_arm"  — exact match
+     *   "create" or "create:*"  — entire mod namespace
+     *   "create:mechanical*"    — prefix wildcard
+     */
+    private static boolean matchesBlacklistEntry(Entity entity, List<? extends String> list) {
         ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
         if (key == null) return false;
         String id = key.toString();
-        List<? extends String> blacklist = PettingConfig.TAMING_BLACKLIST.get();
-        return blacklist.contains(id);
+        String namespace = key.getNamespace();
+        for (String entry : list) {
+            if (entry == null || entry.isBlank()) continue;
+            String e = entry.trim();
+            if (e.equals(id)) return true;
+            if (e.equals(namespace) || e.equals(namespace + ":*")) return true;
+            if (e.endsWith("*") && id.startsWith(e.substring(0, e.length() - 1))) return true;
+        }
+        return false;
     }
 
     public static net.minecraft.world.item.Item getItemFromID(String id, net.minecraft.world.item.Item fallback) {
@@ -96,7 +114,7 @@ public class PetInventoryUtil {
         String name = key.toString();
         
         if (net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST_ENABLED.get()) {
-            if (net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST.get().contains(name)) {
+            if (matchesBlacklistEntry(entity, net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST.get())) {
                 return false;
             }
         }
@@ -116,7 +134,7 @@ public class PetInventoryUtil {
         String name = key.toString();
         
         if (net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST_ENABLED.get()) {
-            if (net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST.get().contains(name)) {
+            if (matchesBlacklistEntry(entity, net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST.get())) {
                 return false;
             }
         }
