@@ -10,8 +10,6 @@
   [![Modrinth](https://img.shields.io/modrinth/dt/petting?style=for-the-badge&logo=modrinth&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/petting)
   [![Discord](https://img.shields.io/discord/1440563800930652235?style=for-the-badge&logo=discord&label=Discord&color=5865F2)](https://discord.gg/aPk7Qs5d4H)
   [![License](https://img.shields.io/badge/License-LGPL%20v3-blue?style=for-the-badge)](LICENSE)
-  [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.1-62B47A?style=for-the-badge)](https://www.minecraft.net/)
-  [![NeoForge](https://img.shields.io/badge/NeoForge-21.1.x-E04E14?style=for-the-badge)](https://neoforged.net/)
 
   [**GitHub**](https://github.com/yigit-guven/Petting) · [**Wiki**](https://github.com/yigit-guven/Petting/wiki) · [**Bug Reports**](https://github.com/yigit-guven/Petting/issues) · [**Discord**](https://discord.gg/aPk7Qs5d4H)
 
