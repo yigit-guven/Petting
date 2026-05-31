@@ -39,7 +39,11 @@ public class PettingClientPayloadHandler {
                         entity.getPersistentData().putString("control_right_click", payload.controlRightClick());
                         entity.getPersistentData().putString("control_shift_right_click", payload.controlShiftRightClick());
                     }
-                    net.yigitguven.petting.client.gui.PetSettingsScreen.open(payload.entityId(), payload.sitStill(), payload.waiting(), payload.isTamed(), payload.attackIfOwnerAttacks(), payload.attackIfOwnerAttacked(), payload.attackIfSelfAttacked(), payload.damageOwner(), payload.ignoreWhistle(), payload.followDistance(), payload.teleportDistance(), payload.controlRightClick(), payload.controlShiftRightClick());
+                    // Do not steal focus when user is editing key mappings.
+                    if (!(mc.screen instanceof net.yigitguven.petting.client.gui.PetControlMappingsScreen)
+                            && !(mc.screen instanceof net.yigitguven.petting.client.gui.MappingSelectionScreen)) {
+                        net.yigitguven.petting.client.gui.PetSettingsScreen.open(payload.entityId(), payload.sitStill(), payload.waiting(), payload.isTamed(), payload.attackIfOwnerAttacks(), payload.attackIfOwnerAttacked(), payload.attackIfSelfAttacked(), payload.damageOwner(), payload.ignoreWhistle(), payload.followDistance(), payload.teleportDistance(), payload.controlRightClick(), payload.controlShiftRightClick());
+                    }
             });
         }
     }
