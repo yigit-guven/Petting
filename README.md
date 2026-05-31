@@ -17,7 +17,7 @@
 
 ---
 
-**Petting** is a Minecraft mod for NeoForge that lets you tame virtually any mob in the game — hostile or passive, ordinary or boss. Tamed pets follow your commands, defend you in combat, carry your items, ride alongside you, and respawn at a dedicated bed when they die. Every behavior is deeply configurable, making the mod suitable for survival, adventure maps, and modpacks alike.
+**Petting** is a Minecraft mod that lets you tame virtually any mob in the game — hostile or passive, ordinary or boss. Tamed pets follow your commands, defend you in combat, carry your items, ride alongside you, and respawn at a dedicated bed when they die. Every behavior is deeply configurable, making the mod suitable for survival, adventure maps, and modpacks alike.
 
 ---
 
@@ -38,13 +38,6 @@
 ---
 
 ## Getting Started
-
-### Requirements
-
-| Dependency | Version |
-| :--- | :--- |
-| Minecraft | 1.21.1 |
-| NeoForge | 21.1.x |
 
 ### Installation
 
