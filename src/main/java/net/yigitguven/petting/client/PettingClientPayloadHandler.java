@@ -19,4 +19,28 @@ public class PettingClientPayloadHandler {
             }
         }
     }
+
+    public static void handleSendPetSettings(final net.yigitguven.petting.network.SendPetSettingsPayload payload, final IPayloadContext context) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc != null) {
+            mc.execute(() -> {
+                    net.minecraft.world.entity.Entity entity = mc.level != null ? mc.level.getEntity(payload.entityId()) : null;
+                    if (entity != null) {
+                        entity.getPersistentData().putBoolean("sitstill", payload.sitStill());
+                        entity.getPersistentData().putBoolean("waiting", payload.waiting());
+                        if (payload.isTamed()) entity.getPersistentData().putBoolean("pettingtamed", true); else entity.getPersistentData().remove("pettingtamed");
+                        entity.getPersistentData().putBoolean("attackifownerattacks", payload.attackIfOwnerAttacks());
+                        entity.getPersistentData().putBoolean("attackifownerattacked", payload.attackIfOwnerAttacked());
+                        entity.getPersistentData().putBoolean("attackifselfattacked", payload.attackIfSelfAttacked());
+                        entity.getPersistentData().putBoolean("damageOwner", payload.damageOwner());
+                        entity.getPersistentData().putBoolean("ignoreWhistle", payload.ignoreWhistle());
+                        entity.getPersistentData().putInt("followdistance", payload.followDistance());
+                        entity.getPersistentData().putInt("teleportdistance", payload.teleportDistance());
+                        entity.getPersistentData().putString("control_right_click", payload.controlRightClick());
+                        entity.getPersistentData().putString("control_shift_right_click", payload.controlShiftRightClick());
+                    }
+                    net.yigitguven.petting.client.gui.PetSettingsScreen.open(payload.entityId(), payload.sitStill(), payload.waiting(), payload.isTamed(), payload.attackIfOwnerAttacks(), payload.attackIfOwnerAttacked(), payload.attackIfSelfAttacked(), payload.damageOwner(), payload.ignoreWhistle(), payload.followDistance(), payload.teleportDistance(), payload.controlRightClick(), payload.controlShiftRightClick());
+            });
+        }
+    }
 }

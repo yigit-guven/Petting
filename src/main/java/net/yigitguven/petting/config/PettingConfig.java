@@ -45,8 +45,13 @@ public class PettingConfig {
     public static final ModConfigSpec.BooleanValue SIT_HEAL_ENABLED;
     public static final ModConfigSpec.DoubleValue SIT_HEAL_AMOUNT;
     public static final ModConfigSpec.IntValue SIT_HEAL_INTERVAL;
-    public static final ModConfigSpec.DoubleValue FOLLOW_DISTANCE;
-    public static final ModConfigSpec.DoubleValue TELEPORT_DISTANCE;
+        public static final ModConfigSpec.DoubleValue FOLLOW_DISTANCE;
+        public static final ModConfigSpec.DoubleValue TELEPORT_DISTANCE;
+        // Expose configured clamp ranges for use at runtime (will be initialized in static block)
+        public static final int FOLLOW_DISTANCE_MIN;
+        public static final int FOLLOW_DISTANCE_MAX;
+        public static final int TELEPORT_DISTANCE_MIN;
+        public static final int TELEPORT_DISTANCE_MAX;
     public static final ModConfigSpec.DoubleValue BOUND_ROAM_RADIUS;
 
     public static final ModConfigSpec.ConfigValue<List<? extends String>> MANUAL_FLYING_MOBS;
@@ -169,13 +174,21 @@ public class PettingConfig {
                 .comment("Interval (in ticks) between each sitting health regeneration.")
                 .defineInRange("sitHealInterval", 40, 1, 1000000);
 
+        int minFollow = 1;
+        int maxFollow = 100;
         FOLLOW_DISTANCE = BUILDER
                 .comment("Distance from owner before the pet starts walking to them.")
-                .defineInRange("followDistance", 10.0, 1.0, 100.0);
+                .defineInRange("followDistance", 10.0, (double) minFollow, (double) maxFollow);
+        FOLLOW_DISTANCE_MIN = minFollow;
+        FOLLOW_DISTANCE_MAX = maxFollow;
 
+        int minTeleport = 5;
+        int maxTeleport = 200;
         TELEPORT_DISTANCE = BUILDER
                 .comment("Distance from owner before the pet forcibly teleports to them.")
-                .defineInRange("teleportDistance", 20.0, 5.0, 200.0);
+                .defineInRange("teleportDistance", 20.0, (double) minTeleport, (double) maxTeleport);
+        TELEPORT_DISTANCE_MIN = minTeleport;
+        TELEPORT_DISTANCE_MAX = maxTeleport;
 
         BOUND_ROAM_RADIUS = BUILDER
                 .comment("Radius (in blocks) the pet will roam around its bound coordinate.")

@@ -62,6 +62,10 @@ public class PettingMod {
 		registrar.playToServer(net.yigitguven.petting.network.OpenPetInventoryPayload.TYPE, net.yigitguven.petting.network.OpenPetInventoryPayload.STREAM_CODEC, net.yigitguven.petting.network.OpenPetInventoryPayload::handle);
 		registrar.playToServer(net.yigitguven.petting.network.PetAttackPayload.TYPE, net.yigitguven.petting.network.PetAttackPayload.STREAM_CODEC, net.yigitguven.petting.network.PetAttackPayload::handle);
 		registrar.playToServer(net.yigitguven.petting.network.CancelBindingPayload.TYPE, net.yigitguven.petting.network.CancelBindingPayload.STREAM_CODEC, net.yigitguven.petting.network.CancelBindingPayload::handle);
+		registrar.playToServer(net.yigitguven.petting.network.OpenPetSettingsPayload.TYPE, net.yigitguven.petting.network.OpenPetSettingsPayload.STREAM_CODEC, net.yigitguven.petting.network.OpenPetSettingsPayload::handle);
+		registrar.playToClient(net.yigitguven.petting.network.SendPetSettingsPayload.TYPE, net.yigitguven.petting.network.SendPetSettingsPayload.STREAM_CODEC, net.yigitguven.petting.network.SendPetSettingsPayload::handle);
+		registrar.playToServer(net.yigitguven.petting.network.UpdatePetSettingPayload.TYPE, net.yigitguven.petting.network.UpdatePetSettingPayload.STREAM_CODEC, net.yigitguven.petting.network.UpdatePetSettingPayload::handle);
+		registrar.playToServer(net.yigitguven.petting.network.SavePetControlDefaultsPayload.TYPE, net.yigitguven.petting.network.SavePetControlDefaultsPayload.STREAM_CODEC, net.yigitguven.petting.network.SavePetControlDefaultsPayload::handle);
 	}
 
 	private static final Collection<AbstractMap.SimpleEntry<Runnable, Integer>> workQueue = new ConcurrentLinkedQueue<>();
