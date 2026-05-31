@@ -45,8 +45,9 @@ public class PlayerRightclicksEntitzProcedure {
 					for (String[] rule : parseRules(mapping)) {
 						String action = rule[0];
 						String condition = rule[1];
+						String command = rule.length > 2 ? rule[2] : "";
 						if (!conditionMatches(player, target, condition)) continue;
-						boolean consumed = handleMappedAction(serverPlayer, target, action);
+						boolean consumed = handleMappedAction(serverPlayer, target, action, command);
 						if (consumed) {
 							event.setCancellationResult(InteractionResult.SUCCESS);
 							event.setCanceled(true);
@@ -63,7 +64,7 @@ public class PlayerRightclicksEntitzProcedure {
 		}
 	}
 
-	private static boolean handleMappedAction(ServerPlayer player, Entity target, String action) {
+	private static boolean handleMappedAction(ServerPlayer player, Entity target, String action, String command) {
 		if (player == null || target == null) return false;
 		CompoundTag data = target.getPersistentData();
 		switch (action) {
@@ -79,15 +80,10 @@ public class PlayerRightclicksEntitzProcedure {
 		}
 
 		case "RUN_COMMAND": {
-			// run a per-pet command if configured in NBT key control_command_right_click
-			String cmdKey = "control_command_" + (player.isShiftKeyDown() ? "shift_right_click" : "right_click");
-			if (data.contains(cmdKey)) {
-				String cmd = data.getString(cmdKey);
-				if (cmd != null && !cmd.isEmpty()) {
-					// Use dispatcher.execute to run command string
-					player.getServer().getCommands().performPrefixedCommand(player.createCommandSourceStack(), cmd);
-					return true;
-				}
+			// Execute the embedded command string as the player
+			if (command != null && !command.isEmpty()) {
+				player.getServer().getCommands().performPrefixedCommand(player.createCommandSourceStack(), command);
+				return true;
 			}
 			return false;
 		}
@@ -123,16 +119,14 @@ public class PlayerRightclicksEntitzProcedure {
 				return true;
 			}
 			case "CYCLE": {
-				// cycle follow distance similarly to existing logic (5->10->20->50)
-				int current = data.getInt("followdistance");
-				if (current == 0) current = 5;
-				int next = switch (current) {
-					case 5 -> 10;
-					case 10 -> 20;
-					case 20 -> 50;
-					default -> 5;
-				};
-				net.yigitguven.petting.network.EntitySettingsServer.applyUpdate(player, target.getId(), "followdistance", Integer.toString(next));
+				// Cycle through follow/teleport preset pairs: (5,10) → (10,20) → (20,50) → (5,10)
+				int f = data.contains("followdistance") ? data.getInt("followdistance") : (int)net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get().doubleValue();
+				int nf, nt;
+				if (f <= 5) { nf = 10; nt = 20; }
+				else if (f <= 10) { nf = 20; nt = 50; }
+				else { nf = 5; nt = 10; }
+				net.yigitguven.petting.network.EntitySettingsServer.applyUpdate(player, target.getId(), "followdistance", Integer.toString(nf));
+				net.yigitguven.petting.network.EntitySettingsServer.applyUpdate(player, target.getId(), "teleportdistance", Integer.toString(nt));
 				return true;
 			}
 			case "NONE":
@@ -168,16 +162,18 @@ public class PlayerRightclicksEntitzProcedure {
 			if (token.isEmpty()) continue;
 			String action;
 			String condition = "NONE";
+			String command = "";
 			if (token.contains("|")) {
-				String[] parts = token.split("\\|", 2);
+				String[] parts = token.split("\\|", 3);
 				action = parts[0].trim();
 				if (parts.length > 1 && !parts[1].isBlank()) {
 					condition = parts[1].trim();
 				}
+				if (parts.length > 2) command = parts[2].trim();
 			} else {
 				action = token;
 			}
-			rules.add(new String[] { action, condition });
+			rules.add(new String[] { action, condition, command });
 		}
 		return rules;
 	}

@@ -42,7 +42,10 @@ public class MappingSelectionScreen extends Screen {
             int yy = y + row * 22;
             this.addRenderableWidget(Button.builder(label, b -> {
                 callback.accept(key);
-                Minecraft.getInstance().setScreen(this.parent);
+                // Only navigate back if the callback didn't already change the screen
+                if (Minecraft.getInstance().screen == this) {
+                    Minecraft.getInstance().setScreen(this.parent);
+                }
             }).bounds(xx, yy, buttonWidth, 20).build());
         }
 
@@ -83,7 +86,9 @@ public class MappingSelectionScreen extends Screen {
         } else if (keyCode == 257 || keyCode == 335) {
             if (selectedIndex >= 0 && selectedIndex < keys.size()) {
                 callback.accept(keys.get(selectedIndex));
-                Minecraft.getInstance().setScreen(this.parent);
+                if (Minecraft.getInstance().screen == this) {
+                    Minecraft.getInstance().setScreen(this.parent);
+                }
                 return true;
             }
         }

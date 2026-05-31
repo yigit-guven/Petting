@@ -29,10 +29,18 @@ public class PetControlMappingsScreen extends Screen {
     private static final class MappingRule {
         String action;
         String condition;
+        String command;
 
         MappingRule(String action, String condition) {
             this.action = action;
             this.condition = condition;
+            this.command = "";
+        }
+
+        MappingRule(String action, String condition, String command) {
+            this.action = action;
+            this.condition = condition;
+            this.command = command == null ? "" : command;
         }
     }
 
@@ -67,16 +75,18 @@ public class PetControlMappingsScreen extends Screen {
                 if (trimmed.isEmpty()) continue;
                 String action;
                 String condition = "NONE";
+                String command = "";
                 if (trimmed.contains("|")) {
-                    String[] parts = trimmed.split("\\|", 2);
+                    String[] parts = trimmed.split("\\|", 3);
                     action = parts[0].trim();
                     if (parts.length > 1 && !parts[1].isBlank()) condition = parts[1].trim();
+                    if (parts.length > 2) command = parts[2];
                 } else {
                     action = trimmed;
                 }
                 if (!ACTION_KEYS.contains(action)) action = fallbackAction;
                 if (!CONDITION_KEYS.contains(condition)) condition = "NONE";
-                rules.add(new MappingRule(action, condition));
+                rules.add(new MappingRule(action, condition, command));
             }
         }
         if (rules.isEmpty()) {
@@ -89,7 +99,21 @@ public class PetControlMappingsScreen extends Screen {
         if (rules.isEmpty()) {
             return fallbackAction + "|NONE";
         }
-        return rules.stream().map(r -> r.action + "|" + r.condition).collect(java.util.stream.Collectors.joining(";"));
+        return rules.stream().map(r -> {
+            String base = r.action + "|" + r.condition;
+            if ("RUN_COMMAND".equals(r.action) && r.command != null && !r.command.isBlank()) {
+                return base + "|" + r.command;
+            }
+            return base;
+        }).collect(java.util.stream.Collectors.joining(";"));
+    }
+
+    private Component buildActionBtnLabel(MappingRule rule) {
+        if ("RUN_COMMAND".equals(rule.action) && rule.command != null && !rule.command.isEmpty()) {
+            String preview = rule.command.length() > 14 ? rule.command.substring(0, 12) + "..." : rule.command;
+            return Component.literal("Run: " + preview);
+        }
+        return actionLabel(rule.action);
     }
 
     private Entity getPetEntity() {
@@ -239,12 +263,30 @@ public class PetControlMappingsScreen extends Screen {
             int rowY2 = rowY + ROW_H + 2;
 
             // Row 1 – action selector (full width)
-            Button actionBtn = Button.builder(actionLabel(rule.action), b ->
+            Button actionBtn = Button.builder(buildActionBtnLabel(rule), b ->
                 Minecraft.getInstance().setScreen(new MappingSelectionScreen(this,
                     Component.translatable("screen.petting.mapping.select_action"),
                     ACTION_KEYS, ACTION_KEYS.stream().map(this::actionLabel).toList(),
                     Math.max(0, ACTION_KEYS.indexOf(rules.get(idx).action)),
-                    sel -> { rules.get(idx).action = sel; sendMapping(shiftSide); rebuildWidgets(); }
+                    sel -> {
+                        if ("RUN_COMMAND".equals(sel)) {
+                            // Chain to command input screen; action/command set only on confirm
+                            Minecraft.getInstance().setScreen(new CommandInputScreen(
+                                PetControlMappingsScreen.this,
+                                rules.get(idx).command,
+                                cmd -> {
+                                    rules.get(idx).action = "RUN_COMMAND";
+                                    rules.get(idx).command = cmd;
+                                    sendMapping(shiftSide);
+                                }
+                            ));
+                        } else {
+                            rules.get(idx).action = sel;
+                            rules.get(idx).command = "";
+                            sendMapping(shiftSide);
+                            rebuildWidgets();
+                        }
+                    }
                 ))
             ).bounds(colX, rowY, colW, ROW_H).build();
             this.addRenderableWidget(actionBtn);

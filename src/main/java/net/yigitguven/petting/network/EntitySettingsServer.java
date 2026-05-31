@@ -137,15 +137,24 @@ public class EntitySettingsServer {
             if (rule.isEmpty()) continue;
             String action;
             String condition = "NONE";
+            String command = "";
             if (rule.contains("|")) {
-                String[] parts = rule.split("\\|", 2);
+                String[] parts = rule.split("\\|", 3);
                 action = parts[0].trim();
                 if (parts.length > 1 && !parts[1].isBlank()) condition = parts[1].trim();
+                if (parts.length > 2) command = parts[2];
             } else {
                 action = rule;
             }
             if (!allowedActions.contains(action) || !allowedConditions.contains(condition)) return null;
-            out.add(action + "|" + condition);
+            String normalized = action + "|" + condition;
+            if ("RUN_COMMAND".equals(action) && !command.isBlank()) {
+                // Sanitize: strip control characters, cap length
+                command = command.replaceAll("[\\p{Cntrl}]", "").trim();
+                if (command.length() > 256) command = command.substring(0, 256);
+                if (!command.isEmpty()) normalized += "|" + command;
+            }
+            out.add(normalized);
         }
         if (out.isEmpty()) out.add(fallbackAction + "|NONE");
         return String.join(";", out);
