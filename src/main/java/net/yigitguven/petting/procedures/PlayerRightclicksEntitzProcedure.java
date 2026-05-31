@@ -96,10 +96,26 @@ public class PlayerRightclicksEntitzProcedure {
 		}
 
 		case "RUN_COMMAND": {
-			// Execute the embedded command string as the player
+			// Only execute if the player has permission to run the command themselves.
+			// Parse the root command name, find it in the dispatcher, and check its
+			// required permission level against the player's actual op level.
 			if (command != null && !command.isEmpty()) {
-				player.getServer().getCommands().performPrefixedCommand(player.createCommandSourceStack(), command);
-				return true;
+				com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> dispatcher =
+						player.getServer().getCommands().getDispatcher();
+				// Strip leading slash if present
+				String cmd = command.startsWith("/") ? command.substring(1) : command;
+				String rootName = cmd.split("\\s+")[0];
+				com.mojang.brigadier.tree.CommandNode<net.minecraft.commands.CommandSourceStack> rootNode =
+						dispatcher.getRoot().getChild(rootName);
+				net.minecraft.commands.CommandSourceStack source = player.createCommandSourceStack();
+				// If the command node exists and the player's source can use it, run it.
+				// This respects op-level requirements defined by the command itself.
+				if (rootNode != null && rootNode.canUse(source)) {
+					player.getServer().getCommands().performPrefixedCommand(source, command);
+					return true;
+				}
+				// Permission denied — silently skip (no feedback to avoid info leak)
+				return true; // still consumed, just not executed
 			}
 			return false;
 		}

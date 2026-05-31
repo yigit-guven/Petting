@@ -23,6 +23,7 @@ public class GoldenWheatRightclickedProcedure {
 
     public static boolean execute(Entity entity, Player player) {
         if (entity == null || player == null) return false;
+        if (entity.level().isClientSide()) return false;
 
         long currentTime = entity.level().getGameTime();
         long lastInteracted = entity.getPersistentData().getLong("pettingLastInteracted");

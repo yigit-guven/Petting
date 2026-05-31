@@ -18,7 +18,7 @@ public class PetWhistleProcedure {
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
         Player player = event.getEntity();
-        if (player.level().isClientSide() || !player.isShiftKeyDown()) return;
+        if (player.level().isClientSide()) return;
 
         if (!PettingConfig.ENABLE_GOAT_HORN_WHISTLE.get()) return;
 
