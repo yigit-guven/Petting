@@ -57,7 +57,17 @@ public class PetDeathHandlerProcedure {
 
                 // B. Heal Fully
                 mob.setHealth(mob.getMaxHealth());
-                mob.removeAllEffects(); 
+                mob.removeAllEffects();
+
+                // Reset bee stinger state via NBT so it doesn't re-enter the death loop.
+                // setHasStung() is private, but vanilla reads "HasStung" from NBT via
+                // readAdditionalSaveData, so we patch that and reload just that tag.
+                if (mob instanceof net.minecraft.world.entity.animal.Bee) {
+                    net.minecraft.nbt.CompoundTag beeNbt = new net.minecraft.nbt.CompoundTag();
+                    mob.saveWithoutId(beeNbt);
+                    beeNbt.putBoolean("HasStung", false);
+                    mob.readAdditionalSaveData(beeNbt);
+                }
 
                 // C. Teleport to Bed
                 mob.teleportTo(respawnPos.getX() + 0.5, respawnPos.getY(), respawnPos.getZ() + 0.5);
