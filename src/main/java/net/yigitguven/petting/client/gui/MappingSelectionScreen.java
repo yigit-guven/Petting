@@ -1,6 +1,5 @@
 package net.yigitguven.petting.client.gui;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -8,14 +7,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.client.Minecraft;
 
 public class MappingSelectionScreen extends Screen {
+    private final Screen parent;
     private final Component title;
     private final java.util.List<String> keys;
     private final java.util.List<Component> labels;
     private final java.util.function.Consumer<String> callback;
     private int selectedIndex;
 
-    protected MappingSelectionScreen(Component title, java.util.List<String> keys, java.util.List<Component> labels, int selectedIndex, java.util.function.Consumer<String> callback) {
+    protected MappingSelectionScreen(Screen parent, Component title, java.util.List<String> keys, java.util.List<Component> labels, int selectedIndex, java.util.function.Consumer<String> callback) {
         super(title);
+        this.parent = parent;
         this.title = title;
         this.keys = keys;
         this.labels = labels;
@@ -41,11 +42,11 @@ public class MappingSelectionScreen extends Screen {
             int yy = y + row * 22;
             this.addRenderableWidget(Button.builder(label, b -> {
                 callback.accept(key);
-                Minecraft.getInstance().setScreen(null);
+                Minecraft.getInstance().setScreen(this.parent);
             }).bounds(xx, yy, buttonWidth, 20).build());
         }
 
-        this.addRenderableWidget(Button.builder(Component.translatable("screen.petting.settings.close"), b -> Minecraft.getInstance().setScreen(null))
+        this.addRenderableWidget(Button.builder(Component.translatable("screen.petting.settings.close"), b -> Minecraft.getInstance().setScreen(this.parent))
                 .bounds((this.width - buttonWidth) / 2, y + rows * 22 + 8, buttonWidth, 20).build());
     }
 
@@ -82,7 +83,7 @@ public class MappingSelectionScreen extends Screen {
         } else if (keyCode == 257 || keyCode == 335) {
             if (selectedIndex >= 0 && selectedIndex < keys.size()) {
                 callback.accept(keys.get(selectedIndex));
-                Minecraft.getInstance().setScreen(null);
+                Minecraft.getInstance().setScreen(this.parent);
                 return true;
             }
         }

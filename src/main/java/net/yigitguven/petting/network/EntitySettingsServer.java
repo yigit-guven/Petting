@@ -37,10 +37,12 @@ public class EntitySettingsServer {
         if (player == null) return;
         CompoundTag data = player.getPersistentData();
         if (rightClick != null && !rightClick.isBlank()) {
-            data.putString("petting_default_control_right_click", rightClick);
+            String normalized = normalizeMapping(rightClick, "SIT");
+            if (normalized != null) data.putString("petting_default_control_right_click", normalized);
         }
         if (shiftRightClick != null && !shiftRightClick.isBlank()) {
-            data.putString("petting_default_control_shift_right_click", shiftRightClick);
+            String normalized = normalizeMapping(shiftRightClick, "CYCLE");
+            if (normalized != null) data.putString("petting_default_control_shift_right_click", normalized);
         }
     }
 
@@ -87,21 +89,10 @@ public class EntitySettingsServer {
                 return; // invalid int
             }
         } else if (controlKeys.contains(key)) {
-            // Accept detailed format ACTION|CONDITION or legacy single ACTION
-            String action = null;
-            String condition = "NONE";
-            if (value.contains("|")) {
-                String[] parts = value.split("\\|", 2);
-                action = parts[0];
-                condition = parts[1];
-            } else {
-                action = value;
-            }
-            java.util.Set<String> allowedActions = java.util.Set.of("SIT", "CYCLE", "RIDE", "OPEN_INV", "TOGGLE_WAIT", "TOGGLE_FOLLOW_TELEPORT", "OPEN_SETTINGS", "RUN_COMMAND", "NONE");
-            java.util.Set<String> allowedConditions = java.util.Set.of("NONE", "SADDLE", "SNEAK", "HEALTH_LT_50", "HOLD_ITEM");
-            if (!allowedActions.contains(action) || !allowedConditions.contains(condition)) return;
-            // store as composite string for simplicity
-            data.putString(key, action + "|" + condition);
+            String fallback = key.equals("control_right_click") ? "SIT" : "CYCLE";
+            String normalized = normalizeMapping(value, fallback);
+            if (normalized == null) return;
+            data.putString(key, normalized);
         } else {
             // not an allowed key — ignore
             return;
@@ -133,5 +124,30 @@ public class EntitySettingsServer {
             if (tamable.isOwnedBy(player)) return true;
         }
         return false;
+    }
+
+    private static String normalizeMapping(String value, String fallbackAction) {
+        if (value == null || value.isBlank()) return fallbackAction + "|NONE";
+        java.util.Set<String> allowedActions = java.util.Set.of("SIT", "CYCLE", "RIDE", "OPEN_INV", "TOGGLE_WAIT", "TOGGLE_FOLLOW_TELEPORT", "OPEN_SETTINGS", "RUN_COMMAND", "NONE");
+        java.util.Set<String> allowedConditions = java.util.Set.of("NONE", "SADDLE", "SNEAK", "HEALTH_LT_50", "HOLD_ITEM");
+        java.util.List<String> out = new java.util.ArrayList<>();
+        String[] rawRules = value.split(";");
+        for (String rawRule : rawRules) {
+            String rule = rawRule.trim();
+            if (rule.isEmpty()) continue;
+            String action;
+            String condition = "NONE";
+            if (rule.contains("|")) {
+                String[] parts = rule.split("\\|", 2);
+                action = parts[0].trim();
+                if (parts.length > 1 && !parts[1].isBlank()) condition = parts[1].trim();
+            } else {
+                action = rule;
+            }
+            if (!allowedActions.contains(action) || !allowedConditions.contains(condition)) return null;
+            out.add(action + "|" + condition);
+        }
+        if (out.isEmpty()) out.add(fallbackAction + "|NONE");
+        return String.join(";", out);
     }
 }

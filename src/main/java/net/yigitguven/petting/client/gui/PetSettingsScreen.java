@@ -24,10 +24,8 @@ public class PetSettingsScreen extends Screen {
     private boolean ignoreWhistle;
     private int followDistance;
     private int teleportDistance;
-    private final String controlRightAction;
-    private final String controlRightCondition;
-    private final String controlShiftAction;
-    private final String controlShiftCondition;
+    private final String controlRightMapping;
+    private final String controlShiftMapping;
     private EditBox followBox;
     private EditBox tpBox;
     private String followError;
@@ -59,12 +57,8 @@ public class PetSettingsScreen extends Screen {
         this.followDistance = followDistance;
         this.teleportDistance = teleportDistance;
 
-        String[] rightParts = controlRightClick != null ? controlRightClick.split("\\|", 2) : new String[] { "SIT", "NONE" };
-        String[] shiftParts = controlShiftRightClick != null ? controlShiftRightClick.split("\\|", 2) : new String[] { "CYCLE", "NONE" };
-        this.controlRightAction = rightParts.length > 0 ? rightParts[0] : "SIT";
-        this.controlRightCondition = rightParts.length > 1 ? rightParts[1] : "NONE";
-        this.controlShiftAction = shiftParts.length > 0 ? shiftParts[0] : "CYCLE";
-        this.controlShiftCondition = shiftParts.length > 1 ? shiftParts[1] : "NONE";
+        this.controlRightMapping = controlRightClick != null && !controlRightClick.isBlank() ? controlRightClick : "SIT|NONE";
+        this.controlShiftMapping = controlShiftRightClick != null && !controlShiftRightClick.isBlank() ? controlShiftRightClick : "CYCLE|NONE";
     }
 
     public static void open(int entityId, boolean sitStill, boolean waiting, boolean isTamed,
@@ -188,8 +182,7 @@ public class PetSettingsScreen extends Screen {
         int controlsRowY = distanceRowY + 50;
         this.controlsButton = Button.builder(Component.translatable("screen.petting.controls.open"), b ->
                 Minecraft.getInstance().setScreen(new PetControlMappingsScreen(this, this.entityId,
-                        this.controlRightAction, this.controlRightCondition,
-                        this.controlShiftAction, this.controlShiftCondition)))
+                this.controlRightMapping, this.controlShiftMapping)))
                 .bounds(cardLeft, controlsRowY, cardWidth, 20).build();
         this.addRenderableWidget(this.controlsButton);
 

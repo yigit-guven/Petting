@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
 import java.util.List;
-import java.util.function.Consumer;
 
 @EventBusSubscriber
 public class PlayerRightclicksEntitzProcedure {
@@ -42,47 +41,16 @@ public class PlayerRightclicksEntitzProcedure {
 				String key = isShift ? "control_shift_right_click" : "control_right_click";
 				String defaultKey = isShift ? "petting_default_control_shift_right_click" : "petting_default_control_right_click";
 				String mapping = data.contains(key) ? data.getString(key) : player.getPersistentData().getString(defaultKey);
-				if (mapping != null && !mapping.isEmpty()) {
-					// parse ACTION|CONDITION or legacy ACTION
-					String action = mapping;
-					String condition = "NONE";
-					if (mapping.contains("|")) {
-						String[] parts = mapping.split("\\|", 2);
-						action = parts[0];
-						condition = parts[1];
-					}
-
-					// check condition
-							if ("SADDLE".equals(condition) && !net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(target)) {
-						// condition not met -> fallthrough to normal handling
-							} else if ("SNEAK".equals(condition) && !player.isShiftKeyDown()) {
-						// condition not met
-							} else if ("HEALTH_LT_50".equals(condition)) {
-								if (!(target instanceof net.minecraft.world.entity.LivingEntity living)) {
-									// not a living entity
-									// fallthrough
-								} else {
-									float hp = living.getHealth();
-									float max = living.getMaxHealth();
-									if ((hp / max) * 100.0F >= 50.0F) {
-										// condition not met
-										// fallthrough
-										;
-									}
-								}
-							} else if ("HOLD_ITEM".equals(condition)) {
-								if (player.getMainHandItem().isEmpty()) {
-									// not holding item => condition not met
-								}
-					} else {
-						// perform action server-side
-								if (player instanceof ServerPlayer serverPlayer) {
-									boolean consumed = handleMappedAction(serverPlayer, target, action);
-							if (consumed) {
-								event.setCancellationResult(InteractionResult.SUCCESS);
-								event.setCanceled(true);
-								return;
-							}
+				if (mapping != null && !mapping.isEmpty() && player instanceof ServerPlayer serverPlayer) {
+					for (String[] rule : parseRules(mapping)) {
+						String action = rule[0];
+						String condition = rule[1];
+						if (!conditionMatches(player, target, condition)) continue;
+						boolean consumed = handleMappedAction(serverPlayer, target, action);
+						if (consumed) {
+							event.setCancellationResult(InteractionResult.SUCCESS);
+							event.setCanceled(true);
+							return;
 						}
 					}
 				}
@@ -171,5 +139,46 @@ public class PlayerRightclicksEntitzProcedure {
 			default:
 				return false;
 		}
+	}
+
+	private static boolean conditionMatches(Player player, Entity target, String condition) {
+		return switch (condition) {
+			case "SADDLE" -> net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(target);
+			case "SNEAK" -> player.isShiftKeyDown();
+			case "HEALTH_LT_50" -> {
+				if (!(target instanceof net.minecraft.world.entity.LivingEntity living)) {
+					yield false;
+				}
+				float max = living.getMaxHealth();
+				if (max <= 0.0F) yield false;
+				yield (living.getHealth() / max) < 0.5F;
+			}
+			case "HOLD_ITEM" -> !player.getMainHandItem().isEmpty();
+			case "NONE" -> true;
+			default -> false;
+		};
+	}
+
+	private static List<String[]> parseRules(String mapping) {
+		List<String[]> rules = new java.util.ArrayList<>();
+		if (mapping == null || mapping.isBlank()) return rules;
+		String[] rawRules = mapping.split(";");
+		for (String raw : rawRules) {
+			String token = raw.trim();
+			if (token.isEmpty()) continue;
+			String action;
+			String condition = "NONE";
+			if (token.contains("|")) {
+				String[] parts = token.split("\\|", 2);
+				action = parts[0].trim();
+				if (parts.length > 1 && !parts[1].isBlank()) {
+					condition = parts[1].trim();
+				}
+			} else {
+				action = token;
+			}
+			rules.add(new String[] { action, condition });
+		}
+		return rules;
 	}
 }
