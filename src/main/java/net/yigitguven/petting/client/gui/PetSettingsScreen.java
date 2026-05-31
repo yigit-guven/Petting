@@ -177,11 +177,11 @@ public class PetSettingsScreen extends Screen {
         this.addRenderableWidget(this.ignoreWhistleButton);
 
         int distanceRowY = startY + (rowHeight + rowGap) * 4 + 2;
-        this.followBox = new EditBox(this.font, leftColumnX, distanceRowY + 10, columnWidth, 20, Component.translatable("screen.petting.settings.followdistance"));
+        this.followBox = new EditBox(this.font, leftColumnX, distanceRowY + 10, columnWidth, 20, Component.translatable("gui.petting.followdistance"));
         this.followBox.setValue(Integer.toString(this.followDistance));
         this.addRenderableWidget(this.followBox);
 
-        this.tpBox = new EditBox(this.font, rightColumnX, distanceRowY + 10, columnWidth, 20, Component.translatable("screen.petting.settings.teleportdistance"));
+        this.tpBox = new EditBox(this.font, rightColumnX, distanceRowY + 10, columnWidth, 20, Component.translatable("gui.petting.teleportdistance"));
         this.tpBox.setValue(Integer.toString(this.teleportDistance));
         this.addRenderableWidget(this.tpBox);
 
@@ -262,8 +262,8 @@ public class PetSettingsScreen extends Screen {
         guiGraphics.drawString(this.font, getPetName(), portraitX + portraitSize + 6, portraitY + 2, 0xFFFFFF, false);
         guiGraphics.drawString(this.font, this.title, portraitX + portraitSize + 6, portraitY + 12, 0xAAAAAA, false);
 
-        guiGraphics.drawString(this.font, Component.translatable("screen.petting.settings.followdistance").getString(), leftColumnX2, distanceRowY, 0xDDDDDD);
-        guiGraphics.drawString(this.font, Component.translatable("screen.petting.settings.teleportdistance").getString(), rightColumnX2, distanceRowY, 0xDDDDDD);
+        guiGraphics.drawString(this.font, Component.translatable("gui.petting.followdistance").getString(), leftColumnX2, distanceRowY, 0xDDDDDD);
+        guiGraphics.drawString(this.font, Component.translatable("gui.petting.teleportdistance").getString(), rightColumnX2, distanceRowY, 0xDDDDDD);
         guiGraphics.drawString(this.font, Component.translatable("screen.petting.settings.range_hint",
                 net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE_MIN,
                 net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE_MAX).getString(), leftColumnX, distanceRowY + 34, 0xAAAAAA);
