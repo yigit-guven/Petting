@@ -14,3 +14,4 @@
 - Updated legacy tool-based pet boolean toggles to use server-side `EntitySettingsServer.applyUpdate` for proper validation and client sync.
 - Ensured `ignoreWhistle` is correctly respected by pet whistle teleport logic.
 - Added permission-aware `RUN_COMMAND` execution so pets only run embedded commands if the owner actually has permission to execute that command.
+- Fixed blacklist handling for taming by default enabling pet blacklist support and making blacklisted entities fully transparent to Petting interactions, preventing Create package duplication glitches.

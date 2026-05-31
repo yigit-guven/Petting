@@ -50,10 +50,9 @@ public class GoldenWheatRightclickedProcedure {
 
         if (!toolMatches) return false;
 
-        // 2. Blacklist Check
+        // 2. Blacklist Check — return false so the entity's own interaction handlers still run
         if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) {
-            player.displayClientMessage(Component.literal("§cThis entity cannot be tamed."), true);
-            return true;
+            return false;
         }
 
         // 3. Whitelist Check

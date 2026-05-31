@@ -388,7 +388,7 @@ public class PettingConfig {
 
         BLACKLIST_ENABLED = BUILDER
                 .comment("If true, mobs listed in 'tamingBlacklist' CANNOT be tamed. (Overrides Whitelist)")
-                .define("blacklistEnabled", false);
+                .define("blacklistEnabled", true);
 
         TAMING_BLACKLIST = BUILDER
                 .comment("List of entity registry names that are forbidden from taming. (e.g. [\"minecraft:wither\"])")
