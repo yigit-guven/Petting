@@ -180,10 +180,18 @@ public class PetSettingsScreen extends Screen {
         this.addRenderableWidget(this.tpBox);
 
         int controlsRowY = distanceRowY + 50;
-        this.controlsButton = Button.builder(Component.translatable("screen.petting.controls.open"), b ->
-                Minecraft.getInstance().setScreen(new PetControlMappingsScreen(this, this.entityId,
-                this.controlRightMapping, this.controlShiftMapping)))
-                .bounds(cardLeft, controlsRowY, cardWidth, 20).build();
+        this.controlsButton = Button.builder(Component.translatable("screen.petting.controls.open"), b -> {
+                // Always read fresh mapping strings from entity client NBT so we don't pass stale constructor values
+                net.minecraft.world.entity.Entity _pet = getPetEntity();
+                String _right = "SIT|NONE";
+                String _shift = "CYCLE|NONE";
+                if (_pet != null) {
+                    net.minecraft.nbt.CompoundTag _d = _pet.getPersistentData();
+                    if (_d.contains("control_right_click"))       _right = _d.getString("control_right_click");
+                    if (_d.contains("control_shift_right_click")) _shift = _d.getString("control_shift_right_click");
+                }
+                Minecraft.getInstance().setScreen(new PetControlMappingsScreen(this, this.entityId, _right, _shift));
+        }).bounds(cardLeft, controlsRowY, cardWidth, 20).build();
         this.addRenderableWidget(this.controlsButton);
 
         int bottomRowY = controlsRowY + 24;

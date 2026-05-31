@@ -15,7 +15,7 @@ import net.minecraft.world.InteractionResult;
 
 @EventBusSubscriber
 public class OwnerRightclicksPetProcedure {
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.NORMAL)
     public static void onRightClickEntity(PlayerInteractEvent.EntityInteract event) {
         if (event.isCanceled())
             return;
@@ -252,8 +252,10 @@ public class OwnerRightclicksPetProcedure {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("ignoreWhistle");
-                    data.putBoolean("ignoreWhistle", !current);
-                    sendFeedback(player, "§6[Whistle] §f" + petName + " will now " + (!current ? "§cignore" : "§arespond to") + " §fwhistles.");
+                    boolean newVal = !current;
+                    // Use applyUpdate so the change is validated and synced to all clients
+                    net.yigitguven.petting.network.EntitySettingsServer.applyUpdate((net.minecraft.server.level.ServerPlayer) player, entity.getId(), "ignoreWhistle", Boolean.toString(newVal));
+                    sendFeedback(player, "§6[Whistle] §f" + petName + " will now " + (newVal ? "§cignore" : "§arespond to") + " §fwhistles.");
                     playStateChangeFeedback(entity, current);
                     playControlSound(entity, !current);
                 }

@@ -10,11 +10,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.bus.api.EventPriority;
 import java.util.List;
 
 @EventBusSubscriber
 public class PlayerRightclicksEntitzProcedure {
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.HIGH)
 	public static void onRightClickEntity(PlayerInteractEvent.EntityInteract event) {
 		if (event.getHand() != InteractionHand.MAIN_HAND)
 			return;
@@ -26,7 +27,8 @@ public class PlayerRightclicksEntitzProcedure {
 		
         if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
 
-		// If this is an owned pet, handle per-pet control mappings first (server-side authoritative)
+		// Server-side: authoritative action dispatch (must NOT cancel on client-side
+		// because that prevents ServerboundInteractPacket from being sent to the server)
 		Player player = event.getEntity();
 		if (!player.level().isClientSide() && target != null) {
 			CompoundTag data = target.getPersistentData();
@@ -40,8 +42,15 @@ public class PlayerRightclicksEntitzProcedure {
 				boolean isShift = player.isShiftKeyDown();
 				String key = isShift ? "control_shift_right_click" : "control_right_click";
 				String defaultKey = isShift ? "petting_default_control_shift_right_click" : "petting_default_control_right_click";
-				String mapping = data.contains(key) ? data.getString(key) : player.getPersistentData().getString(defaultKey);
-				if (mapping != null && !mapping.isEmpty() && player instanceof ServerPlayer serverPlayer) {
+				// Use stored per-pet mapping, then player default, then hardcoded fallback
+				String mapping;
+				if (data.contains(key)) {
+					mapping = data.getString(key);
+				} else {
+					String playerDefault = player.getPersistentData().getString(defaultKey);
+					mapping = (playerDefault != null && !playerDefault.isEmpty()) ? playerDefault : (isShift ? "CYCLE|NONE" : "SIT|NONE");
+				}
+				if (player instanceof ServerPlayer serverPlayer) {
 					for (String[] rule : parseRules(mapping)) {
 						String action = rule[0];
 						String condition = rule[1];
@@ -53,6 +62,13 @@ public class PlayerRightclicksEntitzProcedure {
 							event.setCanceled(true);
 							return;
 						}
+					}
+					// No rule matched or all returned false — still cancel so OwnerRightclicksPetProcedure
+					// doesn't override with legacy sit-toggle behaviour for owned pets with empty hand
+					if (player.getMainHandItem().isEmpty()) {
+						event.setCancellationResult(InteractionResult.SUCCESS);
+						event.setCanceled(true);
+						return;
 					}
 				}
 			}
