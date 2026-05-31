@@ -1,5 +1,0 @@
-- **Critical Crash**: Resolved a `NullPointerException` when opening the Creative Inventory caused by a registration race condition between blocks and items.
-- **Improved Stability**: Added defensive checks to the creative tab to ensure the game doesn't crash if an item fails to register for any reason.
-- **Internal**: Reordered mod registry initialization to follow Forge best practices for block-item dependency.
-
-**Full Changelog**: https://github.com/yigit-guven/Petting/compare/4.2.1...4.2.2
