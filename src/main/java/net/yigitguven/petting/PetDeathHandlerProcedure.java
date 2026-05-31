@@ -43,13 +43,32 @@ public class PetDeathHandlerProcedure {
 
         // 3. CHECK FOR PET BED
         if (data.contains("pet_bed_loc_x") && data.contains("pet_bed_loc_y") && data.contains("pet_bed_loc_z")) {
-            
+
             double bedX = data.getDouble("pet_bed_loc_x");
             double bedY = data.getDouble("pet_bed_loc_y");
             double bedZ = data.getDouble("pet_bed_loc_z");
-
             BlockPos bedPos = new BlockPos((int)bedX, (int)bedY, (int)bedZ);
-            BlockPos respawnPos = findSafeRespawnLocation(entity.level(), bedPos);
+
+            // Resolve the level the bed is in — may differ from the pet's current level.
+            ServerLevel bedLevel = null;
+            if (entity.level() instanceof ServerLevel currentServerLevel) {
+                if (data.contains("pet_bed_dim")) {
+                    net.minecraft.resources.ResourceLocation dimRL =
+                        net.minecraft.resources.ResourceLocation.tryParse(data.getString("pet_bed_dim"));
+                    if (dimRL != null) {
+                        net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimKey =
+                            net.minecraft.resources.ResourceKey.create(
+                                net.minecraft.core.registries.Registries.DIMENSION, dimRL);
+                        bedLevel = currentServerLevel.getServer().getLevel(dimKey);
+                    }
+                }
+                // Fallback: no dim stored (old save) — assume same dimension
+                if (bedLevel == null) bedLevel = currentServerLevel;
+            }
+
+            if (bedLevel == null) return;
+
+            BlockPos respawnPos = findSafeRespawnLocation(bedLevel, bedPos);
 
             if (respawnPos != null) {
                 // A. Cancel Death
@@ -60,8 +79,6 @@ public class PetDeathHandlerProcedure {
                 mob.removeAllEffects();
 
                 // Reset bee stinger state via NBT so it doesn't re-enter the death loop.
-                // setHasStung() is private, but vanilla reads "HasStung" from NBT via
-                // readAdditionalSaveData, so we patch that and reload just that tag.
                 if (mob instanceof net.minecraft.world.entity.animal.Bee) {
                     net.minecraft.nbt.CompoundTag beeNbt = new net.minecraft.nbt.CompoundTag();
                     mob.saveWithoutId(beeNbt);
@@ -69,29 +86,40 @@ public class PetDeathHandlerProcedure {
                     mob.readAdditionalSaveData(beeNbt);
                 }
 
-                // C. Teleport to Bed
-                mob.teleportTo(respawnPos.getX() + 0.5, respawnPos.getY(), respawnPos.getZ() + 0.5);
-                
+                // C. Teleport to Bed — cross-dimension if needed
+                final double rx = respawnPos.getX() + 0.5;
+                final double ry = respawnPos.getY();
+                final double rz = respawnPos.getZ() + 0.5;
+                if (mob.level() == bedLevel) {
+                    mob.teleportTo(rx, ry, rz);
+                } else {
+                    mob.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(
+                        bedLevel,
+                        new net.minecraft.world.phys.Vec3(rx, ry, rz),
+                        net.minecraft.world.phys.Vec3.ZERO,
+                        mob.getYRot(),
+                        mob.getXRot(),
+                        net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING
+                    ));
+                }
+
                 // D. Force Sit
                 data.putBoolean("sitstill", true);
                 mob.getNavigation().stop();
                 mob.setDeltaMovement(0, 0, 0);
 
                 // E. Notify Owner
-                notifyOwner(entity.level(), ownerUUIDStr, 
+                notifyOwner(bedLevel, ownerUUIDStr,
                     Component.literal("§a[Petting] §fYour pet " + mob.getDisplayName().getString() + " was saved by its bed!"));
 
                 // F. Effects at Bed
-                if (entity.level() instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(ParticleTypes.POOF, 
-                        respawnPos.getX() + 0.5, respawnPos.getY() + 0.5, respawnPos.getZ() + 0.5, 
-                        15, 0.3, 0.3, 0.3, 0.05);
-                    serverLevel.playSound(null, respawnPos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.NEUTRAL, 1.0f, 1.0f);
-                }
+                bedLevel.sendParticles(ParticleTypes.POOF,
+                    rx, ry + 0.5, rz, 15, 0.3, 0.3, 0.3, 0.05);
+                bedLevel.playSound(null, respawnPos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.NEUTRAL, 1.0f, 1.0f);
 
-                return; 
+                return;
             } else {
-                notifyOwner(entity.level(), ownerUUIDStr, 
+                notifyOwner(entity.level(), ownerUUIDStr,
                     Component.literal("§c[Petting] Your pet tried to respawn at its bed, but the location was blocked!"));
             }
         }

@@ -29,6 +29,7 @@ public class PetBedBindingHandler {
     private static final String TAG_BED_X = "PettingTempBedX";
     private static final String TAG_BED_Y = "PettingTempBedY";
     private static final String TAG_BED_Z = "PettingTempBedZ";
+    private static final String TAG_BED_DIM = "PettingTempBedDim";
 
     /**
      * EVENT 1: BLOCK CLICK (Trigger Binding Mode OR Cancel)
@@ -56,6 +57,7 @@ public class PetBedBindingHandler {
             playerNBT.putDouble(TAG_BED_X, pos.getX());
             playerNBT.putDouble(TAG_BED_Y, pos.getY());
             playerNBT.putDouble(TAG_BED_Z, pos.getZ());
+            playerNBT.putString(TAG_BED_DIM, world.dimension().location().toString());
 
             player.displayClientMessage(Component.literal("§a[Petting] §fBinding Mode Active!"), true);
             player.sendSystemMessage(Component.literal("§eRight-click a tamed pet to bind it to this bed."));
@@ -136,6 +138,9 @@ public class PetBedBindingHandler {
             petNBT.putDouble("pet_bed_loc_x", bedX);
             petNBT.putDouble("pet_bed_loc_y", bedY);
             petNBT.putDouble("pet_bed_loc_z", bedZ);
+            if (playerNBT.contains(TAG_BED_DIM)) {
+                petNBT.putString("pet_bed_dim", playerNBT.getString(TAG_BED_DIM));
+            }
 
             // 2. Feedback
             player.sendSystemMessage(Component.literal("§a[Petting] §fSuccessfully bound " + target.getName().getString() + " to the bed!"));
@@ -167,6 +172,7 @@ public class PetBedBindingHandler {
         nbt.remove(TAG_BED_X);
         nbt.remove(TAG_BED_Y);
         nbt.remove(TAG_BED_Z);
+        nbt.remove(TAG_BED_DIM);
     }
 }
 

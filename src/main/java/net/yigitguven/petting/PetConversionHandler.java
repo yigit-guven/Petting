@@ -47,6 +47,7 @@ public class PetConversionHandler {
             copyDouble(originalData, convertedData, "pet_bed_loc_x");
             copyDouble(originalData, convertedData, "pet_bed_loc_y");
             copyDouble(originalData, convertedData, "pet_bed_loc_z");
+            copyString(originalData, convertedData, "pet_bed_dim");
 
             copyBoolean(originalData, convertedData, "pettingbound");
             copyDouble(originalData, convertedData, "boundX");
@@ -85,6 +86,12 @@ public class PetConversionHandler {
     private static void copyDouble(CompoundTag from, CompoundTag to, String key) {
         if (from.contains(key)) {
             to.putDouble(key, from.getDouble(key));
+        }
+    }
+
+    private static void copyString(CompoundTag from, CompoundTag to, String key) {
+        if (from.contains(key)) {
+            to.putString(key, from.getString(key));
         }
     }
 }
