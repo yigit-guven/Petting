@@ -29,8 +29,8 @@ public class EntitySettingsServer {
         int followDistance = data.contains("followdistance") ? data.getInt("followdistance") : (int)net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get().doubleValue();
         int teleportDistance = data.contains("teleportdistance") ? data.getInt("teleportdistance") : (int)net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get().doubleValue();
 
-        net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntity(entity,
-            new SendPetSettingsPayload(entityId, sitstill, waiting, isTamed, attackIfOwnerAttacks, attackIfOwnerAttacked, attackIfSelfAttacked, damageOwner, ignoreWhistle, followDistance, teleportDistance, controlRightClick, controlShiftRightClick));
+        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player,
+            new SendPetSettingsPayload(entityId, sitstill, waiting, isTamed, attackIfOwnerAttacks, attackIfOwnerAttacked, attackIfSelfAttacked, damageOwner, ignoreWhistle, followDistance, teleportDistance, true, controlRightClick, controlShiftRightClick));
     }
 
     public static void saveControlDefaults(ServerPlayer player, String rightClick, String shiftRightClick) {
@@ -111,6 +111,7 @@ public class EntitySettingsServer {
                 data.getBoolean("ignoreWhistle"),
                 data.contains("followdistance") ? data.getInt("followdistance") : (int)net.yigitguven.petting.config.PettingConfig.FOLLOW_DISTANCE.get().doubleValue(),
                 data.contains("teleportdistance") ? data.getInt("teleportdistance") : (int)net.yigitguven.petting.config.PettingConfig.TELEPORT_DISTANCE.get().doubleValue(),
+                false,
                 data.contains("control_right_click") ? data.getString("control_right_click") : "SIT",
                 data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : "CYCLE"
             ));

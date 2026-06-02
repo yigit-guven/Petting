@@ -91,7 +91,7 @@ public class PlayerRightclicksEntitzProcedure {
 			// swap values
 			data.putInt("followdistance", t);
 			data.putInt("teleportdistance", f);
-			net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntity(target, new net.yigitguven.petting.network.SendPetSettingsPayload(target.getId(), data.getBoolean("sitstill"), data.getBoolean("waiting"), data.getBoolean("pettingtamed"), data.getBoolean("attackifownerattacks"), data.getBoolean("attackifownerattacked"), data.getBoolean("attackifselfattacked"), data.getBoolean("damageOwner"), data.getBoolean("ignoreWhistle"), data.getInt("followdistance"), data.getInt("teleportdistance"), data.contains("control_right_click") ? data.getString("control_right_click") : "SIT", data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : "CYCLE"));
+			net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingEntity(target, new net.yigitguven.petting.network.SendPetSettingsPayload(target.getId(), data.getBoolean("sitstill"), data.getBoolean("waiting"), data.getBoolean("pettingtamed"), data.getBoolean("attackifownerattacks"), data.getBoolean("attackifownerattacked"), data.getBoolean("attackifselfattacked"), data.getBoolean("damageOwner"), data.getBoolean("ignoreWhistle"), data.getInt("followdistance"), data.getInt("teleportdistance"), false, data.contains("control_right_click") ? data.getString("control_right_click") : "SIT", data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : "CYCLE"));
 			return true;
 		}
 

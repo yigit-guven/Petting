@@ -39,8 +39,9 @@ public class PettingClientPayloadHandler {
                         entity.getPersistentData().putString("control_right_click", payload.controlRightClick());
                         entity.getPersistentData().putString("control_shift_right_click", payload.controlShiftRightClick());
                     }
-                    // Do not steal focus when user is editing key mappings.
-                    if (!(mc.screen instanceof net.yigitguven.petting.client.gui.PetControlMappingsScreen)
+                        // Only explicit open requests should open the settings UI.
+                        if (payload.openScreen()
+                            && !(mc.screen instanceof net.yigitguven.petting.client.gui.PetControlMappingsScreen)
                             && !(mc.screen instanceof net.yigitguven.petting.client.gui.MappingSelectionScreen)
                             && !(mc.screen instanceof net.yigitguven.petting.client.gui.CommandInputScreen)) {
                         net.yigitguven.petting.client.gui.PetSettingsScreen.open(payload.entityId(), payload.sitStill(), payload.waiting(), payload.isTamed(), payload.attackIfOwnerAttacks(), payload.attackIfOwnerAttacked(), payload.attackIfSelfAttacked(), payload.damageOwner(), payload.ignoreWhistle(), payload.followDistance(), payload.teleportDistance(), payload.controlRightClick(), payload.controlShiftRightClick());

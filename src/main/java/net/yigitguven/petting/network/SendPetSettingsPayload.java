@@ -18,6 +18,7 @@ public record SendPetSettingsPayload(int entityId,
                                       boolean ignoreWhistle,
                                       int followDistance,
                                       int teleportDistance,
+                                      boolean openScreen,
                                       String controlRightClick,
                                       String controlShiftRightClick) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<SendPetSettingsPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(PettingMod.MODID, "send_pet_settings"));
@@ -35,6 +36,7 @@ public record SendPetSettingsPayload(int entityId,
                 buf.writeBoolean(payload.ignoreWhistle());
                 buf.writeInt(payload.followDistance());
                 buf.writeInt(payload.teleportDistance());
+                buf.writeBoolean(payload.openScreen());
                 buf.writeUtf(payload.controlRightClick());
                 buf.writeUtf(payload.controlShiftRightClick());
                 },
@@ -50,6 +52,7 @@ public record SendPetSettingsPayload(int entityId,
                     buf.readBoolean(),
                     buf.readInt(),
                     buf.readInt(),
+                    buf.readBoolean(),
                     buf.readUtf(32767),
                     buf.readUtf(32767)
                 )
