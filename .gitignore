@@ -46,3 +46,4 @@ desktop.ini
 # Java
 /jdk17
 *.class
+/.inverse
