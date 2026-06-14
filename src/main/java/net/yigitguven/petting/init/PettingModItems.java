@@ -1,31 +1,22 @@
-/*
- *    MCreator note: This file will be REGENERATED on each build.
- */
 package net.yigitguven.petting.init;
 
 import net.yigitguven.petting.item.GoldenWheatItem;
 import net.yigitguven.petting.item.PetTetherItem;
 import net.yigitguven.petting.PettingMod;
 
-import net.minecraftforge.registries.RegistryObject;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 
 import net.minecraft.world.item.Item;
 
 public class PettingModItems {
-	public static final DeferredRegister<Item> REGISTRY = DeferredRegister.create(ForgeRegistries.ITEMS, PettingMod.MODID);
-	public static final RegistryObject<Item> GOLDEN_WHEAT;
-	public static final RegistryObject<Item> PET_TETHER;
-	public static final RegistryObject<Item> TELEPORT_ORB;
-	public static final RegistryObject<Item> FOLLOW_WHISTLE;
-	public static final RegistryObject<Item> PET_BED;
-
-	static {
-		GOLDEN_WHEAT = REGISTRY.register("golden_wheat", GoldenWheatItem::new);
-		PET_TETHER = REGISTRY.register("pet_tether", PetTetherItem::new);
-		TELEPORT_ORB = REGISTRY.register("teleport_orb", net.yigitguven.petting.item.TeleportOrbItem::new);
-		FOLLOW_WHISTLE = REGISTRY.register("follow_whistle", net.yigitguven.petting.item.FollowWhistleItem::new);
-		PET_BED = REGISTRY.register("pet_bed", () -> new net.minecraft.world.item.BlockItem(net.yigitguven.petting.init.PettingModBlocks.PET_BED.get(), new net.minecraft.world.item.Item.Properties()));
-	}
+	public static final DeferredRegister<net.minecraft.world.item.Item> REGISTRY = DeferredRegister.create(net.minecraftforge.registries.ForgeRegistries.ITEMS, PettingMod.MODID);
+	public static final net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> GOLDEN_WHEAT = REGISTRY.register("golden_wheat", () -> new GoldenWheatItem());
+	public static final net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> PET_TETHER = REGISTRY.register("pet_tether", () -> new PetTetherItem());
+	public static final net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> TELEPORT_ORB = REGISTRY.register("teleport_orb", () -> new net.yigitguven.petting.item.TeleportOrbItem());
+	public static final net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> FOLLOW_WHISTLE = REGISTRY.register("follow_whistle", () -> new net.yigitguven.petting.item.FollowWhistleItem());
+	public static final net.minecraftforge.registries.RegistryObject<net.minecraft.world.item.Item> PET_BED = REGISTRY.register("pet_bed", () -> new net.minecraft.world.item.BlockItem(net.yigitguven.petting.init.PettingModBlocks.PET_BED.get(), new Item.Properties()));
 }
+
+
+

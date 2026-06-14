@@ -5,9 +5,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraftforge.event.entity.living.LivingConversionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber
 public class PetConversionHandler {
 
     @SubscribeEvent
@@ -19,7 +19,6 @@ public class PetConversionHandler {
             return;
         }
         
-        // --- GLOBAL BLACKLIST CHECK ---
         if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(original) || 
             net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(converted)) return;
 
@@ -27,7 +26,6 @@ public class PetConversionHandler {
         if (originalData.getBoolean("pettingtamed")) {
             CompoundTag convertedData = converted.getPersistentData();
             
-            // Core pet data
             convertedData.putBoolean("pettingtamed", true);
             if (originalData.contains("ownerUUID")) {
                 convertedData.putString("ownerUUID", originalData.getString("ownerUUID"));
@@ -36,7 +34,6 @@ public class PetConversionHandler {
                 convertedData.putBoolean("isNameGenerated", originalData.getBoolean("isNameGenerated"));
             }
 
-            // Behavior settings
             copyBoolean(originalData, convertedData, "attackifownerattacks");
             copyBoolean(originalData, convertedData, "attackifownerattacked");
             copyBoolean(originalData, convertedData, "attackifselfattacked");
@@ -44,35 +41,32 @@ public class PetConversionHandler {
             copyBoolean(originalData, convertedData, "sitstill");
             copyBoolean(originalData, convertedData, "waiting");
 
-            // Distances
             copyInt(originalData, convertedData, "followdistance");
             copyInt(originalData, convertedData, "teleportdistance");
 
-            // Pet Bed
             copyDouble(originalData, convertedData, "pet_bed_loc_x");
             copyDouble(originalData, convertedData, "pet_bed_loc_y");
             copyDouble(originalData, convertedData, "pet_bed_loc_z");
+            copyString(originalData, convertedData, "pet_bed_dim");
 
-            // Bound roaming
             copyBoolean(originalData, convertedData, "pettingbound");
             copyDouble(originalData, convertedData, "boundX");
             copyDouble(originalData, convertedData, "boundY");
             copyDouble(originalData, convertedData, "boundZ");
 
-            // Ensure the new entity is persistent
             if (converted instanceof Mob convertedMob) {
                 convertedMob.setPersistenceRequired();
             }
             
-            // Transfer custom name if it exists and wasn't automatically transferred
             if (original.hasCustomName() && !converted.hasCustomName()) {
                 converted.setCustomName(original.getCustomName());
                 converted.setCustomNameVisible(original.isCustomNameVisible());
             }
 
-            // Sync to client for boss bar hiding and other client-side checks
-            net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> converted), 
-                new net.yigitguven.petting.network.SyncPetStatusPacket(converted.getId(), true));
+            // NeoForge payload sync
+            if (converted.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
+                net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> converted), new net.yigitguven.petting.network.SyncPetStatusPacket(converted.getId(), true));
+            }
         }
     }
 
@@ -91,6 +85,12 @@ public class PetConversionHandler {
     private static void copyDouble(CompoundTag from, CompoundTag to, String key) {
         if (from.contains(key)) {
             to.putDouble(key, from.getDouble(key));
+        }
+    }
+
+    private static void copyString(CompoundTag from, CompoundTag to, String key) {
+        if (from.contains(key)) {
+            to.putString(key, from.getString(key));
         }
     }
 }

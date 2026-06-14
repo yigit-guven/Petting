@@ -6,6 +6,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
@@ -31,8 +32,6 @@ public class PetDeathHandlerProcedure {
         
         if (!(entity instanceof Mob mob)) return;
 
-        // --- GLOBAL BLACKLIST CHECK ---
-        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(mob)) return;
 
         CompoundTag data = mob.getPersistentData();
         
@@ -49,47 +48,76 @@ public class PetDeathHandlerProcedure {
             double bedX = data.getDouble("pet_bed_loc_x");
             double bedY = data.getDouble("pet_bed_loc_y");
             double bedZ = data.getDouble("pet_bed_loc_z");
-
             BlockPos bedPos = new BlockPos((int)bedX, (int)bedY, (int)bedZ);
-            BlockPos respawnPos = findSafeRespawnLocation(entity.level(), bedPos);
+
+            // Resolve the level the bed is in
+            ServerLevel bedLevel = null;
+            if (entity.level() instanceof ServerLevel currentServerLevel) {
+                if (data.contains("pet_bed_dim")) {
+                    net.minecraft.resources.ResourceLocation dimRL =
+                        net.minecraft.resources.ResourceLocation.tryParse(data.getString("pet_bed_dim"));
+                    if (dimRL != null) {
+                        net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> dimKey =
+                            net.minecraft.resources.ResourceKey.create(
+                                net.minecraft.core.registries.Registries.DIMENSION, dimRL);
+                        bedLevel = currentServerLevel.getServer().getLevel(dimKey);
+                    }
+                }
+                // Fallback: no dim stored (old save)
+                if (bedLevel == null) bedLevel = currentServerLevel;
+            }
+
+            if (bedLevel == null) return;
+
+            BlockPos respawnPos = findSafeRespawnLocation(bedLevel, bedPos);
 
             if (respawnPos != null) {
                 // A. Cancel Death
                 event.setCanceled(true);
 
-                // B. Heal Fully & Reset Combat State
+                // B. Heal Fully
                 mob.setHealth(mob.getMaxHealth());
-                mob.removeAllEffects(); 
-                mob.setTarget(null);
-                mob.setLastHurtByMob(null);
+                mob.removeAllEffects();
 
-                // C. Teleport to Bed
-                mob.teleportTo(respawnPos.getX() + 0.5, respawnPos.getY(), respawnPos.getZ() + 0.5);
-                
-                // D. Force Sit & Refresh AI State
-                data.putBoolean("sitstill", true);
-                data.putBoolean("waiting", false);
-                data.putBoolean("freewander", false);
-                
-                if (mob instanceof net.minecraft.world.entity.TamableAnimal tamable) {
-                    tamable.setOrderedToSit(true);
+                // Reset bee stinger state via NBT so it doesn't re-enter the death loop.
+                if (mob instanceof net.minecraft.world.entity.animal.Bee) {
+                    net.minecraft.nbt.CompoundTag beeNbt = new net.minecraft.nbt.CompoundTag();
+                    mob.saveWithoutId(beeNbt);
+                    beeNbt.putBoolean("HasStung", false);
+                    mob.readAdditionalSaveData(beeNbt);
                 }
-                
-                mob.setShiftKeyDown(true); // Visual sitting for non-vanilla mobs
+
+                // C. Teleport to Bed cross-dimension if needed
+                final double rx = respawnPos.getX() + 0.5;
+                final double ry = respawnPos.getY();
+                final double rz = respawnPos.getZ() + 0.5;
+                if (mob.level() == bedLevel) {
+                    mob.teleportTo(rx, ry, rz);
+                } else {
+                    mob.changeDimension(bedLevel, new net.minecraftforge.common.util.ITeleporter() {
+                        @Override
+                        public Entity placeEntity(Entity entity, ServerLevel currentWorld, ServerLevel destWorld, float yaw, java.util.function.Function<Boolean, Entity> repositionEntity) {
+                            entity = repositionEntity.apply(false);
+                            entity.teleportTo(rx, ry, rz);
+                            return entity;
+                        }
+                    });
+                }
+
+                // D. Force Sit
+                data.putBoolean("sitstill", true);
                 mob.getNavigation().stop();
                 mob.setDeltaMovement(0, 0, 0);
 
                 // E. Notify Owner
-                notifyOwner(entity.level(), ownerUUIDStr, 
+                notifyOwner(bedLevel, ownerUUIDStr,
                     Component.literal("§a[Petting] §fYour pet " + mob.getDisplayName().getString() + " was saved by its bed!"));
 
                 // F. Effects at Bed
-                if (entity.level() instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(ParticleTypes.POOF, 
-                        respawnPos.getX() + 0.5, respawnPos.getY() + 0.5, respawnPos.getZ() + 0.5, 
-                        15, 0.3, 0.3, 0.3, 0.05);
-                    serverLevel.playSound(null, respawnPos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.NEUTRAL, 1.0f, 1.0f);
-                }
+                bedLevel.sendParticles(ParticleTypes.POOF,
+                    rx, ry + 0.5, rz, 15, 0.3, 0.3, 0.3, 0.05);
+                bedLevel.playSound(null, respawnPos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.NEUTRAL, 1.0f, 1.0f);
+
 
                 return; 
             } else {

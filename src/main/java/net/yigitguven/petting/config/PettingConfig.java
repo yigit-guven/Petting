@@ -1,42 +1,64 @@
 package net.yigitguven.petting.config;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+
 import java.util.List;
 
 public class PettingConfig {
     public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     public static final ForgeConfigSpec SPEC;
 
-    // --- Taming Settings ---
-    public static final ForgeConfigSpec.DoubleValue TAME_CHANCE;
-    public static final ForgeConfigSpec.BooleanValue HEALTH_SCALES_TAMING_CHANCE;
-    public static final ForgeConfigSpec.DoubleValue TAME_HEALTH_THRESHOLD;
-    public static final ForgeConfigSpec.BooleanValue REQUIRE_KILL_TO_TAME;
+    public static final ForgeConfigSpec.BooleanValue DISABLE_RESPAWN_ON_TAME;
+    public static final ForgeConfigSpec.IntValue INTERACTION_COOLDOWN;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PARTICLES;
+    
     public static final ForgeConfigSpec.BooleanValue WHITELIST_ONLY;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TAMING_WHITELIST;
+    
     public static final ForgeConfigSpec.BooleanValue BLACKLIST_ENABLED;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TAMING_BLACKLIST;
+    
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CUSTOM_TAMING_ITEMS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PET_CATEGORIES;
     public static final ForgeConfigSpec.BooleanValue ALLOW_GOLDEN_WHEAT;
-    public static final ForgeConfigSpec.BooleanValue DISABLE_RESPAWN_ON_TAME;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_STATUS;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_AGGRESSION;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_SELF_DEFENSE;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_GUARD;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_FOLLOW_DIST;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_TELEPORT_DIST;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_WHISTLE_TOGGLE;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_TETHERING;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RELEASING;
 
-    // --- AI & Behavior Settings ---
-    public static final ForgeConfigSpec.DoubleValue FOLLOW_DISTANCE;
-    public static final ForgeConfigSpec.DoubleValue TELEPORT_DISTANCE;
-    public static final ForgeConfigSpec.DoubleValue BOUND_ROAM_RADIUS;
-    public static final ForgeConfigSpec.BooleanValue SIT_HEAL_ENABLED;
-    public static final ForgeConfigSpec.DoubleValue SIT_HEAL_AMOUNT;
-    public static final ForgeConfigSpec.IntValue SIT_HEAL_INTERVAL;
+    public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
     public static final ForgeConfigSpec.BooleanValue ENABLE_GOAT_HORN_WHISTLE;
     public static final ForgeConfigSpec.BooleanValue WHISTLE_TELEPORTS_TETHERED;
     public static final ForgeConfigSpec.BooleanValue HIDE_TAMED_BOSSBARS;
-    public static final ForgeConfigSpec.IntValue MAX_PETS_PER_PLAYER;
-    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> MANUAL_FLYING_MOBS;
-    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> MANUAL_SWIMMING_MOBS;
+
+    public static final ForgeConfigSpec.BooleanValue REQUIRE_KILL_TO_TAME;
+    public static final ForgeConfigSpec.DoubleValue TAME_HEALTH_THRESHOLD;
+
+    public static final ForgeConfigSpec.DoubleValue TAME_CHANCE;
+    public static final ForgeConfigSpec.BooleanValue HEALTH_SCALES_TAMING_CHANCE;
+
+    public static final ForgeConfigSpec.BooleanValue SIT_HEAL_ENABLED;
+    public static final ForgeConfigSpec.DoubleValue SIT_HEAL_AMOUNT;
+    public static final ForgeConfigSpec.IntValue SIT_HEAL_INTERVAL;
+        public static final ForgeConfigSpec.DoubleValue FOLLOW_DISTANCE;
+        public static final ForgeConfigSpec.DoubleValue TELEPORT_DISTANCE;
+        // Expose configured clamp ranges for use at runtime (will be initialized in static block)
+        public static final int FOLLOW_DISTANCE_MIN;
+        public static final int FOLLOW_DISTANCE_MAX;
+        public static final int TELEPORT_DISTANCE_MIN;
+        public static final int TELEPORT_DISTANCE_MAX;
+    public static final ForgeConfigSpec.DoubleValue BOUND_ROAM_RADIUS;
+
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MANUAL_FLYING_MOBS;
+    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> MANUAL_SWIMMING_MOBS;
     public static final ForgeConfigSpec.BooleanValue PREVENT_PET_TO_OWNER_DAMAGE;
     public static final ForgeConfigSpec.BooleanValue ALLOW_OWNER_TO_HURT_PETS;
 
-
-    // --- Pet Riding Settings ---
     public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RIDING;
     public static final ForgeConfigSpec.BooleanValue MOUNT_REQUIRE_SADDLE;
     public static final ForgeConfigSpec.DoubleValue LAND_RIDING_SPEED_MULTIPLIER;
@@ -48,12 +70,9 @@ public class PettingConfig {
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> RIDING_BLACKLIST;
     public static final ForgeConfigSpec.BooleanValue ALLOW_PET_ATTACK_WHILE_RIDING;
 
-
-    // --- Pet Stat Settings ---
     public static final ForgeConfigSpec.DoubleValue PET_BASE_ARMOR;
     public static final ForgeConfigSpec.DoubleValue PET_BASE_ARMOR_TOUGHNESS;
 
-    // --- Pet Inventory Settings ---
     public static final ForgeConfigSpec.DoubleValue PET_PORTRAIT_RENDER_SCALE;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> EXTRA_EQUIPPABLE_MOBS;
     public static final ForgeConfigSpec.BooleanValue ALWAYS_SHOW_EQUIPMENT_SLOTS;
@@ -62,18 +81,6 @@ public class PettingConfig {
     public static final ForgeConfigSpec.BooleanValue INVENTORY_BLACKLIST_ENABLED;
     public static final ForgeConfigSpec.ConfigValue<List<? extends String>> INVENTORY_BLACKLIST;
 
-    // --- Item Interaction Settings ---
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_STATUS;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_AGGRESSION;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_SELF_DEFENSE;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_GUARD;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_FOLLOW_DIST;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_TELEPORT_DIST;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PER_PET_WHISTLE_TOGGLE;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_TETHERING;
-    public static final ForgeConfigSpec.BooleanValue ALLOW_PET_RELEASING;
-    
-    // --- Tool Settings ---
     public static final ForgeConfigSpec.ConfigValue<String> STATUS_TOOL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> AGGRESSION_TOOL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> DEFENSE_TOOL_ID;
@@ -86,9 +93,13 @@ public class PettingConfig {
     public static final ForgeConfigSpec.ConfigValue<String> GLOBAL_WHISTLE_TOOL_ID;
     public static final ForgeConfigSpec.ConfigValue<String> TAMING_ITEM_ID;
 
-    // --- Controls & Feedback Settings ---
-    public static final ForgeConfigSpec.BooleanValue ENABLE_PARTICLES;
-    public static final ForgeConfigSpec.IntValue INTERACTION_COOLDOWN;
+    public enum ControlScheme {
+        RIGHT_CLICK_SIT_SHIFT_WAIT,
+        RIGHT_CLICK_CYCLE,
+        SHIFT_RIGHT_CLICK_CYCLE
+    }
+    public static final ForgeConfigSpec.EnumValue<ControlScheme> CONTROL_SCHEME;
+
     public enum FeedbackStyle {
         ACTION_BAR,
         CHAT,
@@ -96,131 +107,254 @@ public class PettingConfig {
     }
     public static final ForgeConfigSpec.EnumValue<FeedbackStyle> COMMAND_FEEDBACK_STYLE;
 
-    // --- Custom Taming & Categories ---
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> CUSTOM_TAMING_ITEMS;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> PET_CATEGORIES;
-
     static {
-        BUILDER.push("Taming Settings");
-        TAME_CHANCE = BUILDER.comment("Base chance (0.0 to 1.0) for a tame attempt to succeed. Example: 0.33 is ~33% chance.")
-                .defineInRange("tameChance", 0.33, 0.0, 1.0);
-        HEALTH_SCALES_TAMING_CHANCE = BUILDER.comment("If true, a mob's missing health increases tame success chance (weaker mobs are easier to tame).")
-                .define("healthScalesTamingChance", false);
-        TAME_HEALTH_THRESHOLD = BUILDER.comment("Required percentage of missing health before taming is allowed (0.0 to 1.0). Example: 0.5 means mob must be at 50% health.")
-                .defineInRange("tameHealthThreshold", 0.0, 0.0, 1.0);
-        REQUIRE_KILL_TO_TAME = BUILDER.comment("If true, the player must have killed at least one mob of that type before being allowed to tame it.")
-                .define("requireKillToTame", false);
-        WHITELIST_ONLY = BUILDER.comment("If true, only mobs listed in 'tamingWhitelist' can be tamed.")
-                .define("whitelistOnly", false);
-        TAMING_WHITELIST = BUILDER.comment("List of entity IDs allowed for taming. Example: [\"minecraft:zombie\", \"minecraft:creeper\"]")
-                .defineListAllowEmpty("tamingWhitelist", List.of(), obj -> obj instanceof String);
-        BLACKLIST_ENABLED = BUILDER.comment("If true, mobs listed in 'tamingBlacklist' are COMPLETELY ignored by the mod. (Disables taming, AI, interactions, inventory, and riding).")
-                .define("blacklistEnabled", false);
-        TAMING_BLACKLIST = BUILDER.comment("Global Mod Blacklist. List of entity IDs that should never be affected by Petting. Example: [\"minecraft:wither\", \"touhou_little_maid:maid\"]")
-                .defineListAllowEmpty("tamingBlacklist", List.of(), obj -> obj instanceof String);
-        ALLOW_GOLDEN_WHEAT = BUILDER.comment("If true, the Golden Wheat item can be used to tame any tamable mob.")
-                .define("allowGoldenWheat", true);
-        DISABLE_RESPAWN_ON_TAME = BUILDER.comment("If true, tamed mobs keep their original NBT/Armor instead of being re-spawned (prevents losing gear).")
+        BUILDER.push("General Settings");
+
+        DISABLE_RESPAWN_ON_TAME = BUILDER
+                .comment("If true, mobs will not respawn when tamed to preserve their NBT data (like vanilla armor and weapons), instead applying tags to the existing mob.")
                 .define("disableRespawnOnTame", true);
+
+        INTERACTION_COOLDOWN = BUILDER
+                .comment("Cooldown in ticks before petting the same mob again.")
+                .defineInRange("interactionCooldown", 20, 0, 1000000);
+
+        ENABLE_PARTICLES = BUILDER
+                .comment("If true, heart particles will appear when petting/taming.")
+                .define("enableParticles", true);
+
+        REQUIRE_KILL_TO_TAME = BUILDER
+                .comment("If true, players must have killed at least one of the entity type before they are allowed to tame it.")
+                .define("requireKillToTame", false);
+
+        TAME_HEALTH_THRESHOLD = BUILDER
+                .comment("Required percentage of missing health before taming works (0.0 to 1.0). e.g., 0.5 means the mob must be missing 50% of its max health.")
+                .defineInRange("tameHealthThreshold", 0.0, 0.0, 1.0);
+
+        TAME_CHANCE = BUILDER
+                .comment("Base chance (0.0 to 1.0) for a tame attempt to succeed. (e.g., 0.33 means ~1 in 3 chance, like vanilla wolves).")
+                .defineInRange("tameChance", 0.33, 0.0, 1.0);
+
+        HEALTH_SCALES_TAMING_CHANCE = BUILDER
+                .comment("If true, the mob's missing health percentage is added to the base tame chance, making weaker mobs easier to tame.")
+                .define("healthScalesTamingChance", false);
+
+        MAX_PETS_PER_PLAYER = BUILDER
+                .comment("The BASE number of custom pets a player can tame. This is now a Player Attribute (petting:max_pets), so it can be modified per-player by other mods or commands. (-1 for infinite).")
+                .defineInRange("maxPetsPerPlayer", -1, -1, 10000);
+
+        ALLOW_GOLDEN_WHEAT = BUILDER
+                .comment("If true, Golden Wheat can be used to tame mobs. If false, ONLY items defined in Custom Item Settings can be used.")
+                .define("allowGoldenWheat", true);
+
+        ENABLE_GOAT_HORN_WHISTLE = BUILDER
+                .comment("If true, crouching and using a Goat Horn will teleport all of your tamed pets directly to your location.")
+                .define("enableGoatHornWhistle", true);
+
+        WHISTLE_TELEPORTS_TETHERED = BUILDER
+                .comment("If true, tethered (bound) pets will also be teleported when using the Goat Horn. If false, tethered pets ignore the whistle.")
+                .define("whistleTeleportsTethered", false);
+
+        HIDE_TAMED_BOSSBARS = BUILDER
+                .comment("If true, completely hides the Boss Bar UI across the server for all tamed Bosses (like Withers).")
+                .define("hideTamedBossBars", true);
+
         BUILDER.pop();
 
-        BUILDER.push("AI & Behavior Settings");
-        FOLLOW_DISTANCE = BUILDER.comment("Distance (in blocks) the owner must be from the pet before it begins following.")
-                .defineInRange("followDistance", 10.0, 1.0, 100.0);
-        TELEPORT_DISTANCE = BUILDER.comment("Distance (in blocks) at which the pet will instantly teleport to the owner.")
-                .defineInRange("teleportDistance", 20.0, 5.0, 200.0);
-        BOUND_ROAM_RADIUS = BUILDER.comment("The radius (in blocks) a pet will wander around within the area it is bound to.")
-                .defineInRange("boundRoamRadius", 10.0, 1.0, 100.0);
-        SIT_HEAL_ENABLED = BUILDER.comment("If enabled, pets will slowly regenerate health while in the Sitting state.")
+        BUILDER.push("Behavior & AI Settings");
+
+        SIT_HEAL_ENABLED = BUILDER
+                .comment("If true, sitting pets will slowly regenerate health.")
                 .define("sitHealEnabled", true);
-        SIT_HEAL_AMOUNT = BUILDER.comment("Amount of health (in half-hearts) healed per interval.")
+
+        SIT_HEAL_AMOUNT = BUILDER
+                .comment("Amount of health (in half-hearts) a sitting pet regenerates.")
                 .defineInRange("sitHealAmount", 1.0, 0.0, 100.0);
-        SIT_HEAL_INTERVAL = BUILDER.comment("Time (in ticks) between each heal while sitting. (20 ticks = 1 second).")
+
+        SIT_HEAL_INTERVAL = BUILDER
+                .comment("Interval (in ticks) between each sitting health regeneration.")
                 .defineInRange("sitHealInterval", 40, 1, 1000000);
-        ENABLE_GOAT_HORN_WHISTLE = BUILDER.comment("If true, using a Goat Horn while crouching teleports all your pets to you.")
-                .define("enableGoatHornWhistle", true);
-        WHISTLE_TELEPORTS_TETHERED = BUILDER.comment("If true, pets bound to an area will also teleport when you use a Goat Horn whistle.")
-                .define("whistleTeleportsTethered", false);
-        HIDE_TAMED_BOSSBARS = BUILDER.comment("If true, Boss Bars for entities like the Wither will be hidden once they are tamed.")
-                .define("hideTamedBossBars", true);
-        MAX_PETS_PER_PLAYER = BUILDER.comment("The base limit of pets a player can own. (-1 for infinite). Can be modified by attributes.")
-                .defineInRange("maxPetsPerPlayer", -1, -1, 10000);
-        MANUAL_FLYING_MOBS = BUILDER.comment("List of entity IDs that should be manually treated as flying mobs. Use this to enable 3D flight controls (Space/S) for mobs the mod doesn't automatically detect.")
+
+        int minFollow = 1;
+        int maxFollow = 100;
+        FOLLOW_DISTANCE = BUILDER
+                .comment("Distance from owner before the pet starts walking to them.")
+                .defineInRange("followDistance", 10.0, (double) minFollow, (double) maxFollow);
+        FOLLOW_DISTANCE_MIN = minFollow;
+        FOLLOW_DISTANCE_MAX = maxFollow;
+
+        int minTeleport = 5;
+        int maxTeleport = 200;
+        TELEPORT_DISTANCE = BUILDER
+                .comment("Distance from owner before the pet forcibly teleports to them.")
+                .defineInRange("teleportDistance", 20.0, (double) minTeleport, (double) maxTeleport);
+        TELEPORT_DISTANCE_MIN = minTeleport;
+        TELEPORT_DISTANCE_MAX = maxTeleport;
+
+        BOUND_ROAM_RADIUS = BUILDER
+                .comment("Radius (in blocks) the pet will roam around its bound coordinate.")
+                .defineInRange("boundRoamRadius", 10.0, 1.0, 100.0);
+
+        MANUAL_FLYING_MOBS = BUILDER
+                .comment("List of entity ids to manually treat as flying mobs for 3D flight control.")
                 .defineListAllowEmpty("manualFlyingMobs", List.of(), obj -> obj instanceof String);
-        MANUAL_SWIMMING_MOBS = BUILDER.comment("List of entity IDs that should be manually treated as swimming mobs. Use this to enable 3D swimming controls (Space/S) for mobs the mod doesn't automatically detect.")
+
+        MANUAL_SWIMMING_MOBS = BUILDER
+                .comment("List of entity ids to manually treat as swimming mobs for 3D swimming control.")
                 .defineListAllowEmpty("manualSwimmingMobs", List.of(), obj -> obj instanceof String);
-        PREVENT_PET_TO_OWNER_DAMAGE = BUILDER.comment("If true, tamed pets cannot damage their owners (including accidental projectile damage).")
+
+        PREVENT_PET_TO_OWNER_DAMAGE = BUILDER
+                .comment("If true, pets cannot damage their owners.")
                 .define("preventPetToOwnerDamage", true);
-        ALLOW_OWNER_TO_HURT_PETS = BUILDER.comment("If true, players can damage and kill their own pets. If false, pets are protected from their owner's attacks.")
+
+        ALLOW_OWNER_TO_HURT_PETS = BUILDER
+                .comment("If false, owners cannot damage their own pets.")
                 .define("allowOwnerToHurtPets", false);
+
         BUILDER.pop();
 
         BUILDER.push("Pet Riding Settings");
-        ALLOW_PET_RIDING = BUILDER.comment("If true, players can ride their pets by Shift + Right-Clicking with an empty hand.")
+
+        ALLOW_PET_RIDING = BUILDER
+                .comment("If true, players can ride their pets.")
                 .define("allowPetRiding", true);
-        MOUNT_REQUIRE_SADDLE = BUILDER.comment("If true, you CANNOT ride a pet unless it has a Saddle in its custom inventory slot.")
+
+        MOUNT_REQUIRE_SADDLE = BUILDER
+                .comment("If true, a saddle in the pet inventory is required to ride.")
                 .define("mountRequireSaddle", false);
-        LAND_RIDING_SPEED_MULTIPLIER = BUILDER.comment("Multiplier for movement speed while riding ground mobs. 1.0 is default.")
+
+        LAND_RIDING_SPEED_MULTIPLIER = BUILDER
+                .comment("Speed multiplier while riding ground pets.")
                 .defineInRange("landRidingSpeedMultiplier", 1.0, 0.0, 10.0);
-        FLYING_RIDING_SPEED_MULTIPLIER = BUILDER.comment("Multiplier for movement speed while riding flying mobs. 1.0 is default.")
+
+        FLYING_RIDING_SPEED_MULTIPLIER = BUILDER
+                .comment("Speed multiplier while riding flying pets.")
                 .defineInRange("flyingRidingSpeedMultiplier", 1.0, 0.0, 10.0);
-        SWIMMING_RIDING_SPEED_MULTIPLIER = BUILDER.comment("Multiplier for movement speed while riding swimming mobs. 1.0 is default.")
+
+        SWIMMING_RIDING_SPEED_MULTIPLIER = BUILDER
+                .comment("Speed multiplier while riding swimming pets.")
                 .defineInRange("swimmingRidingSpeedMultiplier", 1.0, 0.0, 10.0);
-        RIDING_WHITELIST_ONLY = BUILDER.comment("If true, only mobs in 'ridingWhitelist' can be ridden by players.")
+
+        RIDING_WHITELIST_ONLY = BUILDER
+                .comment("If true, only whitelisted mobs can be ridden.")
                 .define("ridingWhitelistOnly", false);
-        RIDING_WHITELIST = BUILDER.comment("List of entity IDs specifically allowed to be ridden. Example: [\"minecraft:ravager\"]")
+
+        RIDING_WHITELIST = BUILDER
                 .defineListAllowEmpty("ridingWhitelist", List.of(), obj -> obj instanceof String);
-        RIDING_BLACKLIST_ENABLED = BUILDER.comment("If true, mobs listed in 'ridingBlacklist' cannot be ridden.")
+
+        RIDING_BLACKLIST_ENABLED = BUILDER
+                .comment("If true, mobs listed in 'ridingBlacklist' cannot be ridden.")
                 .define("ridingBlacklistEnabled", false);
-        RIDING_BLACKLIST = BUILDER.comment("List of entity IDs forbidden from being ridden. Example: [\"minecraft:phantom\"]")
+
+        RIDING_BLACKLIST = BUILDER
+                .comment(
+                    "Mobs that cannot be ridden. Supports exact IDs, whole mod namespaces, and wildcards.",
+                    "Examples: \"create\", \"minecraft:ravager\", \"create:mechanical*\"",
+                    "Syntax: ridingBlacklist = [\"entry1\", \"entry2\", ...]")
                 .defineListAllowEmpty("ridingBlacklist", List.of(), obj -> obj instanceof String);
-        ALLOW_PET_ATTACK_WHILE_RIDING = BUILDER.comment("If true, players riding an Ender Dragon or Wither can fire projectiles by left-clicking.")
+
+        ALLOW_PET_ATTACK_WHILE_RIDING = BUILDER
+                .comment("If true, pets can perform attacks (like fireballs) while being ridden via left-click.")
                 .define("allowPetAttackWhileRiding", true);
+
         BUILDER.pop();
 
         BUILDER.push("Pet Stat Settings");
-        PET_BASE_ARMOR = BUILDER.comment("Flat armor bonus applied to all tamed pets, even if not wearing armor.")
+
+        PET_BASE_ARMOR = BUILDER
                 .defineInRange("petBaseArmor", 0.0, 0.0, 100.0);
-        PET_BASE_ARMOR_TOUGHNESS = BUILDER.comment("Flat armor toughness bonus applied to all tamed pets.")
+
+        PET_BASE_ARMOR_TOUGHNESS = BUILDER
                 .defineInRange("petBaseArmorToughness", 0.0, 0.0, 100.0);
+
         BUILDER.pop();
 
         BUILDER.push("Pet Inventory Settings");
-        PET_PORTRAIT_RENDER_SCALE = BUILDER.comment("Scales the size of the 3D model preview inside the Pet Inventory UI.")
+
+        PET_PORTRAIT_RENDER_SCALE = BUILDER
                 .defineInRange("petPortraitRenderScale", 45.0, 1.0, 500.0);
-        EXTRA_EQUIPPABLE_MOBS = BUILDER.comment("Force specific mobs to always have Armor/Hand slots visible. Example: [\"minecraft:ghast\"]")
+
+        EXTRA_EQUIPPABLE_MOBS = BUILDER
+                .comment("Force these mobs to show armor/hand slots.")
                 .defineListAllowEmpty("extraEquippableMobs", List.of(), obj -> obj instanceof String);
-        ALWAYS_SHOW_EQUIPMENT_SLOTS = BUILDER.comment("If true, all tamed pets will show equipment slots (Armor/Hands) in their inventory, even if the mob doesn't 'natively' support them.")
+
+        ALWAYS_SHOW_EQUIPMENT_SLOTS = BUILDER
                 .define("alwaysShowEquipmentSlots", false);
-        INVENTORY_WHITELIST_ONLY = BUILDER.comment("If enabled, only mobs in the 'inventoryWhitelist' will have equipment slots.")
+
+        INVENTORY_WHITELIST_ONLY = BUILDER
                 .define("inventoryWhitelistOnly", false);
-        INVENTORY_WHITELIST = BUILDER.comment("List of entity IDs allowed to have a Pet Inventory. Example: [\"minecraft:skeleton\"]")
+
+        INVENTORY_WHITELIST = BUILDER
                 .defineListAllowEmpty("inventoryWhitelist", List.of(), obj -> obj instanceof String);
-        INVENTORY_BLACKLIST_ENABLED = BUILDER.comment("If enabled, mobs in the 'inventoryBlacklist' will have their inventories disabled.")
+
+        INVENTORY_BLACKLIST_ENABLED = BUILDER
+                .comment("If true, mobs listed in 'inventoryBlacklist' will not have the pet inventory UI.")
                 .define("inventoryBlacklistEnabled", false);
-        INVENTORY_BLACKLIST = BUILDER.comment("List of entity IDs forbidden from having a Pet Inventory. Example: [\"minecraft:creeper\"]")
+
+        INVENTORY_BLACKLIST = BUILDER
+                .comment(
+                    "Mobs that cannot have a pet inventory. Supports exact IDs, whole mod namespaces, and wildcards.",
+                    "Examples: \"create\", \"minecraft:blaze\", \"alexsmobs:*\"",
+                    "Syntax: inventoryBlacklist = [\"entry1\", \"entry2\", ...]")
                 .defineListAllowEmpty("inventoryBlacklist", List.of(), obj -> obj instanceof String);
+
+        BUILDER.pop();
+
+        BUILDER.push("Controls Settings");
+
+        CONTROL_SCHEME = BUILDER
+                .comment("Scheme for commanding pets.",
+                        "RIGHT_CLICK_SIT_SHIFT_WAIT: Right-Click toggles Sitting, Shift-Right-Click toggles Waiting (Default)",
+                        "RIGHT_CLICK_CYCLE: Right-Click cycles sequentially (Wander -> Sit -> Wait)",
+                        "SHIFT_RIGHT_CLICK_CYCLE: Shift-Right-Click cycles sequentially (Wander -> Sit -> Wait)")
+                .defineEnum("controlScheme", ControlScheme.RIGHT_CLICK_SIT_SHIFT_WAIT);
+
+        COMMAND_FEEDBACK_STYLE = BUILDER
+                .comment("How state changes (e.g. 'Spot is now Sitting') are communicated.",
+                        "ACTION_BAR: Small text above the hotbar (Default)",
+                        "CHAT: Standard chat message",
+                        "NONE: Completely silent")
+                .defineEnum("commandFeedbackStyle", FeedbackStyle.ACTION_BAR);
+
         BUILDER.pop();
 
         BUILDER.push("Item Interaction Settings");
-        ALLOW_PER_PET_STATUS = BUILDER.comment("Allows viewing a pet's status by Right-Clicking it with a STICK.")
+
+        ALLOW_PER_PET_STATUS = BUILDER
+                .comment("If true, owners can right-click their pet with a Stick to see a status report.")
                 .define("allowPerPetStatus", true);
-        ALLOW_PER_PET_AGGRESSION = BUILDER.comment("Allows toggling Aggressive Mode by Right-Clicking with a SWORD.")
+
+        ALLOW_PER_PET_AGGRESSION = BUILDER
+                .comment("If true, owners can right-click their pet with a Sword to toggle Aggressive Mode.")
                 .define("allowPerPetAggression", true);
-        ALLOW_PER_PET_SELF_DEFENSE = BUILDER.comment("Allows toggling Self-Defense by Right-Clicking with a SHIELD.")
+
+        ALLOW_PER_PET_SELF_DEFENSE = BUILDER
+                .comment("If true, owners can right-click their pet with a Shield to toggle Self-Defense retaliation.")
                 .define("allowPerPetSelfDefense", true);
-        ALLOW_PER_PET_GUARD = BUILDER.comment("Allows toggling Guard Mode by Right-Clicking with a COOKIE.")
+
+        ALLOW_PER_PET_GUARD = BUILDER
+                .comment("If true, owners can right-click their pet with a Cookie to toggle Guard Mode.")
                 .define("allowPerPetGuard", true);
-        ALLOW_PER_PET_FOLLOW_DIST = BUILDER.comment("Allows cycling follow distance by Right-Clicking with a LEAD.")
+
+        ALLOW_PER_PET_FOLLOW_DIST = BUILDER
+                .comment("If true, owners can right-click their pet with a Lead to cycle follow distance settings.")
                 .define("allowPerPetFollowDist", true);
-        ALLOW_PER_PET_TELEPORT_DIST = BUILDER.comment("Allows cycling teleport triggers by Right-Clicking with an ENDER PEARL.")
+
+        ALLOW_PER_PET_TELEPORT_DIST = BUILDER
+                .comment("If true, owners can right-click their pet with an Ender Pearl to cycle teleport distance settings.")
                 .define("allowPerPetTeleportDist", true);
-        ALLOW_PER_PET_WHISTLE_TOGGLE = BUILDER.comment("Allows toggling whistle response by Right-Clicking with a CLOCK.")
+
+        ALLOW_PER_PET_WHISTLE_TOGGLE = BUILDER
+                .comment("If true, owners can right-click their pet with a Clock to toggle if it responds to Goat Horn whistles.")
                 .define("allowPerPetWhistleToggle", true);
-        ALLOW_PET_TETHERING = BUILDER.comment("Allows binding a pet to its current location using a PET TETHER.")
+
+        ALLOW_PET_TETHERING = BUILDER
+                .comment("If true, owners can right-click their pet with a Pet Tether item to bind them to an area.")
                 .define("allowPetTethering", true);
-        ALLOW_PET_RELEASING = BUILDER.comment("Allows releasing a pet to the wild via Crouch + Right-Click with SHEARS.")
+
+        ALLOW_PET_RELEASING = BUILDER
+                .comment("If true, owners can Crouch + Right-Click their pet with Shears to release them.")
                 .define("allowPetReleasing", true);
+
         BUILDER.pop();
 
         BUILDER.push("Tool Settings");
@@ -248,24 +382,54 @@ public class PettingConfig {
                 .define("tamingItem", "petting:golden_wheat");
         BUILDER.pop();
 
-        BUILDER.push("Controls & Feedback Settings");
-        ENABLE_PARTICLES = BUILDER.comment("Enables heart and effect particles during taming or petting interactions.")
-                .define("enableParticles", true);
-        INTERACTION_COOLDOWN = BUILDER.comment("Wait time (ticks) required before you can pet the same mob again.")
-                .defineInRange("interactionCooldown", 20, 0, 1000000);
-        COMMAND_FEEDBACK_STYLE = BUILDER.comment("Defines how the mod communicates state changes to you.",
-                "Options: ACTION_BAR (text above hotbar), CHAT (normal chat), NONE (silent)")
-                .defineEnum("commandFeedbackStyle", FeedbackStyle.ACTION_BAR);
+        BUILDER.push("Whitelist Settings");
+
+        WHITELIST_ONLY = BUILDER
+                .comment("If true, only mobs listed in 'tamingWhitelist' can be tamed.")
+                .define("whitelistOnly", false);
+
+        TAMING_WHITELIST = BUILDER
+                .comment("List of entity registry names that are allowed to be tamed. (e.g. [\"minecraft:zombie\" , \"minecraft:creeper\"])")
+                .defineListAllowEmpty("tamingWhitelist", List.of(), obj -> obj instanceof String);
+
         BUILDER.pop();
 
-        BUILDER.push("Custom Taming & Categories");
-        CUSTOM_TAMING_ITEMS = BUILDER.comment("Specify custom items for taming specific mobs.",
-                "Format: entity_registry|item_registry. Example: [\"minecraft:zombie|minecraft:bone\"]")
+        BUILDER.push("Blacklist Settings");
+
+        BLACKLIST_ENABLED = BUILDER
+                .comment("If true, mobs listed in 'tamingBlacklist' CANNOT be tamed. (Overrides Whitelist)")
+                .define("blacklistEnabled", true);
+
+        TAMING_BLACKLIST = BUILDER
+                .comment(
+                    "List of entities or entire mods that CANNOT be tamed.",
+                    "Each entry is a string in the list. Supported formats:",
+                    "  Exact entity:   \"minecraft:wither\"   (blocks only that entity)",
+                    "  Whole mod:      \"create\"              (blocks ALL entities from mod 'create')",
+                    "  Mod wildcard:   \"create:*\"            (same as above, explicit wildcard)",
+                    "  Prefix:         \"create:mechanical*\"  (blocks any entity whose ID starts with 'create:mechanical')",
+                    "Syntax: tamingBlacklist = [\"entry1\", \"entry2\", ...]",
+                    "Example: tamingBlacklist = [\"create\", \"minecraft:wither\", \"alexsmobs:void_worm\"]")
+                .defineListAllowEmpty("tamingBlacklist", List.of(), obj -> obj instanceof String);
+
+        BUILDER.pop();
+
+        BUILDER.push("Custom Taming Settings");
+
+        CUSTOM_TAMING_ITEMS = BUILDER
+                .comment("Map custom taming items to specific mobs. Format: entity_registry|item_registry. Example: [\"minecraft:zombie|minecraft:bone\"]")
                 .defineListAllowEmpty("customTamingItems", List.of(), obj -> obj instanceof String);
-        PET_CATEGORIES = BUILDER.comment("Group mobs into categories with shared limits.",
-                "Format: SlotID|DisplayName|MobList|DefaultLimit",
-                "Example: [\"1|Goblins|minecraft:zombie,minecraft:skeleton|5\"]")
+
+        PET_CATEGORIES = BUILDER
+                .comment("Define pet categories with per-player attribute limits.",
+                        "Format: SlotID|DisplayName|MobList|DefaultLimit",
+                        "SlotID: 1 to 20 (corresponds to petting:max_pets_category_X)",
+                        "DisplayName: Name shown in-game (e.g. Necromancer)",
+                        "MobList: Comma-separated entity IDs (e.g. minecraft:zombie,minecraft:skeleton)",
+                        "DefaultLimit: Starting limit for that category. Attributes can override this.",
+                        "Example: [\"1|Necromancer|minecraft:zombie,minecraft:skeleton|3\"]")
                 .defineListAllowEmpty("petCategories", List.of(), obj -> obj instanceof String);
+
         BUILDER.pop();
 
         SPEC = BUILDER.build();

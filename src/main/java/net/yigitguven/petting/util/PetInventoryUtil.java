@@ -9,6 +9,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.yigitguven.petting.config.PettingConfig;
+
+import net.minecraft.core.registries.BuiltInRegistries;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -17,29 +19,41 @@ public class PetInventoryUtil {
 
     static {
         try {
-            // m_6072_ is the mapped name for canEquipStack in 1.20.1
-            CAN_EQUIP_STACK_METHOD = ObfuscationReflectionHelper.findMethod(Mob.class, "m_6072_", ItemStack.class);
+            // In 1.21.1, we try to find the method for checking if a mob can equip a stack
+            CAN_EQUIP_STACK_METHOD = ObfuscationReflectionHelper.findMethod(Mob.class, "canEquipStack", ItemStack.class);
             CAN_EQUIP_STACK_METHOD.setAccessible(true);
         } catch (Exception e) {
-            try {
-                CAN_EQUIP_STACK_METHOD = ObfuscationReflectionHelper.findMethod(Mob.class, "canEquipStack", ItemStack.class);
-                CAN_EQUIP_STACK_METHOD.setAccessible(true);
-            } catch (Exception e2) {
-                // Silently fail, fallback logic will be used
-            }
+            // Silently fail
         }
     }
     
     public static boolean isBlacklisted(Entity entity) {
         if (entity == null || !PettingConfig.BLACKLIST_ENABLED.get()) return false;
-        String id = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
-        List<? extends String> blacklist = PettingConfig.TAMING_BLACKLIST.get();
-        return blacklist.contains(id);
+        return matchesBlacklistEntry(entity, PettingConfig.TAMING_BLACKLIST.get());
     }
 
     /**
-     * Resolves an item from a registry ID string. Fallback to default if invalid.
+     * Returns true if the entity's registry ID matches any entry in the given list.
+     * Supported formats:
+     *   "create:mechanical_arm"  â€” exact match
+     *   "create" or "create:*"  â€” entire mod namespace
+     *   "create:mechanical*"    â€” prefix wildcard
      */
+    private static boolean matchesBlacklistEntry(Entity entity, List<? extends String> list) {
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (key == null) return false;
+        String id = key.toString();
+        String namespace = key.getNamespace();
+        for (String entry : list) {
+            if (entry == null || entry.isBlank()) continue;
+            String e = entry.trim();
+            if (e.equals(id)) return true;
+            if (e.equals(namespace) || e.equals(namespace + ":*")) return true;
+            if (e.endsWith("*") && id.startsWith(e.substring(0, e.length() - 1))) return true;
+        }
+        return false;
+    }
+
     public static net.minecraft.world.item.Item getItemFromID(String id, net.minecraft.world.item.Item fallback) {
         if (id == null || id.isEmpty()) return fallback;
         try {
@@ -55,8 +69,10 @@ public class PetInventoryUtil {
         if (!isInventoryAllowed(entity)) return false;
         if (slotType == null) return true; // Saddle
         
-        // Check Config Overrides
-        String registryName = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (key == null) return false;
+        String registryName = key.toString();
+        
         if (net.yigitguven.petting.config.PettingConfig.EXTRA_EQUIPPABLE_MOBS.get().contains(registryName)) {
             return true;
         }
@@ -71,18 +87,17 @@ public class PetInventoryUtil {
             if (CAN_EQUIP_STACK_METHOD != null) {
                 try {
                     ItemStack testStack;
-                    if (slotType.getType() == EquipmentSlot.Type.ARMOR) {
+                    if (slotType.isArmor()) {
                         testStack = new ItemStack(Items.IRON_CHESTPLATE);
                     } else {
                         testStack = new ItemStack(Items.IRON_SWORD);
                     }
                     return (boolean) CAN_EQUIP_STACK_METHOD.invoke(mob, testStack);
                 } catch (Exception e) {
-                    // Fallback to humanoid check
+                    // Fallback
                 }
             }
             
-            // Humanoid fallback
             if (mob instanceof net.minecraft.world.entity.monster.Zombie || 
                 mob instanceof net.minecraft.world.entity.monster.AbstractSkeleton ||
                 mob instanceof net.minecraft.world.entity.monster.piglin.AbstractPiglin) {
@@ -94,16 +109,16 @@ public class PetInventoryUtil {
     }
 
     public static boolean isInventoryAllowed(Entity entity) {
-        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (key == null) return false;
+        String name = key.toString();
         
-        // 1. Blacklist check (highest priority)
         if (net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST_ENABLED.get()) {
-            if (net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST.get().contains(name)) {
+            if (matchesBlacklistEntry(entity, net.yigitguven.petting.config.PettingConfig.INVENTORY_BLACKLIST.get())) {
                 return false;
             }
         }
         
-        // 2. Whitelist check
         if (net.yigitguven.petting.config.PettingConfig.INVENTORY_WHITELIST_ONLY.get()) {
             return net.yigitguven.petting.config.PettingConfig.INVENTORY_WHITELIST.get().contains(name);
         }
@@ -114,16 +129,16 @@ public class PetInventoryUtil {
     public static boolean isRidingAllowed(Entity entity) {
         if (!net.yigitguven.petting.config.PettingConfig.ALLOW_PET_RIDING.get()) return false;
         
-        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (key == null) return false;
+        String name = key.toString();
         
-        // 1. Blacklist check
         if (net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST_ENABLED.get()) {
-            if (net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST.get().contains(name)) {
+            if (matchesBlacklistEntry(entity, net.yigitguven.petting.config.PettingConfig.RIDING_BLACKLIST.get())) {
                 return false;
             }
         }
         
-        // 2. Whitelist check
         if (net.yigitguven.petting.config.PettingConfig.RIDING_WHITELIST_ONLY.get()) {
             return net.yigitguven.petting.config.PettingConfig.RIDING_WHITELIST.get().contains(name);
         }
@@ -133,26 +148,23 @@ public class PetInventoryUtil {
 
     public static boolean hasSaddle(Entity entity) {
         if (!(entity instanceof LivingEntity living)) return false;
-        return living.getCapability(net.yigitguven.petting.capability.PetInventoryCapability.PET_INVENTORY).map(handler -> {
-            ItemStack stack = handler.getStackInSlot(0);
+        net.yigitguven.petting.capability.PetInventoryCapability.IPetInventory attachment = entity.getCapability(net.yigitguven.petting.capability.PetInventoryCapability.PET_INVENTORY).orElse(null);
+        if (attachment != null) {
+            ItemStack stack = attachment.getStackInSlot(0);
             return !stack.isEmpty() && (stack.is(Items.SADDLE) || stack.getItem().getDescriptionId().contains("saddle"));
-        }).orElse(false);
+        }
+        return false;
     }
 
     public static boolean isFlyingMob(Entity entity) {
         if (!(entity instanceof Mob mob)) return false;
-        
-        // 1. Direct interface check
         if (mob instanceof net.minecraft.world.entity.animal.FlyingAnimal) return true;
-        
-        // 2. Navigation check
         if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.FlyingPathNavigation) return true;
-        
-        // 3. Move Control check
         if (mob.getMoveControl() instanceof net.minecraft.world.entity.ai.control.FlyingMoveControl) return true;
         
-        // 4. Known flying mobs fallback (including Ender Dragon and Phantom)
-        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (key == null) return false;
+        String name = key.toString();
         
         if (net.yigitguven.petting.config.PettingConfig.MANUAL_FLYING_MOBS.get().contains(name)) {
             return true;
@@ -164,15 +176,12 @@ public class PetInventoryUtil {
 
     public static boolean isSwimmingMob(Entity entity) {
         if (!(entity instanceof Mob mob)) return false;
-        
-        // 1. Navigation check
         if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation) return true;
-        
-        // 2. Entity type check
         if (mob instanceof net.minecraft.world.entity.animal.WaterAnimal) return true;
         
-        // 3. Known aquatic mobs fallback
-        String name = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(entity.getType()).toString();
+        ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        if (key == null) return false;
+        String name = key.toString();
         
         if (net.yigitguven.petting.config.PettingConfig.MANUAL_SWIMMING_MOBS.get().contains(name)) {
             return true;

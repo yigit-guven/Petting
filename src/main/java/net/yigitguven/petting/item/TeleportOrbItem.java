@@ -16,8 +16,11 @@ public class TeleportOrbItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack itemstack, Level world, List<Component> list, TooltipFlag flag) {
-		super.appendHoverText(itemstack, world, list, flag);
+	public void appendHoverText(ItemStack itemstack, net.minecraft.world.level.Level context, List<Component> list, TooltipFlag flag) {
+		super.appendHoverText(itemstack, context, list, flag);
 		list.add(Component.translatable("item.petting.teleport_orb.tooltip").withStyle(ChatFormatting.GRAY));
 	}
 }
+
+
+

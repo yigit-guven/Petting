@@ -1,9 +1,10 @@
 package net.yigitguven.petting.procedures;
 
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -19,38 +20,31 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraftforge.eventbus.api.Event;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.yigitguven.petting.PettingMod;
-import net.yigitguven.petting.network.CancelBindingPacket;
-
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.FORGE)
 public class PetBedBindingHandler {
 
     private static final String TAG_BINDING_MODE = "PettingBindingMode";
     private static final String TAG_BED_X = "PettingTempBedX";
     private static final String TAG_BED_Y = "PettingTempBedY";
     private static final String TAG_BED_Z = "PettingTempBedZ";
+    private static final String TAG_BED_DIM = "PettingTempBedDim";
 
     /**
      * EVENT 1: BLOCK CLICK (Trigger Binding Mode OR Cancel)
      */
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGHEST)
     public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getLevel().isClientSide()) return;
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
 
         Player player = event.getEntity();
-        if (player.isSecondaryUseActive()) return;
-
         Level world = event.getLevel();
         BlockPos pos = event.getPos();
         
         // Check what block was clicked
-        ResourceLocation blockRegistryName = ForgeRegistries.BLOCKS.getKey(world.getBlockState(pos).getBlock());
+        ResourceLocation blockRegistryName = BuiltInRegistries.BLOCK.getKey(world.getBlockState(pos).getBlock());
         String blockId = (blockRegistryName != null) ? blockRegistryName.toString() : "";
 
         CompoundTag playerNBT = player.getPersistentData();
@@ -58,102 +52,51 @@ public class PetBedBindingHandler {
 
         // SCENARIO A: Clicking a Pet Bed (Start Binding)
         if (blockId.contains("pet_bed")) {
-            // Cancel and deny on both sides to prevent placement prediction
-            event.setCanceled(true); 
-            event.setUseItem(Event.Result.DENY);
-            event.setUseBlock(Event.Result.DENY);
-
-            if (world.isClientSide()) return;
-            
-            // Force inventory sync to be safe
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.containerMenu.broadcastFullState();
-            }
-
             // Save Coordinates to Player
             playerNBT.putBoolean(TAG_BINDING_MODE, true);
             playerNBT.putDouble(TAG_BED_X, pos.getX());
             playerNBT.putDouble(TAG_BED_Y, pos.getY());
             playerNBT.putDouble(TAG_BED_Z, pos.getZ());
+            playerNBT.putString(TAG_BED_DIM, world.dimension().location().toString());
 
-            player.displayClientMessage(Component.literal("§a[Petting] §fBinding Mode Active!"), true);
-            player.sendSystemMessage(Component.literal("§eRight-click a tamed pet to bind it to this bed."));
-            player.sendSystemMessage(Component.literal("§7(Right-click air or ground to cancel)"));
+            player.displayClientMessage(Component.literal("Â§a[Petting] Â§fBinding Mode Active!"), true);
+            player.sendSystemMessage(Component.literal("Â§eRight-click a tamed pet to bind it to this bed."));
+            player.sendSystemMessage(Component.literal("Â§7(Right-click air or ground to cancel)"));
             
             // Play a "click" sound
-            world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.get(), SoundSource.PLAYERS, 0.5f, 1.0f);
+            world.playSound(null, pos, SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
             
             // Cancel event so we don't open the bed GUI immediately if it exists
             event.setCanceled(true); 
             return;
         }
 
+        // SCENARIO B: Clicking any OTHER block while Binding is active (Cancel)
         if (isBinding) {
-            // Cancel and deny on both sides to prevent placement prediction
-            event.setCanceled(true); 
-            event.setUseItem(Event.Result.DENY);
-            event.setUseBlock(Event.Result.DENY);
-
-            if (world.isClientSide()) return;
-
-            // Force immediate inventory sync to clear ghost items on client
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.containerMenu.broadcastFullState();
-            }
-
             clearBindingState(player);
-            player.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
+            player.displayClientMessage(Component.literal("Â§c[Petting] Binding Cancelled."), true);
         }
     }
 
     /**
-     * EVENT 2: AIR CLICK (Item in hand)
+     * EVENT 2: AIR CLICK (Cancel)
      */
     @SubscribeEvent
     public static void onRightClickItem(PlayerInteractEvent.RightClickItem event) {
+        if (event.getLevel().isClientSide()) return;
         Player player = event.getEntity();
-        if (player.isSecondaryUseActive()) return;
         
         // If clicking air while binding, cancel it
-        if (event.getLevel().isClientSide()) {
-            // Client sends packet because it can't see the binding NBT
-            PettingMod.PACKET_HANDLER.sendToServer(new CancelBindingPacket());
-        } else if (player.getPersistentData().getBoolean(TAG_BINDING_MODE)) {
-            // Server handles it directly if it's the one receiving the event
-            handleMenuCancellation(player);
-        }
-    }
-
-    /**
-     * EVENT 4: EMPTY AIR CLICK (Empty hand, Client Side Only)
-     */
-    @SubscribeEvent
-    public static void onRightClickEmpty(PlayerInteractEvent.RightClickEmpty event) {
-        Player player = event.getEntity();
-        if (player.isSecondaryUseActive()) return;
-
-        // Since we can't easily check NBT on Client, we just send the packet 
-        // whenever the player right-clicks air. The server will ignore it if not in binding mode.
-        PettingMod.PACKET_HANDLER.sendToServer(new CancelBindingPacket());
-    }
-
-    /**
-     * Public helper to safely clear state and sync from both Packet and Event handlers
-     */
-    public static void handleMenuCancellation(Player player) {
         if (player.getPersistentData().getBoolean(TAG_BINDING_MODE)) {
             clearBindingState(player);
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.displayClientMessage(Component.literal("§c[Petting] Binding Cancelled."), true);
-                serverPlayer.containerMenu.broadcastFullState();
-            }
+            player.displayClientMessage(Component.literal("Â§c[Petting] Binding Cancelled."), true);
         }
     }
 
     /**
      * EVENT 3: ENTITY CLICK (The Binding Logic)
      */
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = net.minecraftforge.eventbus.api.EventPriority.HIGHEST)
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (event.getLevel().isClientSide()) return;
         if (event.getHand() != InteractionHand.MAIN_HAND) return;
@@ -195,9 +138,12 @@ public class PetBedBindingHandler {
             petNBT.putDouble("pet_bed_loc_x", bedX);
             petNBT.putDouble("pet_bed_loc_y", bedY);
             petNBT.putDouble("pet_bed_loc_z", bedZ);
+            if (playerNBT.contains(TAG_BED_DIM)) {
+                petNBT.putString("pet_bed_dim", playerNBT.getString(TAG_BED_DIM));
+            }
 
             // 2. Feedback
-            player.sendSystemMessage(Component.literal("§a[Petting] §fSuccessfully bound " + target.getName().getString() + " to the bed!"));
+            player.sendSystemMessage(Component.literal("Â§a[Petting] Â§fSuccessfully bound " + target.getName().getString() + " to the bed!"));
             player.level().playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f);
 
             if (player.level() instanceof ServerLevel serverLevel) {
@@ -207,12 +153,17 @@ public class PetBedBindingHandler {
             }
         } else {
             // --- INVALID TARGET (Cancel) ---
-            player.sendSystemMessage(Component.literal("§c[Petting] Cancelled. That is not your custom pet!"));
+            player.sendSystemMessage(Component.literal("Â§c[Petting] Cancelled. That is not your custom pet!"));
         }
 
         // Always clear state and consume the click so we don't sit on the pet
         clearBindingState(player);
         event.setCanceled(true); 
+    }
+
+    public static void handleMenuCancellation(Player player) {
+        clearBindingState(player);
+        player.displayClientMessage(Component.literal("Â§c[Petting] Binding Cancelled."), true);
     }
 
     private static void clearBindingState(Player player) {
@@ -221,5 +172,9 @@ public class PetBedBindingHandler {
         nbt.remove(TAG_BED_X);
         nbt.remove(TAG_BED_Y);
         nbt.remove(TAG_BED_Z);
+        nbt.remove(TAG_BED_DIM);
     }
 }
+
+
+

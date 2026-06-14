@@ -2,6 +2,7 @@ package net.yigitguven.petting.command;
 
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import net.minecraft.commands.Commands;
@@ -23,7 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.particles.ParticleTypes;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class PetCommand {
 
     @SubscribeEvent
@@ -114,10 +115,6 @@ public class PetCommand {
                     newData.putInt("followdistance", 10);
                     newData.putInt("teleportdistance", 20);
 
-                    // Sync to client for boss bar hiding and other client-side checks
-                    net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> newMob), 
-                        new net.yigitguven.petting.network.SyncPetStatusPacket(newMob.getId(), true));
-
                     newMob.setTarget(null);
                     world.addFreshEntity(newMob);
                     entity.discard();
@@ -126,3 +123,6 @@ public class PetCommand {
         }
     }
 }
+
+
+

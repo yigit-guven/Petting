@@ -12,7 +12,6 @@ public class EquipmentSlotHandler extends Slot {
     private final Mob mob;
     private final EquipmentSlot slot;
     private final boolean active;
-    private final SimpleContainer dummyContainer = new SimpleContainer(1);
 
     public EquipmentSlotHandler(Mob mob, EquipmentSlot slot, int x, int y, boolean active) {
         super(new SimpleContainer(1), 0, x, y);
@@ -35,15 +34,15 @@ public class EquipmentSlotHandler extends Slot {
     @Override
     public boolean mayPlace(ItemStack stack) {
         if (!active) return false;
-        if (slot.getType() == EquipmentSlot.Type.ARMOR) {
+        if (slot.isArmor()) {
             return stack.getItem() instanceof ArmorItem armor && armor.getType().getSlot() == slot;
         }
-        return true; // Hands can hold anything
+        return true; 
     }
 
     @Override
     public boolean mayPickup(Player player) {
-        return active && super.mayPickup(player);
+        return active;
     }
 
     @Override
@@ -53,12 +52,6 @@ public class EquipmentSlotHandler extends Slot {
         ItemStack taken = current.split(amount);
         mob.setItemSlot(slot, current);
         return taken;
-    }
-
-    @Override
-    public void onTake(Player player, ItemStack stack) {
-        this.setChanged();
-        super.onTake(player, stack);
     }
 
     @Override

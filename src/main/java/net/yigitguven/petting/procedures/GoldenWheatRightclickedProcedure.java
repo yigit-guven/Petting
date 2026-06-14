@@ -1,110 +1,82 @@
 package net.yigitguven.petting.procedures;
 
 import net.minecraft.world.level.Level;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.stats.Stats;
-import net.yigitguven.petting.config.PettingConfig;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 
-import java.util.List;
+import net.yigitguven.petting.config.PettingConfig;
 
 public class GoldenWheatRightclickedProcedure {
 
-    public static void execute(Entity sourceentity) {
-        execute(null, sourceentity);
-    }
-
-    public static boolean execute(Entity entity, Entity sourceentity) {
-        if (entity == null || sourceentity == null) return false;
+    public static boolean execute(Entity entity, Player player) {
+        if (entity == null || player == null) return false;
         if (entity.level().isClientSide()) return false;
-        if (!(sourceentity instanceof Player player)) return false;
 
-        ItemStack itemInHand = player.getMainHandItem();
-        ResourceLocation itemID = ForgeRegistries.ITEMS.getKey(itemInHand.getItem());
-        if (itemID == null) return false;
-        
-        ResourceLocation entityKey = ForgeRegistries.ENTITY_TYPES.getKey(entity.getType());
-        if (entityKey == null) return false;
-        
-        String entityName = entityKey.toString();
-        String itemName = itemID.toString();
-
-        // 0. Check Custom Taming Items Config First
-        boolean hasCustomItem = false;
-        boolean customItemMatch = false;
-
-        List<? extends String> customItemsMap = PettingConfig.CUSTOM_TAMING_ITEMS.get();
-        for (String mapping : customItemsMap) {
-            String[] parts = mapping.split("\\|");
-            if (parts.length == 2 && parts[0].trim().equals(entityName)) {
-                hasCustomItem = true;
-                if (parts[1].trim().equals(itemName)) {
-                    customItemMatch = true;
-                }
-                break; // Found the entity mapping, no need to keep searching
-            }
-        }
-
-        // Evaluate Taming Eligibility
-        if (hasCustomItem) {
-            if (!customItemMatch) return false; // Entity strictly requires the mapped item
-        } else {
-            String targetTamingItem = PettingConfig.TAMING_ITEM_ID.get();
-            if (!itemName.equals(targetTamingItem)) return false; // Must be holding the configured taming item
-            if (!PettingConfig.ALLOW_GOLDEN_WHEAT.get() && targetTamingItem.equals("petting:golden_wheat")) return false; // Wheat check specifically if using default
-        }
-
-        // Interaction handled beyond this point
-        
-        // --- NEW CONFIG CHECKS ---
         long currentTime = entity.level().getGameTime();
-        if (entity.getPersistentData().contains("pettingLastInteracted")) {
-            long lastInteracted = entity.getPersistentData().getLong("pettingLastInteracted");
-            if (currentTime - lastInteracted < PettingConfig.INTERACTION_COOLDOWN.get()) {
-                return true; // Cooldown active, but still "handled"
-            }
+        long lastInteracted = entity.getPersistentData().getLong("pettingLastInteracted");
+        if (currentTime - lastInteracted < PettingConfig.INTERACTION_COOLDOWN.get()) {
+            return false;
         }
+
+        net.minecraft.world.item.ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         
-        // 1. Check Blacklist First
-        if (PettingConfig.BLACKLIST_ENABLED.get()) {
-            List<? extends String> blacklist = PettingConfig.TAMING_BLACKLIST.get();
-            if (blacklist.contains(entityName)) {
+        // 1. Tool check (Specific Golden Wheat or Configured Tool)
+        String targetTamingItem = PettingConfig.TAMING_ITEM_ID.get();
+        boolean toolMatches = false;
+        
+        ResourceLocation itemKey = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(itemInHand.getItem());
+        if (itemKey != null && itemKey.toString().equals(targetTamingItem)) {
+            toolMatches = true;
+        }
+
+        if (!toolMatches && PettingConfig.ALLOW_GOLDEN_WHEAT.get()) {
+             if (itemInHand.getItem() == net.yigitguven.petting.init.PettingModItems.GOLDEN_WHEAT.get()) {
+                 toolMatches = true;
+             }
+        }
+
+        if (!toolMatches) return false;
+
+        // 2. Blacklist Check â€” return false so the entity's own interaction handlers still run
+        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) {
+            return false;
+        }
+
+        // 3. Whitelist Check
+        ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        String entityName = (entityKey != null) ? entityKey.toString() : "";
+        
+        if (PettingConfig.WHITELIST_ONLY.get()) {
+            java.util.List<? extends String> whitelist = PettingConfig.TAMING_WHITELIST.get();
+            if (!whitelist.contains(entityName)) {
+                player.displayClientMessage(Component.literal("Â§cOnly specific mobs can be tamed in this modpack."), true);
                 return true;
             }
         }
 
-        // 2. Check Whitelist
-        if (PettingConfig.WHITELIST_ONLY.get()) {
-            List<? extends String> whitelist = PettingConfig.TAMING_WHITELIST.get();
-            if (!whitelist.contains(entityName)) {
-                return true; 
-            }
+        // 4. Kill Requirement
+        if (PettingConfig.REQUIRE_KILL_TO_TAME.get() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+             int killCount = serverPlayer.getStats().getValue(net.minecraft.stats.Stats.ENTITY_KILLED.get(entity.getType()));
+             if (killCount <= 0) {
+                 player.displayClientMessage(Component.literal("Â§cYou must kill at least one " + entity.getType().getDescription().getString() + " before you can tame it!"), true);
+                 return true;
+             }
         }
         
-        if (PettingConfig.REQUIRE_KILL_TO_TAME.get()) {
-            if (player instanceof ServerPlayer serverPlayer) {
-                int kills = serverPlayer.getStats().getValue(Stats.ENTITY_KILLED.get(entity.getType()));
-                if (kills <= 0) {
-                    return true;
-                }
-            }
-        }
-        
-        // 4. Check Max Pets Limit
+        // 5. Global Pet Limit
         double maxPets = player.getAttributeValue(net.yigitguven.petting.init.PettingModAttributes.MAX_PETS.get());
         
         if (maxPets != -1 && entity.level() instanceof ServerLevel serverLevel) {
@@ -118,12 +90,13 @@ public class GoldenWheatRightclickedProcedure {
                 }
             }
             if (currentPets >= (int)maxPets) {
-                player.displayClientMessage(Component.literal("§cYou cannot tame any more custom pets! (Limit: " + (int)maxPets + ")"), true);
+                player.displayClientMessage(Component.literal("Â§cYou have reached your global pet limit (" + (int)maxPets + ")!"), true);
+                PleasantryHelper.sendParticles(serverLevel, entity, ParticleTypes.SMOKE);
                 return true;
             }
         }
 
-        // 5. Check Category Limits
+        // 6. Category Limits
         java.util.List<? extends String> categoryConfigs = PettingConfig.PET_CATEGORIES.get();
         for (String catConfig : categoryConfigs) {
             String[] parts = catConfig.split("\\|");
@@ -137,7 +110,7 @@ public class GoldenWheatRightclickedProcedure {
                         double catMax = player.getAttributeValue(getCategoryAttribute(slot));
                         
                         if (catMax <= 0) {
-                            player.displayClientMessage(Component.literal("§cYou cannot tame mobs in the " + catName + " category!"), true);
+                            player.displayClientMessage(Component.literal("Â§cYou cannot tame mobs in the " + catName + " category!"), true);
                             return true;
                         }
 
@@ -147,7 +120,7 @@ public class GoldenWheatRightclickedProcedure {
                                 if (e instanceof Mob m && isCustomPet(m)) {
                                     String ownerStr = m.getPersistentData().getString("ownerUUID");
                                     if (ownerStr.equals(player.getStringUUID())) {
-                                        ResourceLocation eKey = ForgeRegistries.ENTITY_TYPES.getKey(m.getType());
+                                        ResourceLocation eKey = BuiltInRegistries.ENTITY_TYPE.getKey(m.getType());
                                         if (eKey != null && catMobs.contains(eKey.toString())) {
                                             currentCatPets++;
                                         }
@@ -155,7 +128,8 @@ public class GoldenWheatRightclickedProcedure {
                                 }
                             }
                             if (currentCatPets >= (int)catMax) {
-                                player.displayClientMessage(Component.literal("§cYou have reached your " + catName + " pet limit (" + (int)catMax + ")!"), true);
+                                player.displayClientMessage(Component.literal("Â§cYou have reached your " + catName + " pet limit (" + (int)catMax + ")!"), true);
+                                PleasantryHelper.sendParticles(serverLevel, entity, ParticleTypes.SMOKE);
                                 return true;
                             }
                         }
@@ -165,7 +139,7 @@ public class GoldenWheatRightclickedProcedure {
             }
         }
 
-        // 6. Check Health Threshold
+        // 7. Health Threshold
         double hpThreshold = PettingConfig.TAME_HEALTH_THRESHOLD.get();
         if (hpThreshold > 0.0 && entity instanceof net.minecraft.world.entity.LivingEntity minion) {
             float maxHp = minion.getMaxHealth();
@@ -173,19 +147,18 @@ public class GoldenWheatRightclickedProcedure {
             double missingPercentage = (maxHp - currentHp) / maxHp;
             
             if (missingPercentage < hpThreshold) {
-                player.displayClientMessage(Component.literal("§cThis entity is too strong to be tamed right now. Weaken it first! (Requires at least " + (int)(hpThreshold * 100) + "% missing health)"), true);
+                player.displayClientMessage(Component.literal("Â§cThis entity is too strong to be tamed right now. Weaken it first! (Requires at least " + (int)(hpThreshold * 100) + "% missing health)"), true);
                 return true;
             }
         }
         
         entity.getPersistentData().putLong("pettingLastInteracted", currentTime);
 
-        // We consume the item since an attempt was made (unless in creative)
         if (!player.getAbilities().instabuild) {
             itemInHand.shrink(1);
         }
 
-        // Calculate RNG Chance
+        // 8. RNG Taming
         double baseChance = PettingConfig.TAME_CHANCE.get();
         double actualChance = baseChance;
         
@@ -210,7 +183,6 @@ public class GoldenWheatRightclickedProcedure {
                     tamable.setTarget(null);
                     actionSuccessful = true;
                     injectPettingTags(entity, player, data);
-                    tamable.targetSelector.removeAllGoals(goal -> true);
                 }
             }
             else if (entity instanceof Mob oldMob) { 
@@ -219,7 +191,6 @@ public class GoldenWheatRightclickedProcedure {
                     needsRespawn = true;
                 } else {
                     injectPettingTags(entity, player, data);
-                    oldMob.targetSelector.removeAllGoals(goal -> true);
                     oldMob.setTarget(null);
                 }
             }
@@ -280,9 +251,9 @@ public class GoldenWheatRightclickedProcedure {
         data.putInt("followdistance", 10);
         data.putInt("teleportdistance", 20);
 
-        // Sync to client for boss bar hiding and other client-side checks
-        net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entity), 
-            new net.yigitguven.petting.network.SyncPetStatusPacket(entity.getId(), true));
+        if (entity.level() instanceof ServerLevel serverLevel) {
+            net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entity), new net.yigitguven.petting.network.SyncPetStatusPacket(entity.getId(), true));
+        }
     }
 
     private static net.minecraft.world.entity.ai.attributes.Attribute getCategoryAttribute(int slot) {
@@ -313,5 +284,11 @@ public class GoldenWheatRightclickedProcedure {
 
     private static boolean isCustomPet(Mob entity) {
         return entity.getPersistentData().getBoolean("pettingtamed");
+    }
+    
+    private static class PleasantryHelper {
+        public static void sendParticles(ServerLevel level, Entity entity, net.minecraft.core.particles.ParticleOptions type) {
+            level.sendParticles(type, entity.getX(), entity.getY() + 0.5, entity.getZ(), 7, 0.5, 0.5, 0.5, 0.1);
+        }
     }
 }

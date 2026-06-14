@@ -1,12 +1,12 @@
 package net.yigitguven.petting;
 
 import net.minecraftforge.event.entity.living.LivingEvent; // NEW IMPORT
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
+
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import net.minecraft.world.entity.player.Player;
@@ -14,33 +14,28 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerBossEvent;
-import net.yigitguven.petting.config.PettingConfig;
-
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.monster.warden.Warden;
+import net.yigitguven.petting.config.PettingConfig;
 
 import java.lang.reflect.Field;
 import java.util.UUID;
 import java.util.List;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class PetAttackLogic {
     public PetAttackLogic() {}
 
     @SubscribeEvent
     public static void init(FMLCommonSetupEvent event) { new PetAttackLogic(); }
 
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-    private static class PetAttackLogicForgeBusEvents {
+    @EventBusSubscriber
+    public static class PetAttackLogicForgeBusEvents {
 
         @SubscribeEvent
         public static void onTargetChange(LivingChangeTargetEvent event) {
-            Entity attackerEntity = event.getEntity();
-            if (!(attackerEntity instanceof Mob attacker)) return;
-            
-            // --- GLOBAL BLACKLIST CHECK ---
-            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(attackerEntity)) return;
+            if (!(event.getEntity() instanceof Mob attacker)) return;
             
             LivingEntity newTarget = event.getNewTarget();
             if (newTarget == null) return;
@@ -74,9 +69,6 @@ public class PetAttackLogic {
             if (event.getLevel().isClientSide()) return;
             Entity spawned = event.getEntity();
             
-            // --- GLOBAL BLACKLIST CHECK ---
-            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(spawned)) return;
-            
             // --- IDLE WITHER PROJECTILE INTERCEPT ---
             if (spawned instanceof net.minecraft.world.entity.projectile.WitherSkull skull) {
                 Entity shooter = skull.getOwner();
@@ -99,13 +91,10 @@ public class PetAttackLogic {
         }
 
         @SubscribeEvent
-        public static void onEntityTick(LivingEvent.LivingTickEvent event) {
+        public static void onEntityTick(net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent event) {
             Entity entity = event.getEntity();
             
             if (entity.level().isClientSide() || !(entity instanceof Mob pet)) return;
-
-            // --- GLOBAL BLACKLIST CHECK ---
-            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
 
             if (isCustomPet(pet)) {
                 Player owner = getOwner(pet);
@@ -185,7 +174,6 @@ public class PetAttackLogic {
                         if (currentTarget != null) {
                             warden.clearAnger(currentTarget);
                         }
-                        // removed owner clear
                     }
                 }
                 
@@ -194,62 +182,42 @@ public class PetAttackLogic {
                     warden.clearAnger(owner);
                 }
 
-                // --- BOSSBAR DELETION ---
-                if (PettingConfig.HIDE_TAMED_BOSSBARS.get()) {
-                    // 1. WITHER BOSS
+                    // --- WITHER BOSS PATCH ---
                     if (pet instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
                         // Blast side-heads back to 0 (no target) actively
                         wither.setAlternativeTarget(1, 0);
                         wither.setAlternativeTarget(2, 0);
                         
-                        try {
-                            Field bossEventField = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.boss.wither.WitherBoss.class, "f_31427_"); // official name: bossEvent
-                            bossEventField.setAccessible(true);
-                            ServerBossEvent bossEvent = (ServerBossEvent) bossEventField.get(wither);
-                            if (bossEvent != null) {
-                                bossEvent.setVisible(false);
-                                bossEvent.removeAllPlayers();
-                            }
-                        } catch (Exception ignored) {}
-                    }
-                    // 2. ENDER DRAGON
-                    else if (pet instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
-                        if (dragon.level() instanceof net.minecraft.server.level.ServerLevel serverLevel) {
-                            net.minecraft.world.level.dimension.end.EndDragonFight fight = serverLevel.getDragonFight();
-                            if (fight != null) {
-                                try {
-                                    Field fightBossEventField = ObfuscationReflectionHelper.findField(net.minecraft.world.level.dimension.end.EndDragonFight.class, "f_64287_"); // official name: bossEvent
-                                    fightBossEventField.setAccessible(true);
-                                    ServerBossEvent bossEvent = (ServerBossEvent) fightBossEventField.get(fight);
-                                    if (bossEvent != null) {
-                                        bossEvent.setVisible(false);
-                                        bossEvent.removeAllPlayers();
-                                    }
-                                } catch (Exception ignored) {}
-                            }
+                        // BOSSBAR DELETION (Reflection)
+                        if (PettingConfig.HIDE_TAMED_BOSSBARS.get()) {
+                            try {
+                                java.lang.reflect.Field bossEventField = net.minecraftforge.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.boss.wither.WitherBoss.class, "bossEvent");
+                                bossEventField.setAccessible(true);
+                                net.minecraft.server.level.ServerBossEvent bossEvent = (net.minecraft.server.level.ServerBossEvent) bossEventField.get(wither);
+                                if (bossEvent != null) {
+                                    bossEvent.removeAllPlayers();
+                                    bossEvent.setVisible(false);
+                                }
+                            } catch (Exception ignored) {}
                         }
                     }
                 }
             }
-        }
 
         @SubscribeEvent
-        public static void onLivingDamage(LivingDamageEvent event) {
+        public static void onLivingDamage(net.minecraftforge.event.entity.living.LivingDamageEvent event) {
             LivingEntity victim = event.getEntity();
 
             if (victim == null || victim.level().isClientSide()) return;
 
-            // --- GLOBAL BLACKLIST CHECK ---
-            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(victim)) return;
-
             if (victim instanceof Mob petMob && isCustomPet(petMob)) {
                 // QUALITY OF LIFE INVULNERABILITIES
                 // Prevent tamed pets from taking silly environmental damage to preserve them better
-                if (event.getSource().is(net.minecraft.world.damagesource.DamageTypes.FALL) || 
-                    event.getSource().is(net.minecraft.world.damagesource.DamageTypes.IN_FIRE) ||
-                    event.getSource().is(net.minecraft.world.damagesource.DamageTypes.ON_FIRE) ||
-                    event.getSource().is(net.minecraft.world.damagesource.DamageTypes.LAVA)) {
-                    event.setCanceled(true);
+                if (event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FALL) || 
+                    event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FIRE) ||
+                    event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FIRE) ||
+                    event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FIRE)) {
+                    event.setAmount(0.0f);
                     return;
                 }
             }
@@ -262,7 +230,7 @@ public class PetAttackLogic {
                 Player victimOwner = getOwner(victimMob);
                 Player attackerOwner = getOwner(attackerMob);
                 if (victimOwner != null && victimOwner == attackerOwner) {
-                    event.setCanceled(true); // Neutralize damage completely
+                    event.setAmount(0.0f); // Neutralize damage completely
                     victimMob.setTarget(null);
                     attackerMob.setTarget(null);
                     return;
@@ -281,13 +249,12 @@ public class PetAttackLogic {
 
             Player owner = getOwner(petMob);
             if (attacker == owner) { 
-                if (PettingConfig.ALLOW_OWNER_TO_HURT_PETS.get()) {
-                    return; // Allow damage to proceed
+                if (!net.yigitguven.petting.config.PettingConfig.ALLOW_OWNER_TO_HURT_PETS.get()) {
+                    petMob.setTarget(null);
+                    petMob.setLastHurtByMob(null);
+                    event.setAmount(0.0f);
+                    return; 
                 }
-                petMob.setTarget(null);
-                petMob.setLastHurtByMob(null);
-                event.setCanceled(true); // Also cancel owner damaging their own pet
-                return; 
             }
 
             boolean attackSelf = petMob.getPersistentData().getBoolean("attackifselfattacked");
@@ -310,7 +277,6 @@ public class PetAttackLogic {
 
         private static boolean isCustomPet(Entity entity) {
             if (!(entity instanceof Mob)) return false;
-            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return false; // ADDED BLACKLIST CHECK
             return entity.getPersistentData().getBoolean("pettingtamed");
         }
 
@@ -354,4 +320,4 @@ public class PetAttackLogic {
             return false;
         }
     }
-}
+    }

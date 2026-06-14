@@ -4,21 +4,21 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.yigitguven.petting.util.PetInventoryUtil;
 import net.yigitguven.petting.config.PettingConfig;
 
 import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import java.lang.reflect.Field;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class PetRidingHandler {
-    private static final Field JUMPING_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20899_"); // official name: jumping
-    private static final Field XXA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20900_"); // official name: xxa
-    private static final Field YYA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20901_"); // official name: yya
-    private static final Field ZZA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20902_"); // official name: zza
+    private static final Field JUMPING_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "jumping");
+    private static final Field XXA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "xxa");
+    private static final Field YYA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "yya");
+    private static final Field ZZA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "zza");
 
     static {
         JUMPING_FIELD.setAccessible(true);
@@ -52,14 +52,12 @@ public class PetRidingHandler {
     }
 
     @SubscribeEvent
-    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
+    public static void onEntityTick(net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent event) {
         LivingEntity pet = event.getEntity();
         if (pet.level().isClientSide()) return;
 
-        // --- GLOBAL BLACKLIST CHECK ---
         if (PetInventoryUtil.isBlacklisted(pet)) return;
 
-        // Check if there is a player passenger
         if (pet.getPassengers().isEmpty()) return;
         
         Player player = null;
@@ -71,7 +69,6 @@ public class PetRidingHandler {
         }
 
         if (player != null) {
-            // Check for saddle and riding permission
             if (PetInventoryUtil.hasSaddle(pet) && PetInventoryUtil.isRidingAllowed(pet)) {
                 handleRidingControl(pet, player);
             }
@@ -79,7 +76,6 @@ public class PetRidingHandler {
     }
 
     private static void handleRidingControl(LivingEntity pet, Player player) {
-        // Clear sitting/waiting states when mounting
         net.minecraft.nbt.CompoundTag data = pet.getPersistentData();
         if (data.getBoolean("sitstill") || data.getBoolean("waiting") || pet.isShiftKeyDown()) {
             data.putBoolean("sitstill", false);
@@ -87,23 +83,23 @@ public class PetRidingHandler {
             pet.setShiftKeyDown(false);
         }
 
-        // 1. Sync Rotation
         float yaw = player.getYRot();
-        if (pet instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
+        // In 1.21.1 Ender Dragon id check
+        net.minecraft.resources.ResourceLocation key = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(pet.getType());
+        if (key != null && key.toString().equals("minecraft:ender_dragon")) {
             yaw += 180.0F;
         }
+        
         pet.setYRot(yaw);
         pet.yRotO = pet.getYRot();
-        pet.setXRot(player.getXRot() * 0.5F); // Look up/down slightly
+        pet.setXRot(player.getXRot() * 0.5F);
         pet.setYBodyRot(pet.getYRot());
         pet.setYHeadRot(pet.getYRot());
 
-        // 2. Movement Inputs
-        float forward = getZza(player); // Forward/Backward (W/S)
-        float strafe = getXxa(player);  // Left/Right (A/D)
+        float forward = getZza(player);
+        float strafe = getXxa(player);
         
-        // Use a multiplier for speed (standardized)
-        float speed = 0.1F; // Base speed fallback
+        float speed = 0.1F;
         if (pet instanceof Mob mob) {
             speed = (float) mob.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
         }
@@ -125,24 +121,20 @@ public class PetRidingHandler {
         double vy = 0;
         double vz = 0;
 
-        // 1. Vertical Movement (Space to Swim Up, S to Swim Down)
         if (isJumping(player)) {
-            vy = 0.2; // Gentle swim up
+            vy = 0.2;
         } else if (forward < 0) {
-            vy = -0.2; // Gentle swim down
+            vy = -0.2;
         } else {
-            // Neutral buoyancy-ish: keep some downward momentum but slow it
             vy = pet.getDeltaMovement().y * 0.5;
         }
 
-        // 2. Horizontal Movement
         float horizontalForward = Math.max(0, forward); 
         if (horizontalForward != 0 || strafe != 0) {
             Vec3 moveVec = new Vec3(strafe, 0, horizontalForward).yRot(-player.getYRot() * ((float)Math.PI / 180F)).normalize().scale(speed * PettingConfig.SWIMMING_RIDING_SPEED_MULTIPLIER.get());
             vx = moveVec.x;
             vz = moveVec.z;
         } else {
-            // Slow down horizontally when no input
             vx = pet.getDeltaMovement().x * 0.8;
             vz = pet.getDeltaMovement().z * 0.8;
         }
@@ -155,30 +147,24 @@ public class PetRidingHandler {
         double vy = 0;
         double vz = 0;
 
-        // Vertical Movement
         if (isJumping(player)) {
-            vy = 0.25; // Gentle climb
-        } else if (forward < 0) { // S key to Fly Down
+            vy = 0.25;
+        } else if (forward < 0) {
             vy = -0.25;
         } else {
-            // Neutral buoyancy for flyers
             vy = 0;
             pet.setNoGravity(true);
         }
 
-        // Horizontal Movement (Only apply forward if W is pressed, or if only strafing)
         float horizontalForward = Math.max(0, forward); 
         if (horizontalForward != 0 || strafe != 0) {
-            // Flight speed multiplier from config
             Vec3 moveVec = new Vec3(strafe, 0, horizontalForward).yRot(-player.getYRot() * ((float)Math.PI / 180F)).normalize().scale(speed * PettingConfig.FLYING_RIDING_SPEED_MULTIPLIER.get());
             vx = moveVec.x;
             vz = moveVec.z;
         }
 
-        // In flight, we use DeltaMovement for full 3D freedom
         pet.setDeltaMovement(vx, vy, vz);
         
-        // Ensure it doesn't just fall when we stop riding
         if (pet.getPassengers().isEmpty()) {
             pet.setNoGravity(false);
         }
@@ -191,9 +177,8 @@ public class PetRidingHandler {
             mob.getNavigation().stop();
         }
 
-        // Apply WASD movement via DeltaMovement
         float moveSpeed = speed * PettingConfig.LAND_RIDING_SPEED_MULTIPLIER.get().floatValue();
-        if (forward < 0) moveSpeed *= 0.5F; // Slower backing up
+        if (forward < 0) moveSpeed *= 0.5F;
         if (player.isSprinting()) moveSpeed *= 1.3F;
 
         if (forward != 0 || strafe != 0) {
@@ -201,7 +186,6 @@ public class PetRidingHandler {
             pet.setDeltaMovement(moveVec.x, pet.getDeltaMovement().y, moveVec.z);
         }
 
-        // Jumping logic
         if (isJumping(player) && pet.onGround()) {
             pet.setDeltaMovement(pet.getDeltaMovement().x, 0.42D, pet.getDeltaMovement().z);
         }

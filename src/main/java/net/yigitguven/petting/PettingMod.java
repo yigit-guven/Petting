@@ -58,6 +58,10 @@ public class PettingMod {
         addNetworkMessage(net.yigitguven.petting.network.PetAttackPacket.class, net.yigitguven.petting.network.PetAttackPacket::toBytes, net.yigitguven.petting.network.PetAttackPacket::new, net.yigitguven.petting.network.PetAttackPacket::handle);
         addNetworkMessage(net.yigitguven.petting.network.SyncPetStatusPacket.class, net.yigitguven.petting.network.SyncPetStatusPacket::toBytes, net.yigitguven.petting.network.SyncPetStatusPacket::new, net.yigitguven.petting.network.SyncPetStatusPacket::handle);
         addNetworkMessage(CancelBindingPacket.class, CancelBindingPacket::toBytes, CancelBindingPacket::new, CancelBindingPacket::handle);
+        addNetworkMessage(net.yigitguven.petting.network.OpenPetSettingsPacket.class, net.yigitguven.petting.network.OpenPetSettingsPacket::encode, net.yigitguven.petting.network.OpenPetSettingsPacket::new, net.yigitguven.petting.network.OpenPetSettingsPacket::handle);
+        addNetworkMessage(net.yigitguven.petting.network.SendPetSettingsPacket.class, net.yigitguven.petting.network.SendPetSettingsPacket::encode, net.yigitguven.petting.network.SendPetSettingsPacket::new, net.yigitguven.petting.network.SendPetSettingsPacket::handle);
+        addNetworkMessage(net.yigitguven.petting.network.UpdatePetSettingPacket.class, net.yigitguven.petting.network.UpdatePetSettingPacket::encode, net.yigitguven.petting.network.UpdatePetSettingPacket::new, net.yigitguven.petting.network.UpdatePetSettingPacket::handle);
+        addNetworkMessage(net.yigitguven.petting.network.SavePetControlDefaultsPacket.class, net.yigitguven.petting.network.SavePetControlDefaultsPacket::encode, net.yigitguven.petting.network.SavePetControlDefaultsPacket::new, net.yigitguven.petting.network.SavePetControlDefaultsPacket::handle);
 		// End of user code block mod init
 	}
 

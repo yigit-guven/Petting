@@ -5,6 +5,7 @@ import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import net.minecraft.world.level.block.state.BlockState;
@@ -17,11 +18,11 @@ import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class FollowOwnerOrTeleport {
     public FollowOwnerOrTeleport() {}
 
@@ -33,22 +34,19 @@ public class FollowOwnerOrTeleport {
     @SubscribeEvent
     public static void clientLoad(FMLClientSetupEvent event) {}
 
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
-    private static class FollowOwnerOrTeleportForgeBusEvents {
+    @EventBusSubscriber
+    public static class FollowOwnerOrTeleportForgeBusEvents {
         
         @SubscribeEvent
         public static void serverLoad(ServerStartingEvent event) {}
 
         @SubscribeEvent
-        public static void onEntityTick(LivingEvent.LivingTickEvent event) {
+        public static void onEntityTick(net.minecraftforge.event.entity.living.LivingEvent.LivingTickEvent event) {
             Entity entity = event.getEntity();
             Level world = entity.level();
 
             // Safety checks
             if (world.isClientSide() || !(entity instanceof Mob mob)) return;
-            
-            // --- GLOBAL BLACKLIST CHECK ---
-            if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) return;
 
             CompoundTag data = entity.getPersistentData();
 
@@ -64,10 +62,9 @@ public class FollowOwnerOrTeleport {
                 Vec3 boundPos = new Vec3(bX, bY, bZ);
                 double distToBound = mob.distanceToSqr(boundPos);
                 double roamRadius = net.yigitguven.petting.config.PettingConfig.BOUND_ROAM_RADIUS.get();
-                // --- DYNAMIC TELEPORT THRESHOLD ---
-                // If extremely far (e.g. owner teleported it away), teleport back
-                double teleportThresholdSq = Math.max(900.0, Math.pow(roamRadius * 1.5, 2)); // Minimum 30 blocks squared
-                if (distToBound > teleportThresholdSq) {
+                
+                // If extremely far (e.g. teleported away), teleport back
+                if (distToBound > 400.0) { // 20 blocks squared
                     mob.teleportTo(bX, bY, bZ);
                     mob.getNavigation().stop();
                 } 
@@ -87,12 +84,12 @@ public class FollowOwnerOrTeleport {
             net.minecraft.world.entity.ai.attributes.AttributeInstance flyingSpeedAttribute = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FLYING_SPEED);
             
             // Define a unique modifier ID for Petting Stop
-            final UUID PETTING_STOP_UUID = UUID.fromString("11111111-2222-3333-4444-555555555555");
+            final java.util.UUID PETTING_STOP_ID = java.util.UUID.fromString("a1b2c3d4-e5f6-7777-8888-999999999999");
             net.minecraft.world.entity.ai.attributes.AttributeModifier stopModifier = new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                PETTING_STOP_UUID, "Petting Stop", -1.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL);
+                PETTING_STOP_ID, "Petting Stop", -1.0D, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.MULTIPLY_TOTAL);
 
             // --- SIT LOGIC ---
-            if (data.contains("sitstill") && data.getBoolean("sitstill") && !mob.isVehicle()) {
+            if (data.contains("sitstill") && data.getBoolean("sitstill")) {
                 mob.getNavigation().stop();
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
                 
@@ -103,10 +100,10 @@ public class FollowOwnerOrTeleport {
                 mob.setSpeed(0.0f);
 
                 // Apply Stop Modifier if not present
-                if (speedAttribute != null && !speedAttribute.hasModifier(stopModifier)) {
+                if (speedAttribute != null && speedAttribute.getModifier(PETTING_STOP_ID) == null) {
                     speedAttribute.addTransientModifier(stopModifier);
                 }
-                if (flyingSpeedAttribute != null && !flyingSpeedAttribute.hasModifier(stopModifier)) {
+                if (flyingSpeedAttribute != null && flyingSpeedAttribute.getModifier(PETTING_STOP_ID) == null) {
                     flyingSpeedAttribute.addTransientModifier(stopModifier);
                 }
 
@@ -127,7 +124,7 @@ public class FollowOwnerOrTeleport {
             }
 
             // --- WAITING LOGIC ---
-            if (data.contains("waiting") && data.getBoolean("waiting") && !mob.isVehicle()) {
+            if (data.contains("waiting") && data.getBoolean("waiting")) {
                 mob.getNavigation().stop();
                 mob.getMoveControl().setWantedPosition(mob.getX(), mob.getY(), mob.getZ(), 0.0);
 
@@ -138,10 +135,10 @@ public class FollowOwnerOrTeleport {
                 mob.setSpeed(0.0f);
 
                 // Apply Stop Modifier if not present
-                if (speedAttribute != null && !speedAttribute.hasModifier(stopModifier)) {
+                if (speedAttribute != null && speedAttribute.getModifier(PETTING_STOP_ID) == null) {
                     speedAttribute.addTransientModifier(stopModifier);
                 }
-                if (flyingSpeedAttribute != null && !flyingSpeedAttribute.hasModifier(stopModifier)) {
+                if (flyingSpeedAttribute != null && flyingSpeedAttribute.getModifier(PETTING_STOP_ID) == null) {
                     flyingSpeedAttribute.addTransientModifier(stopModifier);
                 }
 
@@ -163,16 +160,11 @@ public class FollowOwnerOrTeleport {
 
             // --- WANDERING RESTORE LOGIC ---
             // Remove the stop modifier if it exists so the pet can walk again
-            if (speedAttribute != null && speedAttribute.hasModifier(stopModifier)) {
-                speedAttribute.removeModifier(PETTING_STOP_UUID);
+            if (speedAttribute != null && speedAttribute.getModifier(PETTING_STOP_ID) != null) {
+                speedAttribute.removeModifier(PETTING_STOP_ID);
             }
-            if (flyingSpeedAttribute != null && flyingSpeedAttribute.hasModifier(stopModifier)) {
-                flyingSpeedAttribute.removeModifier(PETTING_STOP_UUID);
-            }
-
-            // --- FREE WANDER LOGIC ---
-            if (data.getBoolean("freewander")) {
-                return; // Skip follow logic and let the natural AI wander
+            if (flyingSpeedAttribute != null && flyingSpeedAttribute.getModifier(PETTING_STOP_ID) != null) {
+                flyingSpeedAttribute.removeModifier(PETTING_STOP_ID);
             }
 
             if (!data.contains("ownerUUID")) return;
@@ -234,7 +226,7 @@ public class FollowOwnerOrTeleport {
             if (mob.getNavigation() instanceof FlyingPathNavigation) return true;
             if (mob.isNoGravity()) return true;
 
-            String registryName = ForgeRegistries.ENTITY_TYPES.getKey(mob.getType()).toString();
+            String registryName = BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()).toString();
             if (registryName != null) {
                 String lowerName = registryName.toLowerCase();
                 if (lowerName.contains("ghast") || lowerName.contains("blaze") || 
@@ -275,3 +267,7 @@ public class FollowOwnerOrTeleport {
         }
     }
 }
+
+
+
+

@@ -1,9 +1,7 @@
 package net.yigitguven.petting.world.inventory;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
@@ -12,23 +10,17 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
 import net.yigitguven.petting.init.PettingModMenus;
-import net.yigitguven.petting.capability.PetInventoryCapability;
 
 import net.yigitguven.petting.util.PetInventoryUtil;
 
 public class PetInventoryMenu extends AbstractContainerMenu {
     private final Entity pet;
-    private final IItemHandler petCapabilityInventory;
+    private final IItemHandler petInventory;
 
     private static final int SADDLE_SLOT = 0;
-    private static final int ARMOR_START = 1;
-    private static final int ARMOR_COUNT = 4;
-    private static final int HANDS_START = 5;
     private static final int PLAYER_START = 7;
 
     public PetInventoryMenu(int id, Inventory playerInventory, FriendlyByteBuf extraData) {
@@ -40,14 +32,13 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         this.pet = pet;
         
         if (pet != null) {
-            this.petCapabilityInventory = pet.getCapability(PetInventoryCapability.PET_INVENTORY)
-                    .orElse(new PetInventoryCapability.PetInventoryHandler(1));
+            this.petInventory = pet.getCapability(net.yigitguven.petting.capability.PetInventoryCapability.PET_INVENTORY).orElse(null);
         } else {
-            this.petCapabilityInventory = new PetInventoryCapability.PetInventoryHandler(1);
+            this.petInventory = new net.minecraftforge.items.ItemStackHandler(7);
         }
 
-        // 1. Saddle Slot (Top Right of equipment area)
-        this.addSlot(new SlotItemHandler(petCapabilityInventory, 0, 142, 17) {
+        // 1. Saddle Slot
+        this.addSlot(new SlotItemHandler(petInventory, 0, 142, 17) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.is(Items.SADDLE);
@@ -59,16 +50,17 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         });
 
         if (pet instanceof Mob mob) {
-            // 2. Armor Grid (2x2 on Left) - Shifted slightly
+            // 2. Armor Slots
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.HEAD, 17, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.HEAD)));
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.CHEST, 35, 17, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.CHEST)));
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.LEGS, 17, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.LEGS)));
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.FEET, 35, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.FEET)));
             
-            // 3. Hands (Right Column) - Shifted slightly
+            // 3. Hand Slots
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.MAINHAND, 142, 35, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.MAINHAND)));
             this.addSlot(new EquipmentSlotHandler(mob, EquipmentSlot.OFFHAND, 142, 53, PetInventoryUtil.isSlotSupported(mob, EquipmentSlot.OFFHAND)));
         } else {
+            // Dummy slots if not a mob
             for (int i = 0; i < 6; i++) {
                 this.addSlot(new Slot(new net.minecraft.world.SimpleContainer(1), 0, -1000, -1000) {
                     @Override
@@ -79,7 +71,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             }
         }
 
-        // Player Inventory - Standard position
+        // Player Inventory
         int playerInvY = 84;
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
@@ -96,10 +88,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         return pet;
     }
 
-    public IItemHandler getPetInventory() {
-        return petCapabilityInventory;
-    }
-
     @Override
     public boolean stillValid(Player player) {
         return pet != null && pet.isAlive() && pet.distanceTo(player) < 8.0F;
@@ -113,11 +101,11 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             ItemStack itemstack1 = slot.getItem();
             itemstack = itemstack1.copy();
             
-            if (index < PLAYER_START) { // From Pet to Player
+            if (index < PLAYER_START) {
                 if (!this.moveItemStackTo(itemstack1, PLAYER_START, this.slots.size(), true)) {
                     return ItemStack.EMPTY;
                 }
-            } else { // From Player to Pet
+            } else {
                 if (itemstack1.is(Items.SADDLE)) {
                     if (!this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
@@ -134,7 +122,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                         return ItemStack.EMPTY;
                     }
                 } else {
-                    return ItemStack.EMPTY; // No other destinations
+                    return ItemStack.EMPTY;
                 }
             }
 

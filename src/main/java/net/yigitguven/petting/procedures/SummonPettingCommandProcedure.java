@@ -1,8 +1,8 @@
 package net.yigitguven.petting.procedures;
 
-import net.minecraftforge.event.entity.EntityJoinLevelEvent; // CHANGED
-import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
@@ -17,7 +17,7 @@ import net.minecraft.nbt.CompoundTag;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber
+@EventBusSubscriber
 public class SummonPettingCommandProcedure {
     
     @SubscribeEvent
@@ -44,7 +44,7 @@ public class SummonPettingCommandProcedure {
                         finalUUID = inputUUID;
                         ownerPlayer = entity.level().getPlayerByUUID(uuid);
                     } catch (Exception e) {
-                        System.err.println("Petting Mod: Invalid UUID format: " + inputUUID);
+                        // Log error
                     }
                 }
 
@@ -84,13 +84,13 @@ public class SummonPettingCommandProcedure {
                         serverLevel.sendParticles(ParticleTypes.HEART, 
                             entity.getX(), entity.getY() + 0.5, entity.getZ(), 
                             7, 0.5, 0.5, 0.5, 0.1);
+                        
+                        net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entity), new net.yigitguven.petting.network.SyncPetStatusPacket(entity.getId(), true));
                     }
                     entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), 
                         SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.NEUTRAL, 1.0F, 1.0F);
 
                     entity.removeTag(tag);
-                    
-                    System.out.println("Petting Mod: Summoned pet registered for UUID: " + finalUUID);
                 }
             }
         }

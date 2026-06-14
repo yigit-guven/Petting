@@ -5,12 +5,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.yigitguven.petting.config.PettingConfig;
 import net.yigitguven.petting.init.PettingModAttributes;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber(bus = EventBusSubscriber.Bus.FORGE)
 public class PlayerAttributeSyncHandler {
     @SubscribeEvent
     public static void onPlayerJoin(EntityJoinLevelEvent event) {
@@ -66,3 +67,6 @@ public class PlayerAttributeSyncHandler {
         };
     }
 }
+
+
+

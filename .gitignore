@@ -24,3 +24,11 @@ crash-reports/
 .DS_Store
 Thumbs.db
 /jdk17
+
+# Scripts & IDE configurations
+*.py
+*.launch
+bin/
+.eclipse/
+.ide/
+.inverse/
