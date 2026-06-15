@@ -25,15 +25,18 @@ public abstract class EntityMixin implements net.yigitguven.petting.IEntityData 
 
     @Inject(method = "saveWithoutId", at = @At("RETURN"))
     private void onSaveWithoutId(CompoundTag nbt, CallbackInfoReturnable<CompoundTag> cir) {
-        if (this.persistentData != null) {
-            nbt.put("PettingPersistentData", this.persistentData);
+        if (this.persistentData != null && !this.persistentData.isEmpty()) {
+            cir.getReturnValue().put("PettingPersistentData", this.persistentData.copy());
         }
     }
 
     @Inject(method = "load", at = @At("RETURN"))
     private void onLoad(CompoundTag nbt, CallbackInfo ci) {
         if (nbt.contains("PettingPersistentData", 10)) {
-            this.persistentData = nbt.getCompound("PettingPersistentData");
+            if (this.persistentData == null) {
+                this.persistentData = new CompoundTag();
+            }
+            this.persistentData.merge(nbt.getCompound("PettingPersistentData"));
         }
     }
 }
