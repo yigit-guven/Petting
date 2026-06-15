@@ -57,8 +57,8 @@ public class PetSettingsScreen extends Screen {
         this.followDistance = followDistance;
         this.teleportDistance = teleportDistance;
 
-        this.controlRightMapping = controlRightClick != null && !controlRightClick.isBlank() ? controlRightClick : "SIT|NONE";
-        this.controlShiftMapping = controlShiftRightClick != null && !controlShiftRightClick.isBlank() ? controlShiftRightClick : "CYCLE|NONE";
+        this.controlRightMapping = controlRightClick != null && !controlRightClick.isBlank() ? controlRightClick : "RIDE|SADDLE;SIT|NONE";
+        this.controlShiftMapping = controlShiftRightClick != null && !controlShiftRightClick.isBlank() ? controlShiftRightClick : "OPEN_INV|NONE";
     }
 
     public static void open(int entityId, boolean sitStill, boolean waiting, boolean isTamed,
@@ -183,8 +183,8 @@ public class PetSettingsScreen extends Screen {
         this.controlsButton = Button.builder(Component.translatable("screen.petting.controls.open"), b -> {
                 // Always read fresh mapping strings from entity client NBT so we don't pass stale constructor values
                 net.minecraft.world.entity.Entity _pet = getPetEntity();
-                String _right = "SIT|NONE";
-                String _shift = "CYCLE|NONE";
+                String _right = "RIDE|SADDLE;SIT|NONE";
+                String _shift = "OPEN_INV|NONE";
                 if (_pet != null) {
                     net.minecraft.nbt.CompoundTag _d = ((net.yigitguven.petting.IEntityData)_pet).getPersistentData();
                     if (_d.contains("control_right_click"))       _right = _d.getString("control_right_click");

@@ -62,8 +62,8 @@ public class PetControlMappingsScreen extends Screen {
         super(Component.translatable("screen.petting.controls.title"));
         this.parent = parent;
         this.entityId = entityId;
-        this.rightRules = parseRules(controlRightMapping, "SIT");
-        this.shiftRules = parseRules(controlShiftMapping, "CYCLE");
+        this.rightRules = parseRules(controlRightMapping, "RIDE|SADDLE;SIT|NONE");
+        this.shiftRules = parseRules(controlShiftMapping, "OPEN_INV|NONE");
     }
 
     private static List<MappingRule> parseRules(String mapping, String fallbackAction) {
@@ -174,7 +174,7 @@ public class PetControlMappingsScreen extends Screen {
     }
 
     private void sendMapping(boolean shiftSide) {
-        String mapping = shiftSide ? serializeRules(this.shiftRules, "CYCLE") : serializeRules(this.rightRules, "SIT");
+        String mapping = shiftSide ? serializeRules(this.shiftRules, "OPEN_INV|NONE") : serializeRules(this.rightRules, "RIDE|SADDLE;SIT|NONE");
         String key = shiftSide ? "control_shift_right_click" : "control_right_click";
         net.yigitguven.petting.client.PettingClientNetworking.sendUpdatePetSetting(this.entityId, key, mapping);
     }
@@ -210,9 +210,9 @@ public class PetControlMappingsScreen extends Screen {
 
         this.resetButton = Button.builder(Component.translatable("screen.petting.controls.reset_basic"), b -> {
             this.rightRules.clear();
-            this.rightRules.add(new MappingRule("SIT", "NONE"));
+            this.rightRules.addAll(parseRules("RIDE|SADDLE;SIT|NONE", "RIDE|SADDLE;SIT|NONE"));
             this.shiftRules.clear();
-            this.shiftRules.add(new MappingRule("CYCLE", "NONE"));
+            this.shiftRules.addAll(parseRules("OPEN_INV|NONE", "OPEN_INV|NONE"));
             rightScroll = 0; shiftScroll = 0;
             sendMapping(false); sendMapping(true);
             rebuildWidgets();
@@ -220,7 +220,7 @@ public class PetControlMappingsScreen extends Screen {
 
         this.saveDefaultButton = Button.builder(Component.translatable("screen.petting.controls.save_default"), b ->
                 net.yigitguven.petting.client.PettingClientNetworking.sendSavePetControlDefaults(
-                        serializeRules(this.rightRules, "SIT"), serializeRules(this.shiftRules, "CYCLE")))
+                        serializeRules(this.rightRules, "RIDE|SADDLE;SIT|NONE"), serializeRules(this.shiftRules, "OPEN_INV|NONE")))
                 .bounds(cardLeft, bottomTop + 24, halfW, 20).build();
 
         this.backButton = Button.builder(Component.translatable("screen.petting.settings.close"), b -> Minecraft.getInstance().setScreen(this.parent))

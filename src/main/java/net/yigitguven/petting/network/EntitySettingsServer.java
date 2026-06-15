@@ -45,8 +45,8 @@ public class EntitySettingsServer {
         boolean attackIfSelfAttacked = data.getBoolean("attackifselfattacked");
         boolean damageOwner = data.getBoolean("damageOwner");
         boolean ignoreWhistle = data.getBoolean("ignoreWhistle");
-        String defaultRight = ((net.yigitguven.petting.IEntityData)player).getPersistentData().contains("petting_default_control_right_click") ? ((net.yigitguven.petting.IEntityData)player).getPersistentData().getString("petting_default_control_right_click") : "SIT";
-        String defaultShift = ((net.yigitguven.petting.IEntityData)player).getPersistentData().contains("petting_default_control_shift_right_click") ? ((net.yigitguven.petting.IEntityData)player).getPersistentData().getString("petting_default_control_shift_right_click") : "CYCLE";
+        String defaultRight = ((net.yigitguven.petting.IEntityData)player).getPersistentData().contains("petting_default_control_right_click") ? ((net.yigitguven.petting.IEntityData)player).getPersistentData().getString("petting_default_control_right_click") : "RIDE|SADDLE;SIT|NONE";
+        String defaultShift = ((net.yigitguven.petting.IEntityData)player).getPersistentData().contains("petting_default_control_shift_right_click") ? ((net.yigitguven.petting.IEntityData)player).getPersistentData().getString("petting_default_control_shift_right_click") : "OPEN_INV|NONE";
         String controlRightClick = data.contains("control_right_click") ? data.getString("control_right_click") : defaultRight;
         String controlShiftRightClick = data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : defaultShift;
         if (!data.contains("control_right_click")) data.putString("control_right_click", controlRightClick);
@@ -77,11 +77,11 @@ public class EntitySettingsServer {
         if (player == null) return;
         CompoundTag data = ((net.yigitguven.petting.IEntityData)player).getPersistentData();
         if (rightClick != null && !rightClick.isBlank()) {
-            String normalized = normalizeMapping(rightClick, "SIT");
+            String normalized = normalizeMapping(rightClick, "RIDE|SADDLE;SIT|NONE");
             if (normalized != null) data.putString("petting_default_control_right_click", normalized);
         }
         if (shiftRightClick != null && !shiftRightClick.isBlank()) {
-            String normalized = normalizeMapping(shiftRightClick, "CYCLE");
+            String normalized = normalizeMapping(shiftRightClick, "OPEN_INV|NONE");
             if (normalized != null) data.putString("petting_default_control_shift_right_click", normalized);
         }
     }
@@ -128,7 +128,7 @@ public class EntitySettingsServer {
                 return;
             }
         } else if (controlKeys.contains(key)) {
-            String fallback = key.equals("control_right_click") ? "SIT" : "CYCLE";
+            String fallback = key.equals("control_right_click") ? "RIDE|SADDLE;SIT|NONE" : "OPEN_INV|NONE";
             String normalized = normalizeMapping(value, fallback);
             if (normalized == null) return;
             data.putString(key, normalized);
@@ -149,8 +149,8 @@ public class EntitySettingsServer {
         buf.writeInt(data.contains("followdistance") ? data.getInt("followdistance") : (int)net.yigitguven.petting.config.PettingConfig.followDistance);
         buf.writeInt(data.contains("teleportdistance") ? data.getInt("teleportdistance") : (int)net.yigitguven.petting.config.PettingConfig.teleportDistance);
         buf.writeBoolean(false); // openScreen
-        buf.writeUtf(data.contains("control_right_click") ? data.getString("control_right_click") : "SIT");
-        buf.writeUtf(data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : "CYCLE");
+        buf.writeUtf(data.contains("control_right_click") ? data.getString("control_right_click") : "RIDE|SADDLE;SIT|NONE");
+        buf.writeUtf(data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : "OPEN_INV|NONE");
 
         for (ServerPlayer trackingPlayer : PlayerLookup.tracking(entity)) {
             ServerPlayNetworking.send(trackingPlayer, new net.minecraft.resources.ResourceLocation("petting", "send_pet_settings"), buf);
@@ -171,7 +171,7 @@ public class EntitySettingsServer {
     }
 
     private static String normalizeMapping(String value, String fallbackAction) {
-        if (value == null || value.isBlank()) return fallbackAction + "|NONE";
+        if (value == null || value.isBlank()) return fallbackAction.contains("|") ? fallbackAction : (fallbackAction + "|NONE");
         java.util.Set<String> allowedActions = java.util.Set.of("SIT", "CYCLE", "RIDE", "OPEN_INV", "TOGGLE_WAIT", "TOGGLE_FOLLOW_TELEPORT", "OPEN_SETTINGS", "RUN_COMMAND", "NONE");
         java.util.Set<String> allowedConditions = java.util.Set.of("NONE", "SADDLE", "SNEAK", "HEALTH_LT_50", "HOLD_ITEM");
         java.util.List<String> out = new java.util.ArrayList<>();
@@ -199,7 +199,7 @@ public class EntitySettingsServer {
             }
             out.add(normalized);
         }
-        if (out.isEmpty()) out.add(fallbackAction + "|NONE");
+        if (out.isEmpty()) out.add(fallbackAction.contains("|") ? fallbackAction : (fallbackAction + "|NONE"));
         return String.join(";", out);
     }
 }

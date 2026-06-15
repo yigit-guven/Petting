@@ -43,7 +43,11 @@ public class OwnerRightclicksPetProcedure {
         String petName = entity.hasCustomName() ? entity.getCustomName().getString() : entity.getType().getDescription().getString();
 
         if ((data.getString("ownerUUID")).equals(player.getStringUUID())) {
-            if (data.getLong("pettingTamedTick") == entity.level().getGameTime()) {
+            long currentTick = entity.level().getGameTime();
+            if (data.getLong("pettingTamedTick") == currentTick) {
+                return InteractionResult.SUCCESS;
+            }
+            if (data.getLong("pettingLastInteractTick") == currentTick) {
                 return InteractionResult.SUCCESS;
             }
 
@@ -61,6 +65,7 @@ public class OwnerRightclicksPetProcedure {
             // 1. STICK (Status Report)
             if (itemStr.equals(PettingConfig.statusTool) && PettingConfig.allowPerPetStatus) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     player.sendSystemMessage(Component.literal("§6--- Pet Status: §f" + petName + " §6---"));
                     player.sendSystemMessage(Component.literal("§eAggressive Mode: " + (data.getBoolean("attackifownerattacks") ? "§aON" : "§cOFF")));
@@ -76,6 +81,7 @@ public class OwnerRightclicksPetProcedure {
             // 2. SWORD (Toggle Aggressive Mode)
             if (itemStr.equals(PettingConfig.aggressionTool) && PettingConfig.allowPerPetAggression) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifownerattacks");
                     data.putBoolean("attackifownerattacks", !current);
@@ -89,6 +95,7 @@ public class OwnerRightclicksPetProcedure {
             // 3. SHIELD (Toggle Retaliation)
             if (itemStr.equals(PettingConfig.defenseTool) && PettingConfig.allowPerPetSelfDefense) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifselfattacked");
                     data.putBoolean("attackifselfattacked", !current);
@@ -102,6 +109,7 @@ public class OwnerRightclicksPetProcedure {
             // 4. COOKIE (Toggle Guard Owner)
             if (itemStr.equals(PettingConfig.guardTool) && PettingConfig.allowPerPetGuard) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("attackifownerattacked");
                     data.putBoolean("attackifownerattacked", !current);
@@ -115,6 +123,7 @@ public class OwnerRightclicksPetProcedure {
             // 5. LEAD (Cycle Follow Distance)
             if (itemStr.equals(PettingConfig.followDistTool) && PettingConfig.allowPerPetFollowDist) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("followdistance");
                     if (current == 0) current = 10;
@@ -135,6 +144,7 @@ public class OwnerRightclicksPetProcedure {
             // 6. ENDER PEARL (Cycle Teleport Distance)
             if (itemStr.equals(PettingConfig.teleportDistTool) && PettingConfig.allowPerPetTeleportDist) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     int current = data.getInt("teleportdistance");
                     if (current == 0) current = 20;
@@ -155,6 +165,7 @@ public class OwnerRightclicksPetProcedure {
             // 7. CLOCK (Toggle Whistle Response)
             if (itemStr.equals(PettingConfig.whistleTool) && PettingConfig.allowPerPetWhistleToggle) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean current = data.getBoolean("ignoreWhistle");
                     data.putBoolean("ignoreWhistle", !current);
@@ -168,6 +179,7 @@ public class OwnerRightclicksPetProcedure {
             // 8. PET TETHER (Toggle Binding)
             if (itemStr.equals(PettingConfig.tetherTool) && PettingConfig.allowPetTethering) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     boolean isBound = data.getBoolean("pettingbound");
                     if (!isBound) {
@@ -189,6 +201,7 @@ public class OwnerRightclicksPetProcedure {
             // 9. SHEARS (Release Pet - Crouch REQUIRED)
             if (itemStr.equals(PettingConfig.releaseTool) && player.isShiftKeyDown() && PettingConfig.allowPetReleasing) {
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     player.swing(InteractionHand.MAIN_HAND, true);
                     data.remove("pettingtamed");
                     data.remove("ownerUUID");
@@ -216,8 +229,8 @@ public class OwnerRightclicksPetProcedure {
             // Custom Control Mappings
             boolean isShift = player.isShiftKeyDown();
             String mappingRules = isShift 
-                ? (data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : (((IEntityData)player).getPersistentData().contains("petting_default_control_shift_right_click") ? ((IEntityData)player).getPersistentData().getString("petting_default_control_shift_right_click") : "CYCLE|NONE"))
-                : (data.contains("control_right_click") ? data.getString("control_right_click") : (((IEntityData)player).getPersistentData().contains("petting_default_control_right_click") ? ((IEntityData)player).getPersistentData().getString("petting_default_control_right_click") : "SIT|NONE"));
+                ? (data.contains("control_shift_right_click") ? data.getString("control_shift_right_click") : (((IEntityData)player).getPersistentData().contains("petting_default_control_shift_right_click") ? ((IEntityData)player).getPersistentData().getString("petting_default_control_shift_right_click") : "OPEN_INV|NONE"))
+                : (data.contains("control_right_click") ? data.getString("control_right_click") : (((IEntityData)player).getPersistentData().contains("petting_default_control_right_click") ? ((IEntityData)player).getPersistentData().getString("petting_default_control_right_click") : "RIDE|SADDLE;SIT|NONE"));
 
             boolean handled = false;
             String[] rules = mappingRules.split(";");
@@ -248,6 +261,7 @@ public class OwnerRightclicksPetProcedure {
                 }
 
                 if (conditionMet) {
+                    if (!isClient) data.putLong("pettingLastInteractTick", currentTick);
                     executeAction(action, command, entity, player, data, isClient, petName);
                     handled = true;
                     break;
@@ -257,6 +271,7 @@ public class OwnerRightclicksPetProcedure {
             if (!handled && item.equals(net.minecraft.world.item.Items.AIR)) {
                 // Default petting action (Hearts)
                 if (!isClient) {
+                    data.putLong("pettingLastInteractTick", currentTick);
                     Level world = entity.level();
                     if (world instanceof ServerLevel serverLevel) {
                         serverLevel.sendParticles(ParticleTypes.HEART, entity.getX(), entity.getY() + entity.getBbHeight() + 0.5D, entity.getZ(), 3, 0.3, 0.3, 0.3, 0.1);
