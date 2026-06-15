@@ -340,7 +340,20 @@ public class OwnerRightclicksPetProcedure {
                 break;
             case "OPEN_INV":
                 if (!isClient) {
-                    player.openMenu(new net.minecraft.world.SimpleMenuProvider((syncId, inv, p) -> new PetInventoryMenu(syncId, inv, entity), Component.translatable("screen.petting.pet_inventory")));
+                    player.openMenu(new net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory() {
+                        @Override
+                        public void writeScreenOpeningData(net.minecraft.server.level.ServerPlayer p, net.minecraft.network.FriendlyByteBuf buf) {
+                            buf.writeInt(entity.getId());
+                        }
+                        @Override
+                        public net.minecraft.network.chat.Component getDisplayName() {
+                            return net.minecraft.network.chat.Component.translatable("screen.petting.pet_inventory");
+                        }
+                        @Override
+                        public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int syncId, net.minecraft.world.entity.player.Inventory inv, net.minecraft.world.entity.player.Player p) {
+                            return new net.yigitguven.petting.world.inventory.PetInventoryMenu(syncId, inv, entity);
+                        }
+                    });
                 }
                 break;
             case "RIDE":

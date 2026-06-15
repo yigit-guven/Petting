@@ -31,6 +31,7 @@ public class PettingMod implements ModInitializer {
         PettingModItems.register();
         PettingModAttributes.register();
         PettingModTabs.register();
+        net.yigitguven.petting.init.PettingModMenus.register();
 
         PettingServerNetworking.registerReceivers();
 
