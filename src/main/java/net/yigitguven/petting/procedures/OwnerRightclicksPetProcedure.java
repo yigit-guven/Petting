@@ -17,6 +17,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.yigitguven.petting.IEntityData;
 import net.yigitguven.petting.config.PettingConfig;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.SimpleMenuProvider;
+import net.yigitguven.petting.world.inventory.PetInventoryMenu;
 
 public class OwnerRightclicksPetProcedure {
 
@@ -338,9 +340,7 @@ public class OwnerRightclicksPetProcedure {
                 break;
             case "OPEN_INV":
                 if (!isClient) {
-                    player.openMenu(net.yigitguven.petting.init.PettingModMenus.PET_INVENTORY, buf -> {
-                        buf.writeInt(entity.getId());
-                    });
+                    player.openMenu(new net.minecraft.world.SimpleMenuProvider((syncId, inv, p) -> new PetInventoryMenu(syncId, inv, entity), Component.translatable("screen.petting.pet_inventory")));
                 }
                 break;
             case "RIDE":
