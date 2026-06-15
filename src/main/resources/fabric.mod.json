@@ -20,6 +20,9 @@
 		],
 		"client": [
 			"net.yigitguven.petting.PettingModClient"
+		],
+		"modmenu": [
+			"net.yigitguven.petting.client.gui.PettingModMenuIntegration"
 		]
 	},
 	"mixins": [
