@@ -5,6 +5,8 @@ import net.yigitguven.petting.config.PettingConfig;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.init.PettingModAttributes;
 import net.yigitguven.petting.init.PettingModTabs;
+import net.yigitguven.petting.init.PettingModBlocks;
+import net.yigitguven.petting.network.PettingServerNetworking;
 import net.yigitguven.petting.procedures.GoldenWheatItemInHandTickProcedure;
 import net.yigitguven.petting.procedures.PetWhistleProcedure;
 import net.yigitguven.petting.procedures.PetDeathHandlerProcedure;
@@ -25,9 +27,12 @@ public class PettingMod implements ModInitializer {
         PettingConfig.load();
         
         // Register Registries
+        PettingModBlocks.register();
         PettingModItems.register();
         PettingModAttributes.register();
         PettingModTabs.register();
+
+        PettingServerNetworking.registerReceivers();
 
         // Register Procedures/Events
         GoldenWheatItemInHandTickProcedure.register();
@@ -39,6 +44,9 @@ public class PettingMod implements ModInitializer {
         ItemGroupEvents.modifyEntriesEvent(PettingModTabs.PETTING_TAB_KEY).register(content -> {
             content.accept(PettingModItems.GOLDEN_WHEAT);
             content.accept(PettingModItems.PET_TETHER);
+            content.accept(PettingModItems.FOLLOW_WHISTLE);
+            content.accept(PettingModItems.TELEPORT_ORB);
+            content.accept(PettingModItems.PET_BED);
         });
     }
 }

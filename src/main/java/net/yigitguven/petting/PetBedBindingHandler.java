@@ -32,7 +32,7 @@ public class PetBedBindingHandler {
             String blockIdStr = (blockId != null) ? blockId.toString() : "";
 
             IEntityData dataAccess = (IEntityData) player;
-            CompoundTag playerNBT = dataAccess.getPersistentData();
+            CompoundTag playerNBT = ((net.yigitguven.petting.IEntityData)dataAccess).getPersistentData();
             boolean isBinding = playerNBT.getBoolean(TAG_BINDING_MODE);
 
             if (blockIdStr.contains("pet_bed")) {
@@ -40,6 +40,7 @@ public class PetBedBindingHandler {
                 playerNBT.putDouble(TAG_BED_X, pos.getX());
                 playerNBT.putDouble(TAG_BED_Y, pos.getY());
                 playerNBT.putDouble(TAG_BED_Z, pos.getZ());
+                playerNBT.putString("PettingTempBedDim", world.dimension().location().toString());
 
                 player.displayClientMessage(Component.literal("§a[Petting] §fBinding Mode Active!"), true);
                 player.sendSystemMessage(Component.literal("§eRight-click a tamed pet to bind it to this bed."));
@@ -60,7 +61,7 @@ public class PetBedBindingHandler {
             if (world.isClientSide() || hand != InteractionHand.MAIN_HAND) return InteractionResult.PASS;
 
             IEntityData playerData = (IEntityData) player;
-            CompoundTag playerNBT = playerData.getPersistentData();
+            CompoundTag playerNBT = ((net.yigitguven.petting.IEntityData)playerData).getPersistentData();
 
             if (!playerNBT.getBoolean(TAG_BINDING_MODE)) {
                 return InteractionResult.PASS;
@@ -81,11 +82,13 @@ public class PetBedBindingHandler {
                 double bedX = playerNBT.getDouble(TAG_BED_X);
                 double bedY = playerNBT.getDouble(TAG_BED_Y);
                 double bedZ = playerNBT.getDouble(TAG_BED_Z);
+                String bedDim = playerNBT.getString("PettingTempBedDim");
 
                 CompoundTag petNBT = ((IEntityData) entity).getPersistentData();
                 petNBT.putDouble("pet_bed_loc_x", bedX);
                 petNBT.putDouble("pet_bed_loc_y", bedY);
                 petNBT.putDouble("pet_bed_loc_z", bedZ);
+                petNBT.putString("pet_bed_loc_dim", bedDim);
 
                 player.sendSystemMessage(Component.literal("§a[Petting] §fSuccessfully bound " + entity.getName().getString() + " to the bed!"));
                 world.playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0f, 1.0f);
@@ -110,5 +113,6 @@ public class PetBedBindingHandler {
         nbt.remove(TAG_BED_X);
         nbt.remove(TAG_BED_Y);
         nbt.remove(TAG_BED_Z);
+        nbt.remove("PettingTempBedDim");
     }
 }

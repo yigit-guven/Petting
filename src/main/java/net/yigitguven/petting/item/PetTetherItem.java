@@ -16,4 +16,10 @@ public class PetTetherItem extends Item {
 	public boolean isFoil(ItemStack itemstack) {
 		return false;
 	}
+
+	@Override
+	public void appendHoverText(ItemStack itemstack, @org.jetbrains.annotations.Nullable net.minecraft.world.level.Level level, java.util.List<net.minecraft.network.chat.Component> list, net.minecraft.world.item.TooltipFlag flag) {
+		super.appendHoverText(itemstack, level, list, flag);
+		list.add(net.minecraft.network.chat.Component.translatable("item.petting.pet_tether.tooltip").withStyle(net.minecraft.ChatFormatting.GRAY));
+	}
 }

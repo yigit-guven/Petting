@@ -1,6 +1,6 @@
 {
-    "parent": "minecraft:item/generated",
-    "textures": {
-        "layer0": "minecraft:item/stick"
-    }
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "petting:item/pet_tether"
+  }
 }

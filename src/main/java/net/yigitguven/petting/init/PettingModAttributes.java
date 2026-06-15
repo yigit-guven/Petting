@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.yigitguven.petting.PettingMod;
 
 public class PettingModAttributes {
-    public static final Attribute MAX_PETS = new RangedAttribute("attribute.name.petting.max_pets", 1.0D, 0.0D, 1024.0D).setSyncable(true);
+    public static final Attribute MAX_PETS = new RangedAttribute("attribute.name.petting.max_pets", -1.0D, -1.0D, 10000.0D).setSyncable(true);
     
     public static final Attribute[] MAX_PETS_CATEGORIES = new Attribute[20];
 

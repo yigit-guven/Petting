@@ -35,7 +35,7 @@ public class FollowOwnerOrTeleport {
         if (world.isClientSide()) return;
 
         IEntityData dataAccess = (IEntityData) mob;
-        CompoundTag data = dataAccess.getPersistentData();
+        CompoundTag data = ((net.yigitguven.petting.IEntityData)dataAccess).getPersistentData();
 
         if (!data.contains("pettingtamed") || !data.getBoolean("pettingtamed")) {
             return;
@@ -94,7 +94,7 @@ public class FollowOwnerOrTeleport {
             }
 
             int healInterval = PettingConfig.sitHealInterval;
-            if (healInterval > 0 && mob.tickCount % healInterval == 0 && mob.getHealth() < mob.getMaxHealth()) {
+            if (healInterval > 0 && mob.tickCount % healInterval == 0 && PettingConfig.sitHealEnabled && mob.getHealth() < mob.getMaxHealth()) {
                 mob.heal((float) PettingConfig.sitHealAmount);
             }
             return;

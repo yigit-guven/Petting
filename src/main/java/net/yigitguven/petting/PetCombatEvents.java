@@ -50,6 +50,14 @@ public class PetCombatEvents {
                 }
             }
 
+            if (sourceEntity instanceof Mob attackerPet && PetAttackLogic.isCustomPet(attackerPet)) {
+                Player petOwner = PetAttackLogic.getOwner(attackerPet);
+                if (victim == petOwner && net.yigitguven.petting.config.PettingConfig.preventPetToOwnerDamage) {
+                    attackerPet.setTarget(null);
+                    return false;
+                }
+            }
+
             if (!(victim instanceof Mob petMob) || !PetAttackLogic.isCustomPet(petMob)) return true;
 
             if (victim == sourceEntity) {
@@ -64,7 +72,9 @@ public class PetCombatEvents {
             if (attacker == owner) { 
                 petMob.setTarget(null);
                 petMob.setLastHurtByMob(null);
-                return false; 
+                if (!net.yigitguven.petting.config.PettingConfig.allowOwnerToHurtPets) {
+                    return false; 
+                }
             }
 
             CompoundTag data = ((IEntityData) petMob).getPersistentData();

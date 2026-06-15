@@ -62,8 +62,12 @@ public class GoldenWheatRightclickedProcedure {
         if (hasCustomItem) {
             if (!customItemMatch) return InteractionResult.PASS;
         } else {
-            if (!itemName.equals("petting:golden_wheat")) return InteractionResult.PASS;
-            if (!PettingConfig.allowGoldenWheat) return InteractionResult.PASS;
+            if (PettingConfig.tamingItem != null && !PettingConfig.tamingItem.isEmpty()) {
+                if (!itemName.equals(PettingConfig.tamingItem)) return InteractionResult.PASS;
+            } else {
+                if (!itemName.equals("petting:golden_wheat")) return InteractionResult.PASS;
+                if (!PettingConfig.allowGoldenWheat) return InteractionResult.PASS;
+            }
         }
 
         long currentTime = entity.level().getGameTime();
@@ -271,6 +275,7 @@ public class GoldenWheatRightclickedProcedure {
         data.putBoolean("sitstill", false);
         data.putInt("followdistance", 10);
         data.putInt("teleportdistance", 20);
+        data.putLong("pettingTamedTick", entity.level().getGameTime());
     }
 
     private static net.minecraft.world.entity.ai.attributes.Attribute getCategoryAttribute(int slot) {

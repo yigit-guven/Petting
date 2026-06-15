@@ -1,0 +1,20 @@
+{
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "pattern": [
+        "W W",
+        "PPP"
+    ],
+    "key": {
+        "W": {
+            "tag": "minecraft:wool"
+        },
+        "P": {
+            "tag": "minecraft:planks"
+        }
+    },
+    "result": {
+        "item": "petting:pet_bed",
+        "count": 1
+    }
+}

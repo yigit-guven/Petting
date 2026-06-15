@@ -25,6 +25,8 @@ import java.util.UUID;
 public class PetAttackLogic {
 
     private static final UUID PETTING_STOP_UUID = UUID.fromString("11111111-2222-3333-4444-555555555555");
+    private static final UUID PET_ARMOR_MODIFIER_UUID = UUID.fromString("1A3B5C7D-9E8F-4B2A-1C3D-5E7F9A0B2C4D");
+    private static final UUID PET_TOUGHNESS_MODIFIER_UUID = UUID.fromString("2B4C6D8E-0F9A-5C3B-2D4E-6F8A0B1C3D5E");
     private static final AttributeModifier STOP_MODIFIER = new AttributeModifier(
         PETTING_STOP_UUID, "Petting Stop", -1.0D, AttributeModifier.Operation.MULTIPLY_TOTAL);
 
@@ -32,11 +34,39 @@ public class PetAttackLogic {
         if (pet.level().isClientSide()) return;
 
         if (isCustomPet(pet)) {
+            if (pet.tickCount % 20 == 0) {
+                AttributeInstance armorInstance = pet.getAttribute(Attributes.ARMOR);
+                if (armorInstance != null) {
+                    AttributeModifier existingArmor = armorInstance.getModifier(PET_ARMOR_MODIFIER_UUID);
+                    if (PettingConfig.petBaseArmor > 0) {
+                        if (existingArmor == null || existingArmor.getAmount() != PettingConfig.petBaseArmor) {
+                            armorInstance.removeModifier(PET_ARMOR_MODIFIER_UUID);
+                            armorInstance.addPermanentModifier(new AttributeModifier(PET_ARMOR_MODIFIER_UUID, "Pet Base Armor", PettingConfig.petBaseArmor, AttributeModifier.Operation.ADDITION));
+                        }
+                    } else if (existingArmor != null) {
+                        armorInstance.removeModifier(PET_ARMOR_MODIFIER_UUID);
+                    }
+                }
+
+                AttributeInstance toughnessInstance = pet.getAttribute(Attributes.ARMOR_TOUGHNESS);
+                if (toughnessInstance != null) {
+                    AttributeModifier existingToughness = toughnessInstance.getModifier(PET_TOUGHNESS_MODIFIER_UUID);
+                    if (PettingConfig.petBaseArmorToughness > 0) {
+                        if (existingToughness == null || existingToughness.getAmount() != PettingConfig.petBaseArmorToughness) {
+                            toughnessInstance.removeModifier(PET_TOUGHNESS_MODIFIER_UUID);
+                            toughnessInstance.addPermanentModifier(new AttributeModifier(PET_TOUGHNESS_MODIFIER_UUID, "Pet Base Armor Toughness", PettingConfig.petBaseArmorToughness, AttributeModifier.Operation.ADDITION));
+                        }
+                    } else if (existingToughness != null) {
+                        toughnessInstance.removeModifier(PET_TOUGHNESS_MODIFIER_UUID);
+                    }
+                }
+            }
+
             Player owner = getOwner(pet);
             if (owner == null) return;
 
             IEntityData dataAccess = (IEntityData) pet;
-            CompoundTag data = dataAccess.getPersistentData();
+            CompoundTag data = ((net.yigitguven.petting.IEntityData)dataAccess).getPersistentData();
 
             // --- BOUND ROAM LOGIC ---
             if (data.getBoolean("pettingbound")) {
@@ -108,9 +138,10 @@ public class PetAttackLogic {
             }
 
             if (isSitting) {
-                int healInterval = PettingConfig.sitHealInterval;
-                if (healInterval > 0 && pet.tickCount % healInterval == 0 && pet.getHealth() < pet.getMaxHealth()) {
-                    pet.heal((float) PettingConfig.sitHealAmount);
+                if (PettingConfig.sitHealEnabled && pet.tickCount % Math.max(1, PettingConfig.sitHealInterval) == 0) {
+                    if (pet.getHealth() < pet.getMaxHealth()) {
+                        pet.heal((float) PettingConfig.sitHealAmount);
+                    }
                 }
             } else { // Waiting
                 Player nearest = pet.level().getNearestPlayer(pet, 10.0D);
@@ -179,6 +210,15 @@ public class PetAttackLogic {
     }
 
     private static void handleFollow(Mob pet, Player owner, CompoundTag data) {
+        if (pet.level() != owner.level()) {
+            if (!data.getBoolean("sitstill") && !data.getBoolean("waiting") && !data.getBoolean("pettingbound")) {
+                if (pet.getServer() != null && owner.level() instanceof net.minecraft.server.level.ServerLevel targetLevel) {
+                    pet.changeDimension(targetLevel);
+                }
+            }
+            return;
+        }
+
         double dist = pet.distanceTo(owner);
         double followDist = data.contains("followdistance") ? data.getInt("followdistance") : PettingConfig.followDistance;
         double teleDist = data.contains("teleportdistance") ? data.getInt("teleportdistance") : PettingConfig.teleportDistance;

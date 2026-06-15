@@ -13,6 +13,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.fabricmc.fabric.api.dimension.v1.FabricDimensions;
+import net.minecraft.world.level.portal.PortalInfo;
+import net.minecraft.world.phys.Vec3;
 import net.yigitguven.petting.IEntityData;
 import net.yigitguven.petting.PetAttackLogic;
 
@@ -34,28 +40,35 @@ public class PetDeathHandlerProcedure {
                 double bedX = data.getDouble("pet_bed_loc_x");
                 double bedY = data.getDouble("pet_bed_loc_y");
                 double bedZ = data.getDouble("pet_bed_loc_z");
+                String bedDimStr = data.contains("pet_bed_loc_dim") ? data.getString("pet_bed_loc_dim") : entity.level().dimension().location().toString();
+
+                ServerLevel targetLevel = entity.level().getServer().getLevel(ResourceKey.create(Registries.DIMENSION, new ResourceLocation(bedDimStr)));
+                if (targetLevel == null) targetLevel = (ServerLevel)entity.level();
 
                 BlockPos bedPos = new BlockPos((int)bedX, (int)bedY, (int)bedZ);
-                BlockPos respawnPos = findSafeRespawnLocation(entity.level(), bedPos);
+                BlockPos respawnPos = findSafeRespawnLocation(targetLevel, bedPos);
 
                 if (respawnPos != null) {
                     // Heal and Teleport
                     mob.setHealth(mob.getMaxHealth());
                     mob.removeAllEffects(); 
-                    mob.teleportTo(respawnPos.getX() + 0.5, respawnPos.getY(), respawnPos.getZ() + 0.5);
+                    if (targetLevel != entity.level()) {
+                        FabricDimensions.teleport(mob, targetLevel, new PortalInfo(new Vec3(respawnPos.getX() + 0.5, respawnPos.getY(), respawnPos.getZ() + 0.5), Vec3.ZERO, mob.getYRot(), mob.getXRot()));
+                    } else {
+                        mob.teleportTo(respawnPos.getX() + 0.5, respawnPos.getY(), respawnPos.getZ() + 0.5);
+                    }
                     data.putBoolean("sitstill", true);
                     mob.getNavigation().stop();
                     mob.setDeltaMovement(0, 0, 0);
 
-                    notifyOwner(entity.level(), ownerUUIDStr, 
+                    notifyOwner(targetLevel, ownerUUIDStr, 
                         Component.literal("§a[Petting] §fYour pet " + mob.getDisplayName().getString() + " was saved by its bed!"));
 
-                    if (entity.level() instanceof ServerLevel serverLevel) {
-                        serverLevel.sendParticles(ParticleTypes.POOF, 
-                            respawnPos.getX() + 0.5, respawnPos.getY() + 0.5, respawnPos.getZ() + 0.5, 
-                            15, 0.3, 0.3, 0.3, 0.05);
-                        serverLevel.playSound(null, respawnPos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.NEUTRAL, 1.0f, 1.0f);
-                    }
+                    targetLevel.sendParticles(ParticleTypes.POOF, 
+                        respawnPos.getX() + 0.5, respawnPos.getY() + 0.5, respawnPos.getZ() + 0.5, 
+                        15, 0.3, 0.3, 0.3, 0.05);
+                    targetLevel.playSound(null, respawnPos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.NEUTRAL, 1.0f, 1.0f);
+                    
                     return false; // Cancel death
                 } else {
                     notifyOwner(entity.level(), ownerUUIDStr, 
