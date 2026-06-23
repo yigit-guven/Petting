@@ -15,10 +15,10 @@ import java.lang.reflect.Field;
 
 @EventBusSubscriber
 public class PetRidingHandler {
-    private static final Field JUMPING_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "jumping");
-    private static final Field XXA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "xxa");
-    private static final Field YYA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "yya");
-    private static final Field ZZA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "zza");
+    private static final Field JUMPING_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20898_");
+    private static final Field XXA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20899_");
+    private static final Field YYA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20900_");
+    private static final Field ZZA_FIELD = ObfuscationReflectionHelper.findField(net.minecraft.world.entity.LivingEntity.class, "f_20901_");
 
     static {
         JUMPING_FIELD.setAccessible(true);
