@@ -60,6 +60,10 @@ public class EntityTickUpdateProcedure {
                 if (mob.tickCount % 20 == 0) {
                     updateAttribute(mob, Attributes.ARMOR, ARMOR_MODIFIER_ID, net.yigitguven.petting.config.PettingConfig.PET_BASE_ARMOR.get());
                     updateAttribute(mob, Attributes.ARMOR_TOUGHNESS, TOUGHNESS_MODIFIER_ID, net.yigitguven.petting.config.PettingConfig.PET_BASE_ARMOR_TOUGHNESS.get());
+                    
+                    if (mob.isShiftKeyDown() != mob.getPersistentData().getBoolean("sitstill")) {
+                        mob.setShiftKeyDown(mob.getPersistentData().getBoolean("sitstill"));
+                    }
                 }
 
                 if (net.yigitguven.petting.config.PettingConfig.SIT_HEAL_ENABLED.get() && living.getPersistentData().getBoolean("sitstill") && !living.isVehicle()) {
