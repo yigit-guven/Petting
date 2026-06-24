@@ -63,13 +63,6 @@ public class PlayerRightclicksEntitzProcedure {
 							return;
 						}
 					}
-					// No rule matched or all returned false â€” still cancel so OwnerRightclicksPetProcedure
-					// doesn't override with legacy sit-toggle behaviour for owned pets with empty hand
-					if (player.getMainHandItem().isEmpty()) {
-						event.setCancellationResult(InteractionResult.SUCCESS);
-						event.setCanceled(true);
-						return;
-					}
 				}
 			}
 		}

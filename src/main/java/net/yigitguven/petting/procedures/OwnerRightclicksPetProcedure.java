@@ -46,58 +46,6 @@ public class OwnerRightclicksPetProcedure {
             net.minecraft.world.item.Item item = heldItem.getItem();
             boolean isShift = player.isShiftKeyDown();
             
-            if (heldItem.isEmpty()) {
-                if (!isClient) {
-                    if (isShift) {
-                        if (!net.yigitguven.petting.util.PetInventoryUtil.isInventoryAllowed(entity)) return;
-
-                        final Entity target = entity;
-                        net.minecraftforge.network.NetworkHooks.openScreen((net.minecraft.server.level.ServerPlayer) player, new net.minecraft.world.SimpleMenuProvider(
-                            (id, inv, p) -> new net.yigitguven.petting.world.inventory.PetInventoryMenu(id, inv, target),
-                            target.getDisplayName()
-                        ), buf -> buf.writeInt(target.getId()));
-                    } else {
-                        boolean isSitting = data.getBoolean("sitstill");
-                        boolean isWaiting = data.getBoolean("waiting");
-                        boolean isFreewander = data.getBoolean("freewander");
-                        boolean hasSaddle = net.yigitguven.petting.util.PetInventoryUtil.hasSaddle(entity);
-                        boolean isRideable = net.yigitguven.petting.util.PetInventoryUtil.isRidingAllowed(entity);
-                        
-                        if (isSitting || isWaiting || isFreewander) {
-                            data.putBoolean("sitstill", false);
-                            data.putBoolean("waiting", false);
-                            data.putBoolean("freewander", false);
-                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
-                                tamable.setOrderedToSit(false);
-                            }
-                            entity.setShiftKeyDown(false);
-                            sendFeedback(player, petName + " is now following you.");
-                            playStateChangeFeedback(entity, false);
-                        } else if (hasSaddle && isRideable) {
-                            player.startRiding(entity, true);
-                            if (net.yigitguven.petting.config.PettingConfig.MOUNT_REQUIRE_SADDLE.get()) {
-                                sendFeedback(player, "Â§6[Riding] Â§fYou are now riding " + petName + ". (Saddle Active)");
-                            } else {
-                                sendFeedback(player, "Â§6[Riding] Â§fYou are now riding " + petName + ".");
-                            }
-                        } else {
-                            data.putBoolean("sitstill", true);
-                            data.putBoolean("waiting", false);
-                            data.putBoolean("freewander", false);
-                            if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
-                                tamable.setOrderedToSit(true);
-                            }
-                            entity.setShiftKeyDown(true);
-                            sendFeedback(player, petName + " is now sitting and relaxing.");
-                            playStateChangeFeedback(entity, true);
-                        }
-                    }
-                    player.swing(InteractionHand.MAIN_HAND, true);
-                }
-                cancelInteraction(event);
-                return;
-            }
-
             if (item == net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(net.yigitguven.petting.config.PettingConfig.STATUS_TOOL_ID.get(), net.minecraft.world.item.Items.STICK) && net.yigitguven.petting.config.PettingConfig.ALLOW_PER_PET_STATUS.get()) {
                 if (!isClient) {
                     player.swing(InteractionHand.MAIN_HAND, true);
