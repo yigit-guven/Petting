@@ -17,7 +17,7 @@ public class PlayerTickUpdateProcedure {
         if (player.level().isClientSide()) return;
 
         // Warden Darkness Suppression
-        if (player.hasEffect(MobEffects.DARKNESS)) {
+        if (player.hasEffect(MobEffects.DARKNESS) && player.tickCount % 20 == 0) {
             double range = 30.0;
             AABB area = player.getBoundingBox().inflate(range);
             java.util.List<Warden> wardens = player.level().getEntitiesOfClass(Warden.class, area);
