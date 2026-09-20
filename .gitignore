@@ -2,23 +2,32 @@
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
 
-# IDEs
+# IDEs and Editors
 .idea/
 *.iws
 *.iml
 *.ipr
 out/
+!**/src/**/out/
+.vscode/
+.settings/
 .project
 .classpath
-.settings/
-.vscode/
-bin/
-*.launch
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
 .metadata/
+*.launch
+bin/
+!**/src/**/bin/
+.run/
 
-# Run directory (Minecraft run data)
+# Run directory & Minecraft runtime data
 run/
+!**/src/**/run/
 run-data/
 runs/
 logs/
@@ -27,23 +36,26 @@ usernamecache.json
 usercache.json
 options.txt
 
+# Generated cache
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/
+
 # MCreator remnants
 petting.mcreator
 elements/
 
-# Temp/Logs
+# Logs and Temporary files
 errors*.txt
 *.log
 *.bak
 *.tmp
 *.swp
 
-# OS specific
+# OS generated files
 .DS_Store
 Thumbs.db
 desktop.ini
 
-# Java
-/jdk17
+# Compiled Java bytecode
 *.class
-/.inverse
