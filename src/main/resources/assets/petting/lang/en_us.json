@@ -1,4 +1,15 @@
 {
+  "itemGroup.petting": "Petting",
+  "item.petting.golden_paw": "Golden Paw",
+  "item.petting.golden_wheat": "Golden Wheat",
+  "item.petting.golden_star": "Golden Star",
+  "item.petting.golden_flesh": "Golden Flesh",
+  "item.petting.golden_bone": "Golden Bone",
+  "item.petting.golden_fish": "Golden Fish",
+  "item.petting.golden_kelp": "Golden Kelp",
+  "item.petting.golden_fungus": "Golden Fungus",
+  "item.petting.golden_eye": "Golden Eye",
+  "item.petting.golden_slime": "Golden Slime",
   "commands.petting.summon.success": "Summoned %s as a pet for %s",
   "commands.petting.summon.error.not_a_mob": "Target entity is not a mob and cannot be tamed as a pet."
 }

@@ -7,6 +7,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModContainer;
 import net.yigitguven.petting.init.PettingModAttachments;
+import net.yigitguven.petting.init.PettingModItems;
+import net.yigitguven.petting.init.PettingModTabs;
 
 @Mod(Petting.MODID)
 public class Petting {
@@ -15,5 +17,7 @@ public class Petting {
 
     public Petting(IEventBus modEventBus, ModContainer modContainer) {
         PettingModAttachments.ATTACHMENT_TYPES.register(modEventBus);
+        PettingModItems.ITEMS.register(modEventBus);
+        PettingModTabs.CREATIVE_MODE_TABS.register(modEventBus);
     }
 }

@@ -19,6 +19,10 @@ sourceSets.main.resources {
 }
 
 repositories {
+    maven {
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
 }
 
 base {
@@ -54,6 +58,9 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'neoforge.warnings.logofile.hide', 'true'
+            systemProperty 'neoforge.warnings.onlyin.hide', 'true'
+            systemProperty 'neoforge.warnings.mods.info.description.hide', 'true'
 
             logLevel = org.slf4j.event.Level.DEBUG
         }
@@ -71,6 +78,9 @@ configurations {
 }
 
 dependencies {
+    compileOnly "mezz.jei:jei-26.3-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-26.3-neoforge-api:${jei_version}"
+    localRuntime "mezz.jei:jei-26.3-neoforge:${jei_version}"
 }
 
 tasks.withType(ProcessResources).configureEach {
