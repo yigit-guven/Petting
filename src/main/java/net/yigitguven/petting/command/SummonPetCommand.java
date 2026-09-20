@@ -31,7 +31,7 @@ import net.yigitguven.petting.util.PetHelper;
 public class SummonPetCommand {
 
     private static final SimpleCommandExceptionType ERROR_NOT_A_MOB =
-            new SimpleCommandExceptionType(Component.literal("Target entity is not a mob and cannot be tamed as a pet."));
+            new SimpleCommandExceptionType(Component.translatable("commands.petting.summon.error.not_a_mob"));
 
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
@@ -75,7 +75,7 @@ public class SummonPetCommand {
 
         PetHelper.setTamed(mob, owner);
 
-        source.sendSuccess(() -> Component.literal("Summoned " + mob.getDisplayName().getString() + " as a pet for " + owner.getScoreboardName()), true);
+        source.sendSuccess(() -> Component.translatable("commands.petting.summon.success", mob.getDisplayName(), owner.getDisplayName()), true);
         return 1;
     }
 }

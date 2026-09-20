@@ -1,0 +1,4 @@
+{
+  "commands.petting.summon.success": "Summoned %s as a pet for %s",
+  "commands.petting.summon.error.not_a_mob": "Target entity is not a mob and cannot be tamed as a pet."
+}
