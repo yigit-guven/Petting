@@ -14,8 +14,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Sync docs to GitHub Wiki
-        uses: Andrew-Chen-Wang/github-wiki-action@v5
-        with:
-          path: docs
-          commit-message: "Update wiki from docs (${{ github.sha }})"
+      - name: Sync docs to Wiki
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          WIKI_REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.wiki.git"
+
+          echo "Checking if wiki repository exists..."
+          if ! git ls-remote "$WIKI_REPO" > /dev/null 2>&1; then
+            echo "::error::The GitHub Wiki repository has not been initialized yet. Please open https://github.com/${{ github.repository }}/wiki in your browser and click 'Create the first page' once to create the repository."
+            exit 1
+          fi
+
+          echo "Cloning wiki repository..."
+          git clone "$WIKI_REPO" wiki_repo
+
+          echo "Syncing files from docs/ into wiki..."
+          # Clean existing files (except git metadata) and copy from docs/
+          find wiki_repo -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+          cp -r docs/* wiki_repo/
+
+          cd wiki_repo
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No documentation changes to sync."
+          else
+            git commit -m "Sync wiki from commit ${{ github.sha }}"
+            git push origin HEAD
+            echo "Wiki synced successfully!"
+          fi
