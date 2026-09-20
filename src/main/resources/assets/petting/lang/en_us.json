@@ -11,5 +11,12 @@
   "item.petting.golden_eye": "Golden Eye",
   "item.petting.golden_slime": "Golden Slime",
   "commands.petting.summon.success": "Summoned %s as a pet for %s",
-  "commands.petting.summon.error.not_a_mob": "Target entity is not a mob and cannot be tamed as a pet."
+  "commands.petting.summon.error.not_a_mob": "Target entity is not a mob and cannot be tamed as a pet.",
+  "petting.configuration.title": "Petting Configuration",
+  "petting.configuration.section.taming": "Taming Settings",
+  "petting.configuration.section.taming.title": "Taming Settings",
+  "petting.configuration.taming.maxHealthPercentage": "Max Health Percentage",
+  "petting.configuration.taming.maxHealthPercentage.tooltip": "The maximum health percentage a mob must be at or below to be tamed (0.0 to 100.0).",
+  "petting.configuration.taming.hostileMobsOnly": "Hostile Mobs Only",
+  "petting.configuration.taming.hostileMobsOnly.tooltip": "If true, only hostile mobs need to be weakened to the health threshold to be tamed. If false, all mobs must be weakened."
 }

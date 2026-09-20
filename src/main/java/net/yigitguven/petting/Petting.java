@@ -6,6 +6,10 @@ import com.mojang.logging.LogUtils;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.yigitguven.petting.client.PettingClient;
+import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.init.PettingModAttachments;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.init.PettingModTabs;
@@ -19,5 +23,11 @@ public class Petting {
         PettingModAttachments.ATTACHMENT_TYPES.register(modEventBus);
         PettingModItems.ITEMS.register(modEventBus);
         PettingModTabs.CREATIVE_MODE_TABS.register(modEventBus);
+
+        modContainer.registerConfig(ModConfig.Type.SERVER, PettingServerConfig.SPEC);
+
+        if (FMLEnvironment.getDist().isClient()) {
+            PettingClient.registerClientExtensions(modContainer);
+        }
     }
 }
