@@ -23,6 +23,9 @@ import net.yigitguven.petting.init.PettingModAttachments;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.server.level.ServerLevel;
+import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.data.PetSavedData;
 
 public class PetHelper {
 
@@ -110,6 +113,10 @@ public class PetHelper {
         mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
 
         injectGoals(mob);
+
+        if (mob.level() instanceof ServerLevel serverLevel) {
+            PetSavedData.get(serverLevel).addPet(owner.getUUID(), mob.getUUID());
+        }
     }
 
     public static void setUntamed(Mob mob) {
@@ -120,6 +127,21 @@ public class PetHelper {
             data.setOrder(PetOrder.FOLLOW);
             data.setCombatMode(CombatMode.DEFENSIVE);
         }
+        if (mob.level() instanceof ServerLevel serverLevel) {
+            PetSavedData.get(serverLevel).removePet(mob.getUUID());
+        }
+    }
+
+    public static int getPetCount(Player player, ServerLevel serverLevel) {
+        return PetSavedData.get(serverLevel).getPetCount(player.getUUID());
+    }
+
+    public static boolean hasReachedPetLimit(Player player, ServerLevel serverLevel) {
+        int maxPets = PettingServerConfig.getMaxPetCount();
+        if (maxPets < 0) {
+            return false;
+        }
+        return getPetCount(player, serverLevel) >= maxPets;
     }
 
     public static void injectGoals(Mob mob) {

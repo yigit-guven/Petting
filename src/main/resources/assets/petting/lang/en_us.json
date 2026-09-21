@@ -25,6 +25,8 @@
   "petting.configuration.taming.unsuccessfulTamingChance.tooltip": "The percentage chance (0.0 to 100.0) that a taming attempt fails and consumes the treat.",
   "petting.configuration.taming.untameableEntities": "Untameable Entities",
   "petting.configuration.taming.untameableEntities.tooltip": "List of entity registry IDs (e.g. 'minecraft:warden' or 'modid:boss_name') that can never be tamed.",
+  "petting.configuration.taming.maxPetCount": "Max Pet Count",
+  "petting.configuration.taming.maxPetCount.tooltip": "The maximum number of pets a player can own at a time. Set to -1 for unlimited pets.",
   "petting.configuration.feedback": "Feedback Settings",
   "petting.configuration.section.feedback": "Feedback Settings",
   "petting.configuration.section.feedback.title": "Feedback Settings",
@@ -39,6 +41,7 @@
   "petting.action.too_healthy": "This mob is too healthy to tame! Weaken it below %d%% health first.",
   "petting.action.taming_failed": "Taming attempt failed!",
   "petting.action.tamed_success": "You tamed %s!",
+  "petting.action.pet_limit_reached": "You have reached your pet limit (%s)!",
   "petting.jei.taming.title": "Pet Taming",
   "key.petting.open_pet_inventory": "Open Pet Inventory",
   "key.category.petting.petting": "Petting"

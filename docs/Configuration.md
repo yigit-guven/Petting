@@ -32,6 +32,7 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | `hostileMobsOnly` | Boolean | `true` | `true` / `false` | When `true`, only hostile mobs (`Enemy`) must be weakened to the health threshold. When `false`, all mobs must be weakened before taming. |
 | `unsuccessfulTamingChance` | Double | `33.3` | `0.0` – `100.0` | The percentage chance that a taming attempt fails and consumes the treat. Default `33.3` gives a 2/3 (66.7%) success rate per attempt. Set to `0.0` for 100% guaranteed success. |
 | `untameableEntities` | List<String> | `[]` | Any entity ID | A list of entity registry IDs (e.g. `["minecraft:warden", "modid:boss_name"]`) that can never be tamed. |
+| `maxPetCount` | Integer | `-1` | `-1` – `2147483647` | The maximum number of pets a player can own at a time. Set to `-1` for unlimited pets. |
 
 #### Setting Details:
 
@@ -53,6 +54,12 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 - **`untameableEntities`**:
   Blacklist specific mobs from ever being tamed.
   *Example*: `untameableEntities = ["minecraft:warden", "minecraft:ender_dragon"]`
+
+- **`maxPetCount`**:
+  Controls how many pets a single player can own simultaneously.
+  - `-1` (*Default*): Unlimited pets.
+  - `0`: Players cannot tame any pets.
+  - `1+`: Players can tame up to this number of pets. If a player attempts to tame another mob after reaching their limit, angry villager particles are displayed, the treat is not consumed, and taming is prevented.
 
 ---
 

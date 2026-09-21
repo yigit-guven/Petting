@@ -8,6 +8,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue HOSTILE_MOBS_ONLY;
     public static final ModConfigSpec.DoubleValue UNSUCCESSFUL_TAMING_CHANCE;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> UNTAMEABLE_ENTITIES;
+    public static final ModConfigSpec.IntValue MAX_PET_COUNT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -29,6 +30,10 @@ public class PettingServerConfig {
         UNTAMEABLE_ENTITIES = builder
                 .translation("petting.configuration.taming.untameableEntities")
                 .defineListAllowEmpty("untameableEntities", java.util.List.of(), () -> "", obj -> obj instanceof String);
+
+        MAX_PET_COUNT = builder
+                .translation("petting.configuration.taming.maxPetCount")
+                .defineInRange("maxPetCount", -1, -1, Integer.MAX_VALUE);
 
         builder.pop();
 
@@ -53,6 +58,14 @@ public class PettingServerConfig {
 
     public static double getUnsuccessfulTamingRatio() {
         return UNSUCCESSFUL_TAMING_CHANCE.get() / 100.0;
+    }
+
+    public static int getMaxPetCount() {
+        return MAX_PET_COUNT.get();
+    }
+
+    public static boolean hasPetLimit() {
+        return getMaxPetCount() >= 0;
     }
 
     public static boolean isUntameable(net.minecraft.world.entity.EntityType<?> entityType) {

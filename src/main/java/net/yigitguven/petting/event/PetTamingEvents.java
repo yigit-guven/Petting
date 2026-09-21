@@ -91,6 +91,17 @@ public class PetTamingEvents {
             return;
         }
 
+        if (!isClient && mob.level() instanceof ServerLevel serverLevel) {
+            if (PetHelper.hasReachedPetLimit(player, serverLevel)) {
+                serverLevel.sendParticles(ParticleTypes.ANGRY_VILLAGER, mob.getX(), mob.getY() + mob.getBbHeight() / 2.0D, mob.getZ(), 8, 0.4D, 0.4D, 0.4D, 0.0D);
+                mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0F, 1.0F);
+                player.sendSystemMessage(Component.translatable("petting.action.pet_limit_reached", PettingServerConfig.getMaxPetCount()));
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                event.setCanceled(true);
+                return;
+            }
+        }
+
         boolean requiresWeakening = !PettingServerConfig.isHostileMobsOnly() || mob instanceof Enemy;
         double maxAllowedHealth = mob.getMaxHealth() * PettingServerConfig.getMaxHealthRatio();
         if (requiresWeakening && mob.getHealth() > maxAllowedHealth) {
