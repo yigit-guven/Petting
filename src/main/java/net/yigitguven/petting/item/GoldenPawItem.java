@@ -12,7 +12,6 @@ public class GoldenPawItem extends Item {
 
     @Override
     public boolean isEnabled(FeatureFlagSet enabledFeatures) {
-        // Disabling the item hides it from /give command, suggestions, creative search, and recipe viewers (JEI/REI/EMI)
         return false;
     }
 

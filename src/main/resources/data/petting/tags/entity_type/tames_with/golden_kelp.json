@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "#minecraft:aquatic", "required": false},
+    "minecraft:turtle",
+    "minecraft:squid",
+    "minecraft:glow_squid"
+  ]
+}

@@ -6,6 +6,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec SPEC;
     public static final ModConfigSpec.DoubleValue MAX_HEALTH_PERCENTAGE;
     public static final ModConfigSpec.BooleanValue HOSTILE_MOBS_ONLY;
+    public static final ModConfigSpec.DoubleValue UNSUCCESSFUL_TAMING_CHANCE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -13,16 +14,16 @@ public class PettingServerConfig {
         builder.push("taming");
 
         MAX_HEALTH_PERCENTAGE = builder
-                .comment("The maximum health percentage a mob must be at or below to be tamed (0.0 to 100.0).")
                 .translation("petting.configuration.taming.maxHealthPercentage")
                 .defineInRange("maxHealthPercentage", 30.0, 0.0, 100.0);
 
         HOSTILE_MOBS_ONLY = builder
-                .comment("Whether the health percentage requirement applies only to hostile mobs or to all mobs.",
-                        "If true, only hostile mobs need to be weakened to the health threshold to be tamed.",
-                        "If false, all mobs (including passive and neutral mobs) must be weakened to the health threshold.")
                 .translation("petting.configuration.taming.hostileMobsOnly")
                 .define("hostileMobsOnly", true);
+
+        UNSUCCESSFUL_TAMING_CHANCE = builder
+                .translation("petting.configuration.taming.unsuccessfulTamingChance")
+                .defineInRange("unsuccessfulTamingChance", 33.3, 0.0, 100.0);
 
         builder.pop();
 
@@ -39,5 +40,13 @@ public class PettingServerConfig {
 
     public static boolean isHostileMobsOnly() {
         return HOSTILE_MOBS_ONLY.get();
+    }
+
+    public static double getUnsuccessfulTamingChance() {
+        return UNSUCCESSFUL_TAMING_CHANCE.get();
+    }
+
+    public static double getUnsuccessfulTamingRatio() {
+        return UNSUCCESSFUL_TAMING_CHANCE.get() / 100.0;
     }
 }

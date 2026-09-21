@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "#minecraft:skeletons", "required": false},
+    "minecraft:wolf",
+    "minecraft:skeleton_horse"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "#minecraft:can_equip_saddle", "required": false},
+    {"id": "#minecraft:followable_friendly_mobs", "required": false},
+    "minecraft:cow",
+    "minecraft:sheep",
+    "minecraft:pig",
+    "minecraft:chicken",
+    "minecraft:goat",
+    "minecraft:mooshroom",
+    "minecraft:horse",
+    "minecraft:donkey",
+    "minecraft:mule",
+    "minecraft:camel",
+    "minecraft:llama",
+    "minecraft:trader_llama",
+    "minecraft:rabbit",
+    "minecraft:sniffer",
+    "minecraft:armadillo"
+  ]
+}

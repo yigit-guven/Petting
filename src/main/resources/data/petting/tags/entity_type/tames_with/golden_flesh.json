@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "#minecraft:undead", "required": false},
+    {"id": "#minecraft:zombies", "required": false},
+    "minecraft:phantom",
+    "minecraft:zoglin",
+    "minecraft:zombie_horse",
+    "minecraft:zombified_piglin"
+  ]
+}

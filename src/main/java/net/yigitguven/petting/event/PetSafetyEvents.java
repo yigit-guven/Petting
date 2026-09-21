@@ -24,27 +24,19 @@ public class PetSafetyEvents {
             return;
         }
 
-        // Case 1: Owner attacks their own pet
-        if (attacker instanceof Player player && PetHelper.isTamed(victim)) {
-            if (PetHelper.isOwner(victim, player)) {
-                event.setCanceled(true);
-                return;
-            }
+        if (attacker instanceof Player player && PetHelper.isOwner(victim, player)) {
+            event.setCanceled(true);
+            return;
         }
 
-        // Case 2: Pet attacks their owner
-        if (victim instanceof Player player && attacker instanceof LivingEntity petMob && PetHelper.isTamed(petMob)) {
-            if (PetHelper.isOwner(petMob, player)) {
-                event.setCanceled(true);
-                return;
-            }
+        if (victim instanceof Player player && attacker instanceof LivingEntity petMob && PetHelper.isOwner(petMob, player)) {
+            event.setCanceled(true);
+            return;
         }
 
-        // Case 3: Two pets belonging to the same owner attack each other
-        if (attacker instanceof LivingEntity attackerPet && PetHelper.isTamed(attackerPet) && PetHelper.isTamed(victim)) {
+        if (attacker instanceof LivingEntity attackerPet) {
             Optional<UUID> owner1 = PetHelper.getOwnerUUID(attackerPet);
-            Optional<UUID> owner2 = PetHelper.getOwnerUUID(victim);
-            if (owner1.isPresent() && owner1.equals(owner2)) {
+            if (owner1.isPresent() && owner1.equals(PetHelper.getOwnerUUID(victim))) {
                 event.setCanceled(true);
             }
         }

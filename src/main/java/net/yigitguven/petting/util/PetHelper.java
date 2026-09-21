@@ -4,6 +4,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.NeutralMob;
+import net.minecraft.world.entity.OwnableEntity;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.yigitguven.petting.ai.PetAttackOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetDefendOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetFollowOwnerGoal;
@@ -20,18 +26,29 @@ import java.util.UUID;
 
 public class PetHelper {
 
-    public static boolean isTamed(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
-            return false;
+    public static boolean isVanillaTamed(LivingEntity entity) {
+        if (entity instanceof TamableAnimal tamable && tamable.isTame()) {
+            return true;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).isTamed();
+        if (entity instanceof AbstractHorse horse && horse.isTamed()) {
+            return true;
+        }
+        if (entity instanceof OwnableEntity ownable && ownable.getOwner() != null) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isTamed(LivingEntity entity) {
+        return entity.hasData(PettingModAttachments.PET_DATA) && entity.getData(PettingModAttachments.PET_DATA).isTamed();
     }
 
     public static Optional<UUID> getOwnerUUID(LivingEntity entity) {
-        if (!isTamed(entity)) {
+        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
             return Optional.empty();
         }
-        return Optional.ofNullable(entity.getData(PettingModAttachments.PET_DATA).getOwnerUUID());
+        PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        return data.isTamed() ? Optional.ofNullable(data.getOwnerUUID()) : Optional.empty();
     }
 
     @Nullable
@@ -80,6 +97,18 @@ public class PetHelper {
         data.setOwnerUUID(owner.getUUID());
         data.setOrder(PetOrder.FOLLOW);
         data.setCombatMode(CombatMode.DEFENSIVE);
+
+        mob.setPersistenceRequired();
+        mob.setTarget(null);
+        mob.setLastHurtByMob(null);
+        if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
+            mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+        }
+        if (mob instanceof NeutralMob neutralMob) {
+            neutralMob.stopBeingAngry();
+        }
+        mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
+
         injectGoals(mob);
     }
 

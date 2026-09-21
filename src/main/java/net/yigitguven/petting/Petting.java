@@ -9,6 +9,7 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.yigitguven.petting.client.PettingClient;
+import net.yigitguven.petting.config.PettingClientConfig;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.init.PettingModAttachments;
 import net.yigitguven.petting.init.PettingModItems;
@@ -25,6 +26,7 @@ public class Petting {
         PettingModTabs.CREATIVE_MODE_TABS.register(modEventBus);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, PettingServerConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC);
 
         if (FMLEnvironment.getDist().isClient()) {
             PettingClient.registerClientExtensions(modContainer);
