@@ -15,5 +15,6 @@ public class PettingModAttachments {
     public static final Supplier<AttachmentType<PetData>> PET_DATA =
             ATTACHMENT_TYPES.register("pet_data", () -> AttachmentType.builder(PetData::new)
                     .serialize(PetData.MAP_CODEC)
+                    .sync(PetData.STREAM_CODEC)
                     .build());
 }

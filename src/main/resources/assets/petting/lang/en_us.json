@@ -44,5 +44,6 @@
   "petting.action.pet_limit_reached": "You have reached your pet limit (%s)!",
   "petting.jei.taming.title": "Pet Taming",
   "key.petting.open_pet_inventory": "Open Pet Inventory",
-  "key.category.petting.petting": "Petting"
+  "key.category.petting.petting": "Petting",
+  "container.petting.pet_inventory": "Pet Inventory"
 }

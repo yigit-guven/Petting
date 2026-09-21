@@ -13,6 +13,10 @@ import net.neoforged.neoforge.client.settings.KeyModifier;
 import net.minecraft.resources.Identifier;
 import net.yigitguven.petting.Petting;
 
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.yigitguven.petting.client.gui.PetInventoryScreen;
+import net.yigitguven.petting.init.PettingModMenus;
+
 public class PettingClient {
     public static final KeyMapping.Category PETTING_CATEGORY = new KeyMapping.Category(Identifier.fromNamespaceAndPath(Petting.MODID, "petting"));
 
@@ -28,10 +32,15 @@ public class PettingClient {
     public static void registerClientExtensions(ModContainer modContainer, IEventBus modEventBus) {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, PettingConfigurationScreen::new);
         modEventBus.addListener(RegisterKeyMappingsEvent.class, PettingClient::onRegisterKeyMappings);
+        modEventBus.addListener(RegisterMenuScreensEvent.class, PettingClient::onRegisterMenuScreens);
     }
 
     private static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
         event.registerCategory(PETTING_CATEGORY);
         event.register(OPEN_PET_INVENTORY);
+    }
+
+    private static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+        event.register(PettingModMenus.PET_MENU.get(), PetInventoryScreen::new);
     }
 }

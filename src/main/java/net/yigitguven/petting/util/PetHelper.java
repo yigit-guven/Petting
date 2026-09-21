@@ -36,22 +36,40 @@ public class PetHelper {
         if (entity instanceof AbstractHorse horse && horse.isTamed()) {
             return true;
         }
-        if (entity instanceof OwnableEntity ownable && ownable.getOwner() != null) {
-            return true;
+        if (entity instanceof OwnableEntity ownable) {
+            if (ownable.getOwnerReference() != null && ownable.getOwnerReference().getUUID() != null) {
+                return true;
+            }
+            if (ownable.getOwner() != null) {
+                return true;
+            }
         }
         return false;
     }
 
     public static boolean isTamed(LivingEntity entity) {
-        return entity.hasData(PettingModAttachments.PET_DATA) && entity.getData(PettingModAttachments.PET_DATA).isTamed();
+        if (entity.hasData(PettingModAttachments.PET_DATA) && entity.getData(PettingModAttachments.PET_DATA).isTamed()) {
+            return true;
+        }
+        return isVanillaTamed(entity);
     }
 
     public static Optional<UUID> getOwnerUUID(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
-            return Optional.empty();
+        if (entity.hasData(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+            if (data.isTamed() && data.getOwnerUUID() != null) {
+                return Optional.of(data.getOwnerUUID());
+            }
         }
-        PetData data = entity.getData(PettingModAttachments.PET_DATA);
-        return data.isTamed() ? Optional.ofNullable(data.getOwnerUUID()) : Optional.empty();
+        if (entity instanceof OwnableEntity ownable) {
+            if (ownable.getOwnerReference() != null && ownable.getOwnerReference().getUUID() != null) {
+                return Optional.of(ownable.getOwnerReference().getUUID());
+            }
+            if (ownable.getOwner() != null) {
+                return Optional.of(ownable.getOwner().getUUID());
+            }
+        }
+        return Optional.empty();
     }
 
     @Nullable
@@ -77,7 +95,9 @@ public class PetHelper {
 
     public static void setOrder(LivingEntity entity, PetOrder order) {
         if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            entity.getData(PettingModAttachments.PET_DATA).setOrder(order);
+            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+            data.setOrder(order);
+            entity.setData(PettingModAttachments.PET_DATA, data);
         }
     }
 
@@ -90,7 +110,9 @@ public class PetHelper {
 
     public static void setCombatMode(LivingEntity entity, CombatMode mode) {
         if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            entity.getData(PettingModAttachments.PET_DATA).setCombatMode(mode);
+            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+            data.setCombatMode(mode);
+            entity.setData(PettingModAttachments.PET_DATA, data);
         }
     }
 
@@ -100,6 +122,7 @@ public class PetHelper {
         data.setOwnerUUID(owner.getUUID());
         data.setOrder(PetOrder.FOLLOW);
         data.setCombatMode(CombatMode.DEFENSIVE);
+        mob.setData(PettingModAttachments.PET_DATA, data);
 
         mob.setPersistenceRequired();
         mob.setTarget(null);
@@ -126,6 +149,7 @@ public class PetHelper {
             data.setOwnerUUID(null);
             data.setOrder(PetOrder.FOLLOW);
             data.setCombatMode(CombatMode.DEFENSIVE);
+            mob.setData(PettingModAttachments.PET_DATA, data);
         }
         if (mob.level() instanceof ServerLevel serverLevel) {
             PetSavedData.get(serverLevel).removePet(mob.getUUID());

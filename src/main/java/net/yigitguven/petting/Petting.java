@@ -13,6 +13,7 @@ import net.yigitguven.petting.config.PettingClientConfig;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.init.PettingModAttachments;
 import net.yigitguven.petting.init.PettingModItems;
+import net.yigitguven.petting.init.PettingModMenus;
 import net.yigitguven.petting.init.PettingModTabs;
 
 @Mod(Petting.MODID)
@@ -23,7 +24,10 @@ public class Petting {
     public Petting(IEventBus modEventBus, ModContainer modContainer) {
         PettingModAttachments.ATTACHMENT_TYPES.register(modEventBus);
         PettingModItems.ITEMS.register(modEventBus);
+        PettingModMenus.MENUS.register(modEventBus);
         PettingModTabs.CREATIVE_MODE_TABS.register(modEventBus);
+
+        modEventBus.addListener(net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent.class, net.yigitguven.petting.network.PettingNetwork::registerPayloads);
 
         modContainer.registerConfig(ModConfig.Type.SERVER, PettingServerConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC);

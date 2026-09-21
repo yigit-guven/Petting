@@ -29,8 +29,35 @@ public class PetTamingEvents {
         }
     }
 
+    private static boolean handlePetInventoryOpen(PlayerInteractEvent.EntityInteract event, net.minecraft.world.entity.Entity target, Player player, net.minecraft.world.InteractionHand hand, boolean isClient) {
+        if (hand != net.minecraft.world.InteractionHand.MAIN_HAND) {
+            return false;
+        }
+        if (!(target instanceof Mob mob) || !mob.isAlive()) {
+            return false;
+        }
+        boolean isShifting = player.isShiftKeyDown() || player.isSecondaryUseActive() || player.isCrouching();
+        if (isShifting && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player)) {
+            if (!isClient && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                net.yigitguven.petting.inventory.PetInventoryMenu.open(serverPlayer, mob);
+            }
+            event.setCancellationResult(InteractionResult.SUCCESS);
+            event.setCanceled(true);
+            return true;
+        }
+        return false;
+    }
+
     @SubscribeEvent
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        if (handlePetInventoryOpen(event, event.getTarget(), event.getEntity(), event.getHand(), event.getLevel().isClientSide())) {
+            return;
+        }
+
+        if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) {
+            return;
+        }
+
         if (!(event.getTarget() instanceof Mob mob)) {
             return;
         }

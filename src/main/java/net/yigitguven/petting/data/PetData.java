@@ -5,6 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
 
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,6 +20,18 @@ public class PetData {
                     Codec.STRING.xmap(PetOrder::valueOf, PetOrder::name).fieldOf("order").forGetter(PetData::getOrder),
                     Codec.STRING.xmap(CombatMode::valueOf, CombatMode::name).fieldOf("combat_mode").forGetter(PetData::getCombatMode)
             ).apply(instance, PetData::new)
+    );
+
+    public static final StreamCodec<ByteBuf, PetData> STREAM_CODEC = StreamCodec.composite(
+            ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC),
+            data -> Optional.ofNullable(data.ownerUUID),
+            ByteBufCodecs.BOOL,
+            PetData::isTamed,
+            ByteBufCodecs.stringUtf8(32).map(PetOrder::valueOf, PetOrder::name),
+            PetData::getOrder,
+            ByteBufCodecs.stringUtf8(32).map(CombatMode::valueOf, CombatMode::name),
+            PetData::getCombatMode,
+            PetData::new
     );
 
     private UUID ownerUUID;
