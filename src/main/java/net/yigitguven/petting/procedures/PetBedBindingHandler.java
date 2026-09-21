@@ -22,7 +22,7 @@ import net.minecraft.world.InteractionHand;
 
 import java.util.UUID;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber
 public class PetBedBindingHandler {
 
     private static final String TAG_BINDING_MODE = "PettingBindingMode";

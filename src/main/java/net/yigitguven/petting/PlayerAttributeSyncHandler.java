@@ -11,7 +11,7 @@ import net.yigitguven.petting.init.PettingModAttributes;
 
 import java.util.List;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber
 public class PlayerAttributeSyncHandler {
     @SubscribeEvent
     public static void onPlayerJoin(EntityJoinLevelEvent event) {

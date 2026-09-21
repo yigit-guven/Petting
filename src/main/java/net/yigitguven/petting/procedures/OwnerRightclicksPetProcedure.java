@@ -310,6 +310,18 @@ public class OwnerRightclicksPetProcedure {
                     data.remove("attackifownerattacked");
                     data.remove("attackifselfattacked");
                     data.remove("ignoreWhistle");
+                    data.remove("pet_bed_loc_x");
+                    data.remove("pet_bed_loc_y");
+                    data.remove("pet_bed_loc_z");
+                    data.remove("pet_bed_dim");
+                    data.remove("control_right_click");
+                    data.remove("control_shift_right_click");
+
+                    if (entity instanceof net.minecraft.world.entity.TamableAnimal tamable) {
+                        tamable.setTame(false, false);
+                        tamable.setOwnerUUID(null);
+                        tamable.setOrderedToSit(false);
+                    }
                     
                     net.minecraft.world.level.Level world = entity.level();
                     world.playSound(null, entity.blockPosition(), net.minecraft.sounds.SoundEvents.SHEEP_SHEAR, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);

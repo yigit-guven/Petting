@@ -20,7 +20,7 @@ import net.minecraft.core.particles.ParticleTypes;
 
 import java.util.UUID;
 
-@EventBusSubscriber(bus = EventBusSubscriber.Bus.GAME)
+@EventBusSubscriber
 public class PetDeathHandlerProcedure {
 
     @SubscribeEvent
@@ -68,9 +68,17 @@ public class PetDeathHandlerProcedure {
 
             if (bedLevel == null) return;
 
-            BlockPos respawnPos = findSafeRespawnLocation(bedLevel, bedPos);
+            if (!bedLevel.getBlockState(bedPos).is(net.yigitguven.petting.init.PettingModBlocks.PET_BED.get())) {
+                notifyOwner(entity.level(), ownerUUIDStr,
+                    Component.literal("§c[Petting] Your pet tried to respawn at its bed, but the bed was missing or destroyed!"));
+                data.remove("pet_bed_loc_x");
+                data.remove("pet_bed_loc_y");
+                data.remove("pet_bed_loc_z");
+                data.remove("pet_bed_dim");
+            } else {
+                BlockPos respawnPos = findSafeRespawnLocation(bedLevel, bedPos);
 
-            if (respawnPos != null) {
+                if (respawnPos != null) {
                 // A. Cancel Death
                 event.setCanceled(true);
 
@@ -123,6 +131,7 @@ public class PetDeathHandlerProcedure {
                     Component.literal("§c[Petting] Your pet tried to respawn at its bed, but the location was blocked!"));
             }
         }
+    }
 
         // 4. STANDARD DEATH (No Bed / Blocked Bed)
         try {

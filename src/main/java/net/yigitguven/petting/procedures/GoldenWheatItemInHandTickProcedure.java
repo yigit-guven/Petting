@@ -28,6 +28,11 @@ public class GoldenWheatItemInHandTickProcedure {
                 return;
             }
 
+            boolean wasHolding = player.getPersistentData().getBoolean("pettingHoldingGoldenWheat");
+            if (!isHoldingWheat && !wasHolding) {
+                return;
+            }
+
             double searchRadius = 12.0;
 
             List<Animal> nearbyAnimals = world.getEntitiesOfClass(
@@ -43,6 +48,7 @@ public class GoldenWheatItemInHandTickProcedure {
             );
 
             if (isHoldingWheat) {
+                player.getPersistentData().putBoolean("pettingHoldingGoldenWheat", true);
                 nearbyAnimals.sort(Comparator.comparingDouble(mob -> mob.distanceToSqr(player)));
 
                 for (Animal mob : nearbyAnimals) {
@@ -60,6 +66,7 @@ public class GoldenWheatItemInHandTickProcedure {
                 }
             } 
             else {
+                player.getPersistentData().remove("pettingHoldingGoldenWheat");
                 for (Animal mob : nearbyAnimals) {
                     if (mob.getTags().contains("TemptedByGoldenWheat")) {
                         mob.getNavigation().stop();

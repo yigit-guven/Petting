@@ -110,15 +110,15 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     if (!this.moveItemStackTo(itemstack1, SADDLE_SLOT, SADDLE_SLOT + 1, false)) {
                         return ItemStack.EMPTY;
                     }
-                } else if (itemstack1.getItem() instanceof net.minecraft.world.item.ArmorItem armor) {
-                    int armorSlot = -1;
-                    EquipmentSlot type = armor.getType().getSlot();
-                    if (type == EquipmentSlot.HEAD) armorSlot = 1;
-                    else if (type == EquipmentSlot.CHEST) armorSlot = 2;
-                    else if (type == EquipmentSlot.LEGS) armorSlot = 3;
-                    else if (type == EquipmentSlot.FEET) armorSlot = 4;
+                } else if (pet instanceof Mob mob) {
+                    EquipmentSlot type = mob.getEquipmentSlotForItem(itemstack1);
+                    int equipSlot = -1;
+                    if (type == EquipmentSlot.HEAD) equipSlot = 1;
+                    else if (type == EquipmentSlot.CHEST) equipSlot = 2;
+                    else if (type == EquipmentSlot.LEGS) equipSlot = 3;
+                    else if (type == EquipmentSlot.FEET) equipSlot = 4;
                     
-                    if (armorSlot == -1 || !this.moveItemStackTo(itemstack1, armorSlot, armorSlot + 1, false)) {
+                    if (equipSlot == -1 || !this.moveItemStackTo(itemstack1, equipSlot, equipSlot + 1, false)) {
                         return ItemStack.EMPTY;
                     }
                 } else {
