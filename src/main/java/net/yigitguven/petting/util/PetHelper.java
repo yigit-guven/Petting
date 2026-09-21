@@ -20,7 +20,9 @@ import net.yigitguven.petting.data.PetData;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.init.PettingModAttachments;
 
+import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.server.level.ServerLevel;
@@ -135,10 +137,66 @@ public class PetHelper {
         }
         mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
 
+        syncEntityTameStatus(mob);
         injectGoals(mob);
 
         if (mob.level() instanceof ServerLevel serverLevel) {
             PetSavedData.get(serverLevel).addPet(owner.getUUID(), mob.getUUID());
+        }
+    }
+
+    public static void syncEntityTameStatus(Mob mob) {
+        if (mob == null || mob.level().isClientSide()) {
+            return;
+        }
+        if (!isTamed(mob)) {
+            return;
+        }
+
+        UUID ownerUUID = getOwnerUUID(mob).orElse(null);
+        Player owner = (ownerUUID != null && mob.level() instanceof ServerLevel sl) ? sl.getPlayerByUUID(ownerUUID) : null;
+
+        if (mob instanceof AbstractHorse horse) {
+            if (!horse.isTamed()) {
+                horse.setTamed(true);
+            }
+            if (owner != null) {
+                horse.setOwner(owner);
+            }
+            horse.setTemper(horse.getMaxTemper());
+            horse.goalSelector.getAvailableGoals().removeIf(wrapped -> wrapped.getGoal() instanceof RunAroundLikeCrazyGoal);
+        }
+
+        if (mob instanceof TamableAnimal tamable) {
+            if (!tamable.isTame()) {
+                tamable.setTame(true, false);
+            }
+            if (owner != null) {
+                tamable.setOwner(owner);
+            }
+        }
+
+        syncModdedTame(mob, ownerUUID, owner);
+    }
+
+    private static void syncModdedTame(Mob mob, @Nullable UUID ownerUUID, @Nullable Player owner) {
+        Class<?> clazz = mob.getClass();
+        try {
+            for (Method m : clazz.getMethods()) {
+                String name = m.getName();
+                if ((name.equals("setTamed") || name.equals("setTame")) && m.getParameterCount() == 1 && m.getParameterTypes()[0] == boolean.class) {
+                    m.invoke(mob, true);
+                } else if (name.equals("setOwner") && m.getParameterCount() == 1 && LivingEntity.class.isAssignableFrom(m.getParameterTypes()[0])) {
+                    if (owner != null) {
+                        m.invoke(mob, owner);
+                    }
+                } else if (name.equals("setOwnerUUID") && m.getParameterCount() == 1 && m.getParameterTypes()[0] == UUID.class) {
+                    if (ownerUUID != null) {
+                        m.invoke(mob, ownerUUID);
+                    }
+                }
+            }
+        } catch (Exception ignored) {
         }
     }
 
@@ -150,6 +208,14 @@ public class PetHelper {
             data.setOrder(PetOrder.FOLLOW);
             data.setCombatMode(CombatMode.DEFENSIVE);
             mob.setData(PettingModAttachments.PET_DATA, data);
+        }
+        if (mob instanceof AbstractHorse horse) {
+            horse.setTamed(false);
+            horse.setOwner(null);
+        }
+        if (mob instanceof TamableAnimal tamable) {
+            tamable.setTame(false, false);
+            tamable.setOwner(null);
         }
         if (mob.level() instanceof ServerLevel serverLevel) {
             PetSavedData.get(serverLevel).removePet(mob.getUUID());
@@ -169,6 +235,8 @@ public class PetHelper {
     }
 
     public static void injectGoals(Mob mob) {
+        mob.goalSelector.getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal);
+
         boolean hasGoals = mob.goalSelector.getAvailableGoals().stream()
                 .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetFollowOwnerGoal);
         if (hasGoals) {

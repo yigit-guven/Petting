@@ -18,7 +18,7 @@ public class PetSitGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return PetHelper.isTamed(this.mob) && PetHelper.getOrder(this.mob) == PetOrder.SIT;
+        return PetHelper.isTamed(this.mob) && PetHelper.getOrder(this.mob) == PetOrder.SIT && !this.mob.isVehicle();
     }
 
     @Override

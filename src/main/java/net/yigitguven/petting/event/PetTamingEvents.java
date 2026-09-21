@@ -92,14 +92,16 @@ public class PetTamingEvents {
                         return;
                     }
                 }
-            } else if (PetEggHelper.canTame(mob, stack.getItem())) {
+                PetHelper.syncEntityTameStatus(mob);
+                return;
+            } else {
                 if (!isClient) {
                     player.sendSystemMessage(Component.translatable("petting.action.already_tamed_other"));
                 }
                 event.setCancellationResult(InteractionResult.SUCCESS);
                 event.setCanceled(true);
+                return;
             }
-            return;
         }
 
         if (!PetEggHelper.canTame(mob, stack.getItem())) {

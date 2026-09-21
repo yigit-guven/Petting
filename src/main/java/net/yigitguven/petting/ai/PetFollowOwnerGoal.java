@@ -36,6 +36,9 @@ public class PetFollowOwnerGoal extends Goal {
 
     @Override
     public boolean canUse() {
+        if (this.mob.isVehicle()) {
+            return false;
+        }
         if (!PetHelper.isTamed(this.mob)) {
             return false;
         }
@@ -51,6 +54,9 @@ public class PetFollowOwnerGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        if (this.mob.isVehicle()) {
+            return false;
+        }
         if (this.navigation.isDone()) {
             return false;
         }

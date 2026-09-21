@@ -23,6 +23,7 @@ public class PetGoalEvents {
 
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             PetHelper.injectGoals(mob);
+            PetHelper.syncEntityTameStatus(mob);
             if (event.getLevel() instanceof ServerLevel serverLevel) {
                 PetHelper.getOwnerUUID(mob).ifPresent(ownerUuid ->
                         PetSavedData.get(serverLevel).addPet(ownerUuid, mob.getUUID())
