@@ -11,6 +11,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -63,7 +64,34 @@ public class PetEggHelper {
         return Optional.ofNullable(getTreatTags().get(treatItem));
     }
 
+    public static boolean canTame(Mob mob, Item treatItem) {
+        if (net.yigitguven.petting.config.PettingServerConfig.isUntameable(mob.getType())) {
+            return false;
+        }
+
+        if (canTame(mob.getType(), treatItem)) {
+            return true;
+        }
+
+        for (TagKey<EntityType<?>> tag : getTreatTags().values()) {
+            if (mob.getType().builtInRegistryHolder().is(tag)) {
+                return false;
+            }
+        }
+
+        if (mob.getMaxHealth() > 300.0F) {
+            return treatItem == PettingModItems.GOLDEN_STAR.get();
+        } else if (mob instanceof net.minecraft.world.entity.monster.Enemy) {
+            return treatItem == PettingModItems.GOLDEN_BONE.get();
+        } else {
+            return treatItem == PettingModItems.GOLDEN_WHEAT.get();
+        }
+    }
+
     public static boolean canTame(EntityType<?> entityType, Item treatItem) {
+        if (net.yigitguven.petting.config.PettingServerConfig.isUntameable(entityType)) {
+            return false;
+        }
         TagKey<EntityType<?>> tag = getTreatTags().get(treatItem);
         return tag != null && entityType.builtInRegistryHolder().is(tag);
     }

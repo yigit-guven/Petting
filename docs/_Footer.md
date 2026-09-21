@@ -1,4 +1,3 @@
----
 <div align="center">
   <p>
     <a href="https://github.com/yigit-guven/Petting">Source Code</a> • 

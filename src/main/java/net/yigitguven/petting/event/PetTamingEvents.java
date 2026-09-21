@@ -41,7 +41,7 @@ public class PetTamingEvents {
 
         if (PetHelper.isTamed(mob)) {
             if (PetHelper.isOwner(mob, player)) {
-                if (PetEggHelper.canTame(mob.getType(), stack.getItem())) {
+                if (PetEggHelper.canTame(mob, stack.getItem())) {
                     if (mob.getHealth() < mob.getMaxHealth()) {
                         if (!isClient) {
                             if (!player.getAbilities().instabuild) {
@@ -65,7 +65,7 @@ public class PetTamingEvents {
                         return;
                     }
                 }
-            } else if (PetEggHelper.canTame(mob.getType(), stack.getItem())) {
+            } else if (PetEggHelper.canTame(mob, stack.getItem())) {
                 if (!isClient) {
                     player.sendSystemMessage(Component.translatable("petting.action.already_tamed_other"));
                 }
@@ -75,7 +75,7 @@ public class PetTamingEvents {
             return;
         }
 
-        if (!PetEggHelper.canTame(mob.getType(), stack.getItem())) {
+        if (!PetEggHelper.canTame(mob, stack.getItem())) {
             return;
         }
 
