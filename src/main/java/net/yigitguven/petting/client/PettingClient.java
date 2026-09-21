@@ -6,6 +6,6 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
 public class PettingClient {
     public static void registerClientExtensions(ModContainer modContainer) {
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, PettingConfigurationScreen::new);
     }
 }

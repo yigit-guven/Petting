@@ -13,6 +13,7 @@
   "commands.petting.summon.success": "Summoned %s as a pet for %s",
   "commands.petting.summon.error.not_a_mob": "Target entity is not a mob and cannot be tamed as a pet.",
   "petting.configuration.title": "Petting Configuration",
+  "petting.configuration.wiki_link": "Need help? Visit the configuration guide on our wiki",
   "petting.configuration.taming": "Taming Settings",
   "petting.configuration.section.taming": "Taming Settings",
   "petting.configuration.section.taming.title": "Taming Settings",
