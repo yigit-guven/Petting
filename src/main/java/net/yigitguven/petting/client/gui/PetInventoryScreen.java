@@ -8,12 +8,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.Slot;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.inventory.PetInventoryMenu;
 
 public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu> {
     private static final Identifier TEXTURE =
             Identifier.fromNamespaceAndPath(Petting.MODID, "textures/gui/container/pet_inventory.png");
+    private static final Identifier SLOT_SPRITE =
+            Identifier.withDefaultNamespace("container/slot");
 
     private float xMouse;
     private float yMouse;
@@ -40,6 +43,12 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         int yo = this.topPos;
 
         graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+
+        // Dynamically draw slot background sprite for each active pet slot
+        for (int i = 0; i < this.menu.getPetSlotCount(); i++) {
+            Slot slot = this.menu.slots.get(i);
+            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, xo + slot.x - 1, yo + slot.y - 1, 18, 18);
+        }
 
         Mob pet = this.menu.getPet();
         if (pet != null) {

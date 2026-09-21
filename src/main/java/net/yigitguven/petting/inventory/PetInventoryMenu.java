@@ -1,6 +1,5 @@
 package net.yigitguven.petting.inventory;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,26 +8,24 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.equipment.Equippable;
-import net.minecraft.world.level.block.SkullBlock;
 import net.yigitguven.petting.init.PettingModMenus;
-import net.yigitguven.petting.util.PetHelper;
 import org.jspecify.annotations.Nullable;
 
-public class PetInventoryMenu extends AbstractContainerMenu {
-    public static final Identifier EMPTY_SLOT_SWORD = Identifier.withDefaultNamespace("container/slot/sword");
+import java.util.ArrayList;
+import java.util.List;
 
-    private final Mob pet;
+public class PetInventoryMenu extends AbstractContainerMenu {
+    private final @Nullable Mob pet;
     private final Player player;
-    private final Container petContainer;
+    private final List<PetSlotType> petSlots;
+    private final int petSlotCount;
 
     public PetInventoryMenu(int windowId, Inventory playerInv, RegistryFriendlyByteBuf extraData) {
         this(windowId, playerInv, getPetFromBuf(playerInv.player, extraData));
@@ -44,23 +41,35 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         super(PettingModMenus.PET_MENU.get(), windowId);
         this.pet = pet;
         this.player = playerInv.player;
-        this.petContainer = new PetEquipmentContainer(pet);
 
-        if (pet != null) {
-            for (EquipmentSlot slot : PetEquipmentContainer.SLOTS) {
-                pet.setDropChance(slot, 1.0F);
-            }
+        List<PetSlotType> left = PetSlotType.getLeftSlots(pet);
+        List<PetSlotType> right = PetSlotType.getRightSlots(pet);
+
+        this.petSlots = new ArrayList<>();
+        this.petSlots.addAll(left);
+        this.petSlots.addAll(right);
+        this.petSlotCount = this.petSlots.size();
+
+        Container petContainer = new PetSlotContainer(pet, this.petSlots);
+
+        // Pet left slots: centered on Y between 18 and 90 (height = 72)
+        int leftCount = left.size();
+        int leftStartY = 18 + (72 - leftCount * 18) / 2;
+        int slotIndex = 0;
+        for (int i = 0; i < leftCount; i++) {
+            PetSlotType type = left.get(i);
+            int y = leftStartY + i * 18;
+            this.addSlot(new DynamicPetSlot(petContainer, slotIndex++, 8, y, type, pet));
         }
 
-        // Pet armor slots (left column: x = 8)
-        this.addSlot(new PetSlot(this.petContainer, pet, EquipmentSlot.HEAD, 0, 8, 18, InventoryMenu.EMPTY_ARMOR_SLOT_HELMET));
-        this.addSlot(new PetSlot(this.petContainer, pet, EquipmentSlot.CHEST, 1, 8, 36, InventoryMenu.EMPTY_ARMOR_SLOT_CHESTPLATE));
-        this.addSlot(new PetSlot(this.petContainer, pet, EquipmentSlot.LEGS, 2, 8, 54, InventoryMenu.EMPTY_ARMOR_SLOT_LEGGINGS));
-        this.addSlot(new PetSlot(this.petContainer, pet, EquipmentSlot.FEET, 3, 8, 72, InventoryMenu.EMPTY_ARMOR_SLOT_BOOTS));
-
-        // Pet hand slots (right column: x = 152)
-        this.addSlot(new PetSlot(this.petContainer, pet, EquipmentSlot.MAINHAND, 4, 152, 36, EMPTY_SLOT_SWORD));
-        this.addSlot(new PetSlot(this.petContainer, pet, EquipmentSlot.OFFHAND, 5, 152, 54, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD));
+        // Pet right slots: centered on Y between 18 and 90 (height = 72)
+        int rightCount = right.size();
+        int rightStartY = 18 + (72 - rightCount * 18) / 2;
+        for (int i = 0; i < rightCount; i++) {
+            PetSlotType type = right.get(i);
+            int y = rightStartY + i * 18;
+            this.addSlot(new DynamicPetSlot(petContainer, slotIndex++, 152, y, type, pet));
+        }
 
         // Player standard inventory (27 slots: 3 rows of 9 at x = 8, y = 103)
         for (int row = 0; row < 3; ++row) {
@@ -86,6 +95,10 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         return this.pet;
     }
 
+    public int getPetSlotCount() {
+        return this.petSlotCount;
+    }
+
     @Override
     public boolean stillValid(Player player) {
         if (this.pet == null || !this.pet.isAlive()) {
@@ -102,40 +115,56 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             ItemStack slotStack = slot.getItem();
             result = slotStack.copy();
 
-            if (slotIndex < 6) {
+            if (slotIndex < this.petSlotCount) {
                 // From pet slot to player inventory
-                if (!this.moveItemStackTo(slotStack, 6, 42, true)) {
+                if (!this.moveItemStackTo(slotStack, this.petSlotCount, this.petSlotCount + 36, true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
                 // From player inventory to pet slots
                 boolean moved = false;
-                if (isMatchingEquipment(slotStack, EquipmentSlot.HEAD, this.pet)) {
-                    moved = this.moveItemStackTo(slotStack, 0, 1, false);
-                } else if (isMatchingEquipment(slotStack, EquipmentSlot.CHEST, this.pet)) {
-                    moved = this.moveItemStackTo(slotStack, 1, 2, false);
-                } else if (isMatchingEquipment(slotStack, EquipmentSlot.LEGS, this.pet)) {
-                    moved = this.moveItemStackTo(slotStack, 2, 3, false);
-                } else if (isMatchingEquipment(slotStack, EquipmentSlot.FEET, this.pet)) {
-                    moved = this.moveItemStackTo(slotStack, 3, 4, false);
-                }
 
-                if (!moved) {
-                    // Try mainhand, then offhand
-                    if (!this.slots.get(4).hasItem()) {
-                        moved = this.moveItemStackTo(slotStack, 4, 5, false);
-                    } else if (!this.slots.get(5).hasItem()) {
-                        moved = this.moveItemStackTo(slotStack, 5, 6, false);
+                // First pass: try equipment slots other than hands
+                for (int i = 0; i < this.petSlotCount; i++) {
+                    PetSlotType type = this.petSlots.get(i);
+                    if (type != PetSlotType.MAINHAND && type != PetSlotType.OFFHAND) {
+                        if (type.mayPlace(slotStack, this.pet)) {
+                            if (this.moveItemStackTo(slotStack, i, i + 1, false)) {
+                                moved = true;
+                                break;
+                            }
+                        }
                     }
                 }
 
+                // Second pass: try empty hand slots
                 if (!moved) {
-                    if (slotIndex >= 6 && slotIndex < 33) {
-                        if (!this.moveItemStackTo(slotStack, 33, 42, false)) {
+                    for (int i = 0; i < this.petSlotCount; i++) {
+                        PetSlotType type = this.petSlots.get(i);
+                        if (type == PetSlotType.MAINHAND || type == PetSlotType.OFFHAND) {
+                            Slot targetSlot = this.slots.get(i);
+                            if (!targetSlot.hasItem() && type.mayPlace(slotStack, this.pet)) {
+                                if (this.moveItemStackTo(slotStack, i, i + 1, false)) {
+                                    moved = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Fallback: move between player main storage and hotbar
+                if (!moved) {
+                    int playerMainStart = this.petSlotCount;
+                    int playerMainEnd = this.petSlotCount + 27;
+                    int playerHotbarEnd = this.petSlotCount + 36;
+
+                    if (slotIndex >= playerMainStart && slotIndex < playerMainEnd) {
+                        if (!this.moveItemStackTo(slotStack, playerMainEnd, playerHotbarEnd, false)) {
                             return ItemStack.EMPTY;
                         }
-                    } else if (slotIndex >= 33 && slotIndex < 42) {
-                        if (!this.moveItemStackTo(slotStack, 6, 33, false)) {
+                    } else if (slotIndex >= playerMainEnd && slotIndex < playerHotbarEnd) {
+                        if (!this.moveItemStackTo(slotStack, playerMainStart, playerMainEnd, false)) {
                             return ItemStack.EMPTY;
                         }
                     }
@@ -157,141 +186,155 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         return result;
     }
 
-    public static boolean isMatchingEquipment(ItemStack stack, EquipmentSlot slot, @Nullable Mob mob) {
-        if (stack.isEmpty()) return false;
-        if (slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND) {
-            return true;
-        }
-        Equippable equippable = stack.get(DataComponents.EQUIPPABLE);
-        if (equippable != null && equippable.slot() == slot) {
-            return true;
-        }
-        if (mob != null) {
-            EquipmentSlot itemSlot = mob.getEquipmentSlotForItem(stack);
-            if (itemSlot == slot) return true;
-        }
-        if (slot == EquipmentSlot.HEAD && (stack.is(Items.CARVED_PUMPKIN) || (stack.getItem() instanceof BlockItem bi && bi.getBlock() instanceof SkullBlock))) {
-            return true;
-        }
-        if (slot == EquipmentSlot.CHEST && stack.is(Items.ELYTRA)) {
-            return true;
-        }
-        return false;
-    }
-
-    private static class PetSlot extends Slot {
+    public static class DynamicPetSlot extends Slot {
         private final Mob pet;
-        private final EquipmentSlot slot;
-        private final @Nullable Identifier emptyIcon;
+        private final PetSlotType slotType;
 
-        public PetSlot(Container container, @Nullable Mob pet, EquipmentSlot slot, int index, int x, int y, @Nullable Identifier emptyIcon) {
+        public DynamicPetSlot(Container container, int index, int x, int y, PetSlotType slotType, @Nullable Mob pet) {
             super(container, index, x, y);
             this.pet = pet;
-            this.slot = slot;
-            this.emptyIcon = emptyIcon;
+            this.slotType = slotType;
         }
 
         @Override
         public boolean mayPlace(ItemStack stack) {
-            return isMatchingEquipment(stack, this.slot, this.pet);
+            return this.slotType.mayPlace(stack, this.pet);
         }
 
         @Override
         public int getMaxStackSize() {
-            return (this.slot == EquipmentSlot.MAINHAND || this.slot == EquipmentSlot.OFFHAND) ? 64 : 1;
+            return (this.slotType == PetSlotType.MAINHAND || this.slotType == PetSlotType.OFFHAND) ? 64 : 1;
         }
 
         @Override
         public @Nullable Identifier getNoItemIcon() {
-            return this.emptyIcon;
+            return this.slotType.getIcon(this.pet);
+        }
+
+        public PetSlotType getSlotType() {
+            return this.slotType;
         }
     }
 
-    private static class PetEquipmentContainer implements Container {
-        public static final EquipmentSlot[] SLOTS = new EquipmentSlot[]{
-                EquipmentSlot.HEAD,
-                EquipmentSlot.CHEST,
-                EquipmentSlot.LEGS,
-                EquipmentSlot.FEET,
-                EquipmentSlot.MAINHAND,
-                EquipmentSlot.OFFHAND
-        };
-
+    private static class PetSlotContainer implements Container {
         private final @Nullable Mob pet;
+        private final List<PetSlotType> slotTypes;
 
-        public PetEquipmentContainer(@Nullable Mob pet) {
+        public PetSlotContainer(@Nullable Mob pet, List<PetSlotType> slotTypes) {
             this.pet = pet;
+            this.slotTypes = slotTypes;
         }
 
         @Override
         public int getContainerSize() {
-            return SLOTS.length;
+            return this.slotTypes.size();
         }
 
         @Override
         public boolean isEmpty() {
             if (this.pet == null) return true;
-            for (EquipmentSlot slot : SLOTS) {
-                if (!this.pet.getItemBySlot(slot).isEmpty()) {
+            for (PetSlotType type : this.slotTypes) {
+                if (!this.getItem(type).isEmpty()) {
                     return false;
                 }
             }
             return true;
         }
 
-        @Override
-        public ItemStack getItem(int slotIndex) {
-            if (this.pet == null || slotIndex < 0 || slotIndex >= SLOTS.length) {
+        private ItemStack getItem(PetSlotType type) {
+            if (this.pet == null) return ItemStack.EMPTY;
+            if (type == PetSlotType.CHEST_STORAGE) {
+                if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
+                    return new ItemStack(Items.CHEST);
+                }
                 return ItemStack.EMPTY;
             }
-            return this.pet.getItemBySlot(SLOTS[slotIndex]);
+            EquipmentSlot eq = type.getEquipmentSlot();
+            return eq != null ? this.pet.getItemBySlot(eq) : ItemStack.EMPTY;
+        }
+
+        @Override
+        public ItemStack getItem(int slotIndex) {
+            if (slotIndex < 0 || slotIndex >= this.slotTypes.size()) {
+                return ItemStack.EMPTY;
+            }
+            return getItem(this.slotTypes.get(slotIndex));
         }
 
         @Override
         public ItemStack removeItem(int slotIndex, int amount) {
-            if (this.pet == null || slotIndex < 0 || slotIndex >= SLOTS.length) {
+            if (this.pet == null || slotIndex < 0 || slotIndex >= this.slotTypes.size()) {
                 return ItemStack.EMPTY;
             }
-            EquipmentSlot slot = SLOTS[slotIndex];
-            ItemStack current = this.pet.getItemBySlot(slot);
-            if (current.isEmpty()) {
+            PetSlotType type = this.slotTypes.get(slotIndex);
+            if (type == PetSlotType.CHEST_STORAGE) {
+                if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
+                    chested.setChest(false);
+                    this.setChanged();
+                    return new ItemStack(Items.CHEST);
+                }
                 return ItemStack.EMPTY;
             }
+            EquipmentSlot eq = type.getEquipmentSlot();
+            if (eq == null) return ItemStack.EMPTY;
+            ItemStack current = this.pet.getItemBySlot(eq);
+            if (current.isEmpty()) return ItemStack.EMPTY;
             ItemStack split = current.split(amount);
-            this.pet.setItemSlot(slot, current.isEmpty() ? ItemStack.EMPTY : current);
+            this.pet.setItemSlot(eq, current.isEmpty() ? ItemStack.EMPTY : current);
             this.setChanged();
             return split;
         }
 
         @Override
         public ItemStack removeItemNoUpdate(int slotIndex) {
-            if (this.pet == null || slotIndex < 0 || slotIndex >= SLOTS.length) {
+            if (this.pet == null || slotIndex < 0 || slotIndex >= this.slotTypes.size()) {
                 return ItemStack.EMPTY;
             }
-            EquipmentSlot slot = SLOTS[slotIndex];
-            ItemStack current = this.pet.getItemBySlot(slot);
-            if (current.isEmpty()) {
+            PetSlotType type = this.slotTypes.get(slotIndex);
+            if (type == PetSlotType.CHEST_STORAGE) {
+                if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
+                    chested.setChest(false);
+                    return new ItemStack(Items.CHEST);
+                }
                 return ItemStack.EMPTY;
             }
-            this.pet.setItemSlot(slot, ItemStack.EMPTY);
+            EquipmentSlot eq = type.getEquipmentSlot();
+            if (eq == null) return ItemStack.EMPTY;
+            ItemStack current = this.pet.getItemBySlot(eq);
+            if (current.isEmpty()) return ItemStack.EMPTY;
+            this.pet.setItemSlot(eq, ItemStack.EMPTY);
             return current;
         }
 
         @Override
         public void setItem(int slotIndex, ItemStack stack) {
-            if (this.pet == null || slotIndex < 0 || slotIndex >= SLOTS.length) {
+            if (this.pet == null || slotIndex < 0 || slotIndex >= this.slotTypes.size()) {
                 return;
             }
-            EquipmentSlot slot = SLOTS[slotIndex];
-            this.pet.setItemSlot(slot, stack);
-            this.setChanged();
+            PetSlotType type = this.slotTypes.get(slotIndex);
+            if (type == PetSlotType.CHEST_STORAGE) {
+                if (this.pet instanceof AbstractChestedHorse chested) {
+                    chested.setChest(!stack.isEmpty());
+                }
+                this.setChanged();
+                return;
+            }
+            EquipmentSlot eq = type.getEquipmentSlot();
+            if (eq != null) {
+                this.pet.setItemSlot(eq, stack);
+                this.pet.setDropChance(eq, 1.0F);
+                this.setChanged();
+            }
         }
 
         @Override
         public void setChanged() {
             if (this.pet != null) {
-                for (EquipmentSlot slot : SLOTS) {
-                    this.pet.setDropChance(slot, 1.0F);
+                for (PetSlotType type : this.slotTypes) {
+                    EquipmentSlot eq = type.getEquipmentSlot();
+                    if (eq != null) {
+                        this.pet.setDropChance(eq, 1.0F);
+                    }
                 }
             }
         }
@@ -304,8 +347,17 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         @Override
         public void clearContent() {
             if (this.pet != null) {
-                for (EquipmentSlot slot : SLOTS) {
-                    this.pet.setItemSlot(slot, ItemStack.EMPTY);
+                for (PetSlotType type : this.slotTypes) {
+                    if (type == PetSlotType.CHEST_STORAGE) {
+                        if (this.pet instanceof AbstractChestedHorse chested) {
+                            chested.setChest(false);
+                        }
+                    } else {
+                        EquipmentSlot eq = type.getEquipmentSlot();
+                        if (eq != null) {
+                            this.pet.setItemSlot(eq, ItemStack.EMPTY);
+                        }
+                    }
                 }
             }
         }
