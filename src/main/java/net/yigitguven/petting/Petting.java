@@ -29,7 +29,7 @@ public class Petting {
         modContainer.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC);
 
         if (FMLEnvironment.getDist().isClient()) {
-            PettingClient.registerClientExtensions(modContainer);
+            PettingClient.registerClientExtensions(modContainer, modEventBus);
         }
     }
 }

@@ -39,5 +39,7 @@
   "petting.action.too_healthy": "This mob is too healthy to tame! Weaken it below %d%% health first.",
   "petting.action.taming_failed": "Taming attempt failed!",
   "petting.action.tamed_success": "You tamed %s!",
-  "petting.jei.taming.title": "Pet Taming"
+  "petting.jei.taming.title": "Pet Taming",
+  "key.petting.open_pet_inventory": "Open Pet Inventory",
+  "key.category.petting.petting": "Petting"
 }
