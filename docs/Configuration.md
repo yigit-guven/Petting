@@ -79,4 +79,4 @@ These settings control client-side interface behavior and chat feedback.
 
 ## Customizing Mob Treat Mappings
 
-Looking to change which treat tames which mob? See the [Customizing Taming Treats Guide](Custom-Treat-Tags.md) to learn how to add or reassign mobs using Data Packs or KubeJS.
+Looking to change which treat tames which mob? See the [Customizing Taming Treats Guide](https://github.com/yigit-guven/Petting/wiki/Custom-Treat-Tags) to learn how to add or reassign mobs using Data Packs or KubeJS.
