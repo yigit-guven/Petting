@@ -23,7 +23,8 @@ public class PettingClientEvents {
             "petting.action.too_healthy",
             "petting.action.already_vanilla_tamed",
             "petting.action.already_tamed_other",
-            "petting.action.pet_full_health"
+            "petting.action.pet_full_health",
+            "petting.action.pet_limit_reached"
     );
 
     @SubscribeEvent
