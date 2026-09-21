@@ -115,11 +115,6 @@ public class FollowOwnerOrTeleport {
                     mob.setDeltaMovement(0, mob.getDeltaMovement().y, 0); 
                 }
 
-                // Configurable Healing while sitting
-                int healInterval = net.yigitguven.petting.config.PettingConfig.SIT_HEAL_INTERVAL.get();
-                if (healInterval > 0 && mob.tickCount % healInterval == 0 && mob.getHealth() < mob.getMaxHealth()) {
-                    mob.heal(net.yigitguven.petting.config.PettingConfig.SIT_HEAL_AMOUNT.get().floatValue());
-                }
                 return;
             }
 

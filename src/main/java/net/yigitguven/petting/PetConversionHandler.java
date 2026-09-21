@@ -40,6 +40,7 @@ public class PetConversionHandler {
             copyBoolean(originalData, convertedData, "damageOwner");
             copyBoolean(originalData, convertedData, "sitstill");
             copyBoolean(originalData, convertedData, "waiting");
+            copyBoolean(originalData, convertedData, "ignoreWhistle");
 
             copyInt(originalData, convertedData, "followdistance");
             copyInt(originalData, convertedData, "teleportdistance");
@@ -53,6 +54,18 @@ public class PetConversionHandler {
             copyDouble(originalData, convertedData, "boundX");
             copyDouble(originalData, convertedData, "boundY");
             copyDouble(originalData, convertedData, "boundZ");
+
+            copyString(originalData, convertedData, "control_right_click");
+            copyString(originalData, convertedData, "control_shift_right_click");
+
+            // Transfer pet inventory capability contents if present
+            original.getCapability(net.yigitguven.petting.capability.PetInventoryCapability.PET_INVENTORY).ifPresent(origInv -> {
+                converted.getCapability(net.yigitguven.petting.capability.PetInventoryCapability.PET_INVENTORY).ifPresent(convInv -> {
+                    for (int slot = 0; slot < origInv.getSlots() && slot < convInv.getSlots(); slot++) {
+                        convInv.setStackInSlot(slot, origInv.getStackInSlot(slot).copy());
+                    }
+                });
+            });
 
             if (converted instanceof Mob convertedMob) {
                 convertedMob.setPersistenceRequired();

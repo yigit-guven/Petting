@@ -2,6 +2,7 @@ package net.yigitguven.petting.handler;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
 import net.minecraftforge.event.entity.player.AttackEntityEvent;
@@ -17,11 +18,14 @@ public class PetDamageHandler {
         Player player = event.getEntity();
         Entity target = event.getTarget();
         
-        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
+        if (target == null || net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
         
-        if (player.getVehicle() != null) {
-            Entity vehicle = player.getVehicle();
-            if (target.equals(vehicle) && !PettingConfig.ALLOW_OWNER_TO_HURT_PETS.get()) {
+        if (!PettingConfig.ALLOW_OWNER_TO_HURT_PETS.get()) {
+            if (player.getVehicle() != null && target.equals(player.getVehicle())) {
+                event.setCanceled(true);
+                return;
+            }
+            if (isPetOf(target, player)) {
                 event.setCanceled(true);
             }
         }
@@ -29,16 +33,31 @@ public class PetDamageHandler {
 
     @SubscribeEvent
     public static void onLivingIncomingDamage(LivingDamageEvent event) {
-        if (!PettingConfig.PREVENT_PET_TO_OWNER_DAMAGE.get()) return;
-
         LivingEntity target = event.getEntity();
-        if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
+        if (target == null || net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(target)) return;
 
         DamageSource source = event.getSource();
         Entity attacker = source.getEntity();
         Entity directEntity = source.getDirectEntity();
 
-        // 1. Pet to owner damage prevention
+        // 1. Prevent owner from hurting their own pets (melee or projectile)
+        if (!PettingConfig.ALLOW_OWNER_TO_HURT_PETS.get()) {
+            if (attacker != null && isPetOf(target, attacker)) {
+                event.setCanceled(true);
+                return;
+            }
+            if (directEntity instanceof net.minecraft.world.entity.projectile.Projectile projectile) {
+                Entity shooter = projectile.getOwner();
+                if (shooter != null && isPetOf(target, shooter)) {
+                    event.setCanceled(true);
+                    return;
+                }
+            }
+        }
+
+        if (!PettingConfig.PREVENT_PET_TO_OWNER_DAMAGE.get()) return;
+
+        // 2. Pet to owner damage prevention
         if (attacker != null && attacker.getPersistentData().getBoolean("pettingtamed")) {
             String ownerUUID = attacker.getPersistentData().getString("ownerUUID");
             if (ownerUUID.equals(target.getStringUUID())) {
@@ -47,7 +66,7 @@ public class PetDamageHandler {
             }
         }
 
-        // 2. Projectile protection
+        // 3. Projectile protection from pet
         if (directEntity instanceof net.minecraft.world.entity.projectile.Projectile projectile) {
             Entity shooter = projectile.getOwner();
             if (shooter != null && shooter.getPersistentData().getBoolean("pettingtamed")) {
@@ -64,5 +83,19 @@ public class PetDamageHandler {
                 }
             }
         }
+    }
+
+    private static boolean isPetOf(Entity pet, Entity owner) {
+        if (pet == null || owner == null) return false;
+        if (pet.getPersistentData().getBoolean("pettingtamed")) {
+            String ownerUUID = pet.getPersistentData().getString("ownerUUID");
+            if (!ownerUUID.isEmpty() && ownerUUID.equals(owner.getStringUUID())) {
+                return true;
+            }
+        }
+        if (pet instanceof TamableAnimal tamable && owner instanceof Player player) {
+            if (tamable.isOwnedBy(player)) return true;
+        }
+        return false;
     }
 }

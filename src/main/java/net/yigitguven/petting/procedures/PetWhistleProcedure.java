@@ -23,7 +23,7 @@ public class PetWhistleProcedure {
         if (!PettingConfig.ENABLE_GOAT_HORN_WHISTLE.get()) return;
 
         net.minecraft.world.item.Item whistleItem = net.yigitguven.petting.util.PetInventoryUtil.getItemFromID(PettingConfig.GLOBAL_WHISTLE_TOOL_ID.get(), net.minecraft.world.item.Items.GOAT_HORN);
-        if (event.getItemStack().getItem() == whistleItem) {
+        if (event.getItemStack().getItem() == whistleItem && player.isShiftKeyDown()) {
             if (player.level() instanceof ServerLevel serverLevel) {
                 int summonedCount = 0;
                 String playerUUID = player.getStringUUID();

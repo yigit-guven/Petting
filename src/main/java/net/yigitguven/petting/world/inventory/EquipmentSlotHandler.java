@@ -35,7 +35,10 @@ public class EquipmentSlotHandler extends Slot {
     public boolean mayPlace(ItemStack stack) {
         if (!active) return false;
         if (slot.isArmor()) {
-            return stack.getItem() instanceof ArmorItem armor && armor.getType().getSlot() == slot;
+            if (stack.getItem() instanceof ArmorItem armor && armor.getType().getSlot() == slot) {
+                return true;
+            }
+            return net.minecraft.world.entity.LivingEntity.getEquipmentSlotForItem(stack) == slot;
         }
         return true; 
     }

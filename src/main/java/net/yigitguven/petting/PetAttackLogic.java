@@ -215,8 +215,8 @@ public class PetAttackLogic {
                 // Prevent tamed pets from taking silly environmental damage to preserve them better
                 if (event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FALL) || 
                     event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FIRE) ||
-                    event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FIRE) ||
-                    event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FIRE)) {
+                    event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_DROWNING) ||
+                    event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_FREEZING)) {
                     event.setAmount(0.0f);
                     return;
                 }

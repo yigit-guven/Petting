@@ -24,17 +24,21 @@ public class GoldenWheatItemInHandTickProcedure {
             boolean isHoldingWheat = player.getMainHandItem().getItem() == PettingModItems.GOLDEN_WHEAT.get() 
                                   || player.getOffhandItem().getItem() == PettingModItems.GOLDEN_WHEAT.get();
 
-            if (world instanceof Level _lvl && _lvl.getGameTime() % 10 != 0) {
+            if (world instanceof Level _lvl && _lvl.getGameTime() % 5 != 0) {
                 return;
             }
 
-            double searchRadius = 32.0;
+            boolean wasHolding = player.getPersistentData().getBoolean("pettingHoldingGoldenWheat");
+            if (!isHoldingWheat && !wasHolding) {
+                return;
+            }
+
+            double searchRadius = 12.0;
 
             List<Animal> nearbyAnimals = world.getEntitiesOfClass(
                 Animal.class, 
-                player.getBoundingBox().inflate(searchRadius, 8.0, searchRadius), 
+                player.getBoundingBox().inflate(searchRadius, 4.0, searchRadius), 
                 mob -> {
-                    if (mob.getTags().contains("TemptedByGoldenWheat")) return true;
                     boolean isAlreadyCustomTamed = mob.getPersistentData().getBoolean("pettingtamed");
                     if (isAlreadyCustomTamed) return false;
                     if (mob instanceof TamableAnimal tamable && tamable.isTame()) return false;
@@ -43,12 +47,11 @@ public class GoldenWheatItemInHandTickProcedure {
                 }
             );
 
-            nearbyAnimals.sort(Comparator.comparingDouble(mob -> mob.distanceToSqr(player)));
+            if (isHoldingWheat) {
+                player.getPersistentData().putBoolean("pettingHoldingGoldenWheat", true);
+                nearbyAnimals.sort(Comparator.comparingDouble(mob -> mob.distanceToSqr(player)));
 
-            for (Animal mob : nearbyAnimals) {
-                boolean closeEnough = mob.distanceToSqr(player) <= 12.0 * 12.0;
-
-                if (isHoldingWheat && closeEnough) {
+                for (Animal mob : nearbyAnimals) {
                     if (mob.getTarget() == null || !mob.getTarget().isAlive()) {
                         mob.getLookControl().setLookAt(player, 10.0F, mob.getMaxHeadXRot());
                         boolean success = mob.getNavigation().moveTo(player, 1.25);
@@ -60,10 +63,15 @@ public class GoldenWheatItemInHandTickProcedure {
                                  1, 0.1, 0.1, 0.1, 0);
                         }
                     }
-                } 
-                else if (mob.getTags().contains("TemptedByGoldenWheat")) {
-                    mob.getNavigation().stop();
-                    mob.removeTag("TemptedByGoldenWheat");
+                }
+            } 
+            else {
+                player.getPersistentData().remove("pettingHoldingGoldenWheat");
+                for (Animal mob : nearbyAnimals) {
+                    if (mob.getTags().contains("TemptedByGoldenWheat")) {
+                        mob.getNavigation().stop();
+                        mob.removeTag("TemptedByGoldenWheat");
+                    }
                 }
             }
         }

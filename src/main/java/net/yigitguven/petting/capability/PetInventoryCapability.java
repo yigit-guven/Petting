@@ -11,7 +11,7 @@ import net.minecraftforge.items.ItemStackHandler;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class PetInventoryCapability {
-    public interface IPetInventory extends IItemHandler {}
+    public interface IPetInventory extends net.minecraftforge.items.IItemHandlerModifiable {}
 
     public static class PetInventoryHandler extends ItemStackHandler implements IPetInventory {
         public PetInventoryHandler(int size) {

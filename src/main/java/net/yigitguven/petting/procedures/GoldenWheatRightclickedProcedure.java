@@ -33,32 +33,45 @@ public class GoldenWheatRightclickedProcedure {
 
         net.minecraft.world.item.ItemStack itemInHand = player.getItemInHand(InteractionHand.MAIN_HAND);
         
-        // 1. Tool check (Specific Golden Wheat or Configured Tool)
-        String targetTamingItem = PettingConfig.TAMING_ITEM_ID.get();
-        boolean toolMatches = false;
-        
+        ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
+        String entityName = (entityKey != null) ? entityKey.toString() : "";
         ResourceLocation itemKey = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(itemInHand.getItem());
-        if (itemKey != null && itemKey.toString().equals(targetTamingItem)) {
-            toolMatches = true;
+        String itemId = (itemKey != null) ? itemKey.toString() : "";
+
+        // 1. Tool check (Specific Golden Wheat, Configured Tool, or Custom Taming Items)
+        boolean toolMatches = false;
+
+        java.util.List<? extends String> customItems = PettingConfig.CUSTOM_TAMING_ITEMS.get();
+        if (customItems != null) {
+            for (String entry : customItems) {
+                if (entry == null || entry.isBlank()) continue;
+                String[] parts = entry.split("\\|");
+                if (parts.length >= 2) {
+                    String reqEntity = parts[0].trim();
+                    String reqItem = parts[1].trim();
+                    if (reqEntity.equals(entityName) && reqItem.equals(itemId)) {
+                        toolMatches = true;
+                        break;
+                    }
+                }
+            }
         }
 
         if (!toolMatches && PettingConfig.ALLOW_GOLDEN_WHEAT.get()) {
-             if (itemInHand.getItem() == net.yigitguven.petting.init.PettingModItems.GOLDEN_WHEAT.get()) {
-                 toolMatches = true;
-             }
+            String targetTamingItem = PettingConfig.TAMING_ITEM_ID.get();
+            if (itemId.equals(targetTamingItem) || itemInHand.getItem() == net.yigitguven.petting.init.PettingModItems.GOLDEN_WHEAT.get()) {
+                toolMatches = true;
+            }
         }
 
         if (!toolMatches) return false;
 
-        // 2. Blacklist Check â€” return false so the entity's own interaction handlers still run
+        // 2. Blacklist Check — return false so the entity's own interaction handlers still run
         if (net.yigitguven.petting.util.PetInventoryUtil.isBlacklisted(entity)) {
             return false;
         }
 
         // 3. Whitelist Check
-        ResourceLocation entityKey = BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType());
-        String entityName = (entityKey != null) ? entityKey.toString() : "";
-        
         if (PettingConfig.WHITELIST_ONLY.get()) {
             java.util.List<? extends String> whitelist = PettingConfig.TAMING_WHITELIST.get();
             if (!whitelist.contains(entityName)) {
@@ -250,6 +263,10 @@ public class GoldenWheatRightclickedProcedure {
         data.putBoolean("sitstill", false);
         data.putInt("followdistance", 10);
         data.putInt("teleportdistance", 20);
+
+        if (entity instanceof Mob mob) {
+            mob.setPersistenceRequired();
+        }
 
         if (entity.level() instanceof ServerLevel serverLevel) {
             net.yigitguven.petting.PettingMod.PACKET_HANDLER.send(net.minecraftforge.network.PacketDistributor.TRACKING_ENTITY.with(() -> entity), new net.yigitguven.petting.network.SyncPetStatusPacket(entity.getId(), true));
