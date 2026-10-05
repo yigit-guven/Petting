@@ -6,6 +6,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
+import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.util.PetHelper;
@@ -45,7 +46,7 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
         if (this.target == owner) {
             return false;
         }
-        if (this.target instanceof Mob otherMob && PetHelper.isOwner(otherMob, owner)) {
+        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isOwner(this.target, owner)) {
             return false;
         }
 

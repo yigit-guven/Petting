@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -7,6 +7,9 @@ All notable changes to this project will be documented in this file.
 - Ported mod to Minecraft 26.3 and NeoForge.
 - Modernized mod architecture and resource pipeline.
 - Added comprehensive update.json for Forge and NeoForge update checker.
+- Added configurable friendly fire settings (`[friendlyFire]` in server config):
+  - `ownerCanAttackPets`: Configures whether owners can attack and damage their own pets (default: `true`). Pets will still never attack or target their owner under any circumstances.
+  - `petsCanAttackPets`: Configures whether pets belonging to the same owner can target or attack each other (default: `false`).
 
 ## [4.2.3-beta.4-forge-1.20.1] - 2026-06-25
 

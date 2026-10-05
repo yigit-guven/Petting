@@ -61,6 +61,25 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   - `0`: Players cannot tame any pets.
   - `1+`: Players can tame up to this number of pets. If a player attempts to tame another mob after reaching their limit, angry villager particles are displayed, the treat is not consumed, and taming is prevented.
 
+### Section: `[friendlyFire]`
+
+| Setting | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `ownerCanAttackPets` | Boolean | `true` | When `true`, players can attack and damage their own pets. When `false`, friendly fire from the owner to their pets is prevented. |
+| `petsCanAttackPets` | Boolean | `false` | When `true`, pets belonging to the same owner can attack and damage each other. When `false`, friendly fire between pets of the same owner is prevented. |
+
+#### Setting Details:
+
+- **`ownerCanAttackPets`**:
+  Controls whether players can attack and damage their own pets.
+  - `true` (*Default*): Owners can hit and damage their own pets. Note that pets will still never attack or target their owner under any circumstances.
+  - `false`: Pets are completely immune to damage caused by their owner.
+
+- **`petsCanAttackPets`**:
+  Controls whether pets belonging to the same owner can attack and damage each other.
+  - `false` (*Default*): Friendly fire between pets of the same owner is completely disabled (pets cannot target or damage each other).
+  - `true`: Pets of the same owner can target and damage each other.
+
 ---
 
 ## Client Settings (`petting-client.toml`)

@@ -9,6 +9,8 @@ public class PettingServerConfig {
     public static final ModConfigSpec.DoubleValue UNSUCCESSFUL_TAMING_CHANCE;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> UNTAMEABLE_ENTITIES;
     public static final ModConfigSpec.IntValue MAX_PET_COUNT;
+    public static final ModConfigSpec.BooleanValue OWNER_CAN_ATTACK_PETS;
+    public static final ModConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -34,6 +36,18 @@ public class PettingServerConfig {
         MAX_PET_COUNT = builder
                 .translation("petting.configuration.taming.maxPetCount")
                 .defineInRange("maxPetCount", -1, -1, Integer.MAX_VALUE);
+
+        builder.pop();
+
+        builder.push("friendlyFire");
+
+        OWNER_CAN_ATTACK_PETS = builder
+                .translation("petting.configuration.friendlyFire.ownerCanAttackPets")
+                .define("ownerCanAttackPets", true);
+
+        PETS_CAN_ATTACK_PETS = builder
+                .translation("petting.configuration.friendlyFire.petsCanAttackPets")
+                .define("petsCanAttackPets", false);
 
         builder.pop();
 
@@ -66,6 +80,14 @@ public class PettingServerConfig {
 
     public static boolean hasPetLimit() {
         return getMaxPetCount() >= 0;
+    }
+
+    public static boolean canOwnerAttackPets() {
+        return SPEC.isLoaded() ? OWNER_CAN_ATTACK_PETS.get() : false;
+    }
+
+    public static boolean canPetsAttackPets() {
+        return SPEC.isLoaded() ? PETS_CAN_ATTACK_PETS.get() : false;
     }
 
     public static boolean isUntameable(net.minecraft.world.entity.EntityType<?> entityType) {
