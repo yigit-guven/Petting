@@ -11,6 +11,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec.IntValue MAX_PET_COUNT;
     public static final ModConfigSpec.BooleanValue OWNER_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
+    public static final ModConfigSpec.BooleanValue DISABLE_BUILT_IN_HOSTILITY;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -51,6 +52,14 @@ public class PettingServerConfig {
 
         builder.pop();
 
+        builder.push("behavior");
+
+        DISABLE_BUILT_IN_HOSTILITY = builder
+                .translation("petting.configuration.behavior.disableBuiltInHostility")
+                .define("disableBuiltInHostility", true);
+
+        builder.pop();
+
         SPEC = builder.build();
     }
 
@@ -83,11 +92,15 @@ public class PettingServerConfig {
     }
 
     public static boolean canOwnerAttackPets() {
-        return SPEC.isLoaded() ? OWNER_CAN_ATTACK_PETS.get() : false;
+        return SPEC.isLoaded() ? OWNER_CAN_ATTACK_PETS.get() : true;
     }
 
     public static boolean canPetsAttackPets() {
         return SPEC.isLoaded() ? PETS_CAN_ATTACK_PETS.get() : false;
+    }
+
+    public static boolean shouldDisableBuiltInHostility() {
+        return SPEC.isLoaded() ? DISABLE_BUILT_IN_HOSTILITY.get() : true;
     }
 
     public static boolean isUntameable(net.minecraft.world.entity.EntityType<?> entityType) {

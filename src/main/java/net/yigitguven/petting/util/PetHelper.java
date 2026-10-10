@@ -234,8 +234,63 @@ public class PetHelper {
         return getPetCount(player, serverLevel) >= maxPets;
     }
 
+    public static void purgeBuiltInTargetGoals(Mob mob) {
+        if (!isTamed(mob)) {
+            return;
+        }
+        if (PettingServerConfig.shouldDisableBuiltInHostility()) {
+            mob.targetSelector.removeAllGoals(goal -> !(goal instanceof PetDefendOwnerTargetGoal) && !(goal instanceof PetAttackOwnerTargetGoal));
+        }
+    }
+
+    public static boolean isValidPetTarget(LivingEntity pet, @Nullable LivingEntity target) {
+        if (target == null || !target.isAlive()) {
+            return false;
+        }
+        if (getOrder(pet) == PetOrder.SIT || getCombatMode(pet) == CombatMode.PASSIVE) {
+            return false;
+        }
+        Player owner = getOwner(pet);
+        if (owner == null) {
+            return false;
+        }
+
+        // Rule: Pets can never target their owner
+        if (target == owner) {
+            return false;
+        }
+
+        // Rule: Pets cannot target fellow pets of the same owner unless friendly fire is enabled
+        if (!PettingServerConfig.canPetsAttackPets() && isOwner(target, owner)) {
+            return false;
+        }
+
+        // If the pet already has this target and is alive
+        if (pet instanceof Mob mob && mob.getTarget() == target) {
+            return true;
+        }
+
+        // 1. Protect owner: target attacked the owner
+        if (target == owner.getLastHurtByMob()) {
+            return true;
+        }
+
+        // 2. Attack for owner: owner attacked the target (if in aggressive mode)
+        if (getCombatMode(pet) == CombatMode.AGGRESSIVE && target == owner.getLastHurtMob()) {
+            return true;
+        }
+
+        // 3. Self-defense: target attacked the pet
+        if (target == pet.getLastHurtByMob()) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static void injectGoals(Mob mob) {
         mob.goalSelector.getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal);
+        purgeBuiltInTargetGoals(mob);
 
         boolean hasGoals = mob.goalSelector.getAvailableGoals().stream()
                 .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetFollowOwnerGoal);
@@ -247,8 +302,13 @@ public class PetHelper {
         if (mob instanceof PathfinderMob pathfinderMob) {
             mob.goalSelector.addGoal(2, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
             mob.goalSelector.addGoal(3, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
-            mob.targetSelector.addGoal(1, new PetDefendOwnerTargetGoal(pathfinderMob));
-            mob.targetSelector.addGoal(2, new PetAttackOwnerTargetGoal(pathfinderMob));
+        }
+
+        boolean hasTargetGoals = mob.targetSelector.getAvailableGoals().stream()
+                .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetDefendOwnerTargetGoal);
+        if (!hasTargetGoals) {
+            mob.targetSelector.addGoal(1, new PetDefendOwnerTargetGoal(mob));
+            mob.targetSelector.addGoal(2, new PetAttackOwnerTargetGoal(mob));
         }
     }
 }

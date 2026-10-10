@@ -14,11 +14,11 @@ import net.yigitguven.petting.util.PetHelper;
 import java.util.EnumSet;
 
 public class PetDefendOwnerTargetGoal extends TargetGoal {
-    private final PathfinderMob mob;
+    private final Mob mob;
     private LivingEntity attacker;
     private int timestamp;
 
-    public PetDefendOwnerTargetGoal(PathfinderMob mob) {
+    public PetDefendOwnerTargetGoal(Mob mob) {
         super(mob, false);
         this.mob = mob;
         this.setFlags(EnumSet.of(Flag.TARGET));
@@ -67,5 +67,26 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
             this.timestamp = this.mob.getLastHurtByMobTimestamp();
         }
         super.start();
+    }
+
+    @Override
+    public boolean canContinueToUse() {
+        if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+            return false;
+        }
+        LivingEntity currentTarget = this.mob.getTarget();
+        if (currentTarget == null || !currentTarget.isAlive()) {
+            return false;
+        }
+        Player owner = PetHelper.getOwner(this.mob);
+        if (owner != null) {
+            if (currentTarget == owner) {
+                return false;
+            }
+            if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isOwner(currentTarget, owner)) {
+                return false;
+            }
+        }
+        return super.canContinueToUse();
     }
 }

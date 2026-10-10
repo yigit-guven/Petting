@@ -80,6 +80,19 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   - `false` (*Default*): Friendly fire between pets of the same owner is completely disabled (pets cannot target or damage each other).
   - `true`: Pets of the same owner can target and damage each other.
 
+### Section: `[behavior]`
+
+| Setting | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `disableBuiltInHostility` | Boolean | `true` | When `true`, removes built-in mob aggression and targeting. Pets only attack like tamed wolves (to protect owner, attack owner's target, or defend themselves). |
+
+#### Setting Details:
+
+- **`disableBuiltInHostility`**:
+  Controls whether pets retain natural mob-type aggression or strictly behave like tamed wolves.
+  - `true` (*Default*): Built-in mob targeting is completely disabled (Iron Golems will not attack monsters, Wolves will not hunt sheep/skeletons, Withers will not target everything, etc.). Pets will only attack to defend their owner, attack targets their owner hits, or defend themselves if attacked.
+  - `false`: Pets retain their original mob AI targeting goals.
+
 ---
 
 ## Client Settings (`petting-client.toml`)

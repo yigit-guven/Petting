@@ -10,6 +10,8 @@ All notable changes to this project will be documented in this file.
 - Added configurable friendly fire settings (`[friendlyFire]` in server config):
   - `ownerCanAttackPets`: Configures whether owners can attack and damage their own pets (default: `true`). Pets will still never attack or target their owner under any circumstances.
   - `petsCanAttackPets`: Configures whether pets belonging to the same owner can target or attack each other (default: `false`).
+- Added configurable built-in hostility prevention (`[behavior]` in server config):
+  - `disableBuiltInHostility`: Removes natural mob-type aggression and targeting (e.g. Iron Golems attacking monsters, Wolves hunting sheep/skeletons, or Withers targeting all living entities). Pets now strictly attack like tamed vanilla wolves (only defending their owner, attacking targets their owner hits, or defending themselves if attacked). Defaults to `true`.
 
 ## [4.2.3-beta.4-forge-1.20.1] - 2026-06-25
 

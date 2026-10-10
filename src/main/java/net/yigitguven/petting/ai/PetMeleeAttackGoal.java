@@ -21,6 +21,9 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
         if (target == null) {
             return false;
         }
+        if (PettingServerConfig.shouldDisableBuiltInHostility()) {
+            return PetHelper.isValidPetTarget(this.mob, target);
+        }
         if (target instanceof Player player && PetHelper.isOwner(this.mob, player)) {
             return false;
         }
