@@ -132,6 +132,13 @@ public class PetHelper {
         entity.setData(PettingModAttachments.PET_DATA, data);
     }
 
+    public static boolean isPetRidingEnabledFor(@Nullable Mob pet) {
+        if (pet == null) {
+            return false;
+        }
+        return PettingServerConfig.isPetRidingAllowed(pet.getType());
+    }
+
     public static void setTamed(Mob mob, Player owner) {
         PetData data = mob.getData(PettingModAttachments.PET_DATA);
         data.setTamed(true);

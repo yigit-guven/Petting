@@ -18,6 +18,10 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue PETS_RETALIATE;
     public static final ModConfigSpec.DoubleValue TELEPORT_DISTANCE;
     public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_SLOT;
+    public static final ModConfigSpec.BooleanValue ENABLE_PET_RIDING;
+    public static final ModConfigSpec.BooleanValue RIDING_USE_WHITELIST;
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_WHITELIST;
+    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_BLACKLIST;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -87,6 +91,26 @@ public class PettingServerConfig {
         ENABLE_COLLAR_SLOT = builder
                 .translation("petting.configuration.behavior.enableCollarSlot")
                 .define("enableCollarSlot", true);
+
+        builder.pop();
+
+        builder.push("riding");
+
+        ENABLE_PET_RIDING = builder
+                .translation("petting.configuration.riding.enablePetRiding")
+                .define("enablePetRiding", true);
+
+        RIDING_USE_WHITELIST = builder
+                .translation("petting.configuration.riding.useWhitelist")
+                .define("useWhitelist", false);
+
+        RIDING_WHITELIST = builder
+                .translation("petting.configuration.riding.whitelist")
+                .defineListAllowEmpty("whitelist", java.util.List.of(), () -> "", obj -> obj instanceof String);
+
+        RIDING_BLACKLIST = builder
+                .translation("petting.configuration.riding.blacklist")
+                .defineListAllowEmpty("blacklist", java.util.List.of(), () -> "", obj -> obj instanceof String);
 
         builder.pop();
 
@@ -172,5 +196,50 @@ public class PettingServerConfig {
             }
         }
         return false;
+    }
+
+    public static boolean isPetRidingEnabled() {
+        return SPEC.isLoaded() ? ENABLE_PET_RIDING.get() : true;
+    }
+
+    public static boolean isPetRidingUseWhitelist() {
+        return SPEC.isLoaded() ? RIDING_USE_WHITELIST.get() : false;
+    }
+
+    public static java.util.List<? extends String> getRidingWhitelist() {
+        return SPEC.isLoaded() ? RIDING_WHITELIST.get() : java.util.List.of();
+    }
+
+    public static java.util.List<? extends String> getRidingBlacklist() {
+        return SPEC.isLoaded() ? RIDING_BLACKLIST.get() : java.util.List.of();
+    }
+
+    public static boolean isPetRidingAllowed(net.minecraft.world.entity.EntityType<?> entityType) {
+        if (!isPetRidingEnabled()) {
+            return false;
+        }
+        if (!SPEC.isLoaded()) {
+            return true;
+        }
+        net.minecraft.resources.Identifier id = net.minecraft.world.entity.EntityType.getKey(entityType);
+        if (id == null) {
+            return false;
+        }
+        String idString = id.toString();
+        if (RIDING_USE_WHITELIST.get()) {
+            for (String entry : RIDING_WHITELIST.get()) {
+                if (idString.equals(entry)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            for (String entry : RIDING_BLACKLIST.get()) {
+                if (idString.equals(entry)) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 }

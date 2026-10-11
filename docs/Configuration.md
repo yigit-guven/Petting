@@ -129,6 +129,15 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   - `true` (*Default*): All pet inventory GUIs display a dedicated collar equipment slot.
   - `false`: Removes the collar equipment slot from all pet inventory GUIs.
 
+### Section: `[riding]`
+
+| Setting | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `enablePetRiding` | Boolean | `true` | Controls whether pet riding mechanics and the Riding button in the pet inventory GUI are enabled. |
+| `useWhitelist` | Boolean | `false` | When `true`, only entities in `whitelist` can be ridden. When `false`, all entities except those in `blacklist` can be ridden. |
+| `whitelist` | List<String> | `[]` | List of entity registry IDs (e.g. `["minecraft:creeper"]`) permitted for riding when `useWhitelist` is `true`. |
+| `blacklist` | List<String> | `[]` | List of entity registry IDs (e.g. `["minecraft:bat"]`) blocked from riding when `useWhitelist` is `false`. |
+
 ---
 
 ## Client Settings (`petting-client.toml`)
