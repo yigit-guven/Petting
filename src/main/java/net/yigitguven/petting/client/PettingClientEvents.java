@@ -90,9 +90,17 @@ public class PettingClientEvents {
     @SubscribeEvent
     public static void onRenderNameTag(net.neoforged.neoforge.client.event.RenderNameTagEvent.CanRender event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
-            if (PetHelper.getOrder(mob) == net.yigitguven.petting.data.PetOrder.SIT) {
+            if (PetHelper.isSitting(mob)) {
                 event.getEntityRenderState().isDiscrete = true;
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRenderLivingPre(net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?, ?> event) {
+        Float offset = event.getRenderState().getRenderData(net.yigitguven.petting.client.render.PettingClientRender.PET_SIT_GROUND_OFFSET_KEY);
+        if (offset != null && offset > 0.0F) {
+            event.getPoseStack().translate(0.0D, -offset.doubleValue(), 0.0D);
         }
     }
 }

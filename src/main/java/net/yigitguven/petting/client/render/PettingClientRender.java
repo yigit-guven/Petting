@@ -27,6 +27,9 @@ public class PettingClientRender {
     public static final ContextKey<DyeColor> COLLAR_COLOR_KEY =
             new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "collar_color"));
 
+    public static final ContextKey<Float> PET_SIT_GROUND_OFFSET_KEY =
+            new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "pet_sit_ground_offset"));
+
     private static final MethodHandle ADD_LAYER_HANDLE;
 
     static {
@@ -57,6 +60,43 @@ public class PettingClientRender {
                         ItemStack collar = PetHelper.getCollar(entity);
                         if (!collar.isEmpty() && collar.getItem() instanceof CollarItem collarItem) {
                             renderState.setRenderData(COLLAR_COLOR_KEY, collarItem.getColor());
+                        }
+
+                        if (PetHelper.isSitting(entity) && !entity.isPassenger()) {
+                            boolean isHumanoid = (renderState instanceof net.minecraft.client.renderer.entity.state.HumanoidRenderState);
+                            boolean isIllager = (renderState instanceof net.minecraft.client.renderer.entity.state.IllagerRenderState);
+                            boolean isFox = (renderState instanceof net.minecraft.client.renderer.entity.state.FoxRenderState);
+                            boolean isPanda = (renderState instanceof net.minecraft.client.renderer.entity.state.PandaRenderState);
+                            boolean isWolf = (renderState instanceof net.minecraft.client.renderer.entity.state.WolfRenderState);
+                            boolean isFeline = (renderState instanceof net.minecraft.client.renderer.entity.state.FelineRenderState);
+
+                            if (isHumanoid) {
+                                ((net.minecraft.client.renderer.entity.state.HumanoidRenderState) renderState).isPassenger = true;
+                            } else if (isIllager) {
+                                ((net.minecraft.client.renderer.entity.state.IllagerRenderState) renderState).isRiding = true;
+                            } else if (isFox) {
+                                ((net.minecraft.client.renderer.entity.state.FoxRenderState) renderState).isSitting = true;
+                            } else if (isPanda) {
+                                ((net.minecraft.client.renderer.entity.state.PandaRenderState) renderState).isSitting = true;
+                            } else if (isWolf) {
+                                ((net.minecraft.client.renderer.entity.state.WolfRenderState) renderState).isSitting = true;
+                            } else if (isFeline) {
+                                ((net.minecraft.client.renderer.entity.state.FelineRenderState) renderState).isSitting = true;
+                            }
+
+                            renderState.walkAnimationPos = 0.0F;
+                            renderState.walkAnimationSpeed = 0.0F;
+
+                            if (entity.onGround() && (isHumanoid || isIllager)) {
+                                float baseOffset = (renderState instanceof net.minecraft.client.renderer.entity.state.EndermanRenderState) ? 0.3F : 0.5F;
+                                float scale = renderState.scale > 0.0F ? renderState.scale : 1.0F;
+                                float finalOffset = baseOffset * (renderState.isBaby ? 0.5F : 1.0F) * scale;
+                                renderState.setRenderData(PET_SIT_GROUND_OFFSET_KEY, finalOffset);
+
+                                if (renderState.nameTagAttachment != null) {
+                                    renderState.nameTagAttachment = renderState.nameTagAttachment.subtract(0.0D, finalOffset, 0.0D);
+                                }
+                            }
                         }
                     }
                 }

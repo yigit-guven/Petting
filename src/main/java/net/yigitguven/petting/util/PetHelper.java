@@ -99,6 +99,17 @@ public class PetHelper {
         return entity.getData(PettingModAttachments.PET_DATA).getOrder();
     }
 
+    public static boolean isSitting(LivingEntity entity) {
+        if (entity.hasData(PettingModAttachments.PET_DATA)
+                && entity.getData(PettingModAttachments.PET_DATA).getOrder() == PetOrder.SIT) {
+            return true;
+        }
+        if (entity instanceof TamableAnimal tamable && tamable.isInSittingPose()) {
+            return true;
+        }
+        return false;
+    }
+
     public static void setOrder(LivingEntity entity, PetOrder order) {
         if (entity.hasData(PettingModAttachments.PET_DATA)) {
             PetData data = entity.getData(PettingModAttachments.PET_DATA);
@@ -265,9 +276,13 @@ public class PetHelper {
         try {
             for (Method m : clazz.getMethods()) {
                 String name = m.getName();
-                if ((name.equals("setOrderedToSit") || name.equals("setInSittingPose") || name.equals("setSitting"))
+                if ((name.equals("setOrderedToSit") || name.equals("setInSittingPose") || name.equals("setSitting") || name.equals("sit"))
                         && m.getParameterCount() == 1 && m.getParameterTypes()[0] == boolean.class) {
                     m.invoke(entity, sit);
+                } else if (sit && name.equals("sitDown") && m.getParameterCount() == 0) {
+                    m.invoke(entity);
+                } else if (!sit && name.equals("standUp") && m.getParameterCount() == 0) {
+                    m.invoke(entity);
                 }
             }
         } catch (Exception ignored) {

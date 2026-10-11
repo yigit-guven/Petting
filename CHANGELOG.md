@@ -19,6 +19,8 @@ All notable changes to this project will be documented in this file.
   - **Sit / Stand Keybind (`key.petting.toggle_pet_sit`)**: Defaults to **Right-Click** (`MOUSE_BUTTON_RIGHT`). Remappable in Controls -> Key Binds -> Petting.
   - Context-aware interaction: Automatically prioritizes item interactions (equipping collars, dyeing collars, feeding treats, naming with name tags, leashing, shearing) so held items function as expected.
   - Vanilla `TamableAnimal` pets (wolves, cats) visually transition into sitting poses when sitting.
+  - **Boat/Minecart Sitting Pose for Humanoid & Illager Pets**: When ordered to sit, humanoid mobs (Zombies, Husks, Drowned, Zombie Villagers, Skeletons, Strays, Wither Skeletons, Bogged, Piglins, Piglin Brutes, Zombified Piglins, Endermen, Players) and Illagers (Pillagers, Vindicators, Evokers, Illusioners) adopt their iconic boat / minecart riding shape with outstretched legs and passenger arm poses. When stationed on the ground, their rendered body and floating nametag are seamlessly lowered so they sit realistically on the ground rather than floating in mid-air.
+  - **Special Animal Sitting Support**: Animals with sitting poses (such as Foxes, Pandas, and Camels) seamlessly trigger their sitting animations when ordered to sit.
   - **Hovering physics for flying pets**: Flying pets (Allays, Ghasts, Phantoms, Bats, Bees, Parrots, Blazes, Withers, Vexes, etc.) hover completely motionless in mid-air right where commanded to sit.
   - **Stillness physics for aquatic pets**: Swimming pets (and any pet submerged in water) remain completely stationary without sinking, floating up, or drifting in currents.
   - **Walking pets**: Remain firmly stationed on the ground like a sitting wolf in vanilla Minecraft.
