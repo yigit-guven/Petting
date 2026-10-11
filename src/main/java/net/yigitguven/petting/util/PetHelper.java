@@ -105,7 +105,7 @@ public class PetHelper {
 
     public static CombatMode getCombatMode(LivingEntity entity) {
         if (!entity.hasData(PettingModAttachments.PET_DATA)) {
-            return CombatMode.DEFENSIVE;
+            return PettingServerConfig.getDefaultCombatMode();
         }
         return entity.getData(PettingModAttachments.PET_DATA).getCombatMode();
     }
@@ -123,7 +123,7 @@ public class PetHelper {
         data.setTamed(true);
         data.setOwnerUUID(owner.getUUID());
         data.setOrder(PetOrder.FOLLOW);
-        data.setCombatMode(CombatMode.DEFENSIVE);
+        data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
         mob.setData(PettingModAttachments.PET_DATA, data);
 
         mob.setPersistenceRequired();
@@ -206,7 +206,7 @@ public class PetHelper {
             data.setTamed(false);
             data.setOwnerUUID(null);
             data.setOrder(PetOrder.FOLLOW);
-            data.setCombatMode(CombatMode.DEFENSIVE);
+            data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
             mob.setData(PettingModAttachments.PET_DATA, data);
         }
         if (mob instanceof AbstractHorse horse) {
@@ -266,22 +266,28 @@ public class PetHelper {
         }
 
         // If the pet already has this target and is alive
-        if (pet instanceof Mob mob && mob.getTarget() == target) {
-            return true;
+        if (pet instanceof Mob mob) {
+            if (mob.getTarget() == target) {
+                return true;
+            }
+            if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
+                    && mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null) == target) {
+                return true;
+            }
         }
 
         // 1. Protect owner: target attacked the owner
-        if (target == owner.getLastHurtByMob()) {
+        if (PettingServerConfig.canPetsDefendOwner() && target == owner.getLastHurtByMob()) {
             return true;
         }
 
-        // 2. Attack for owner: owner attacked the target (if in aggressive mode)
-        if (getCombatMode(pet) == CombatMode.AGGRESSIVE && target == owner.getLastHurtMob()) {
+        // 2. Attack for owner: owner attacked the target
+        if (PettingServerConfig.canPetsAttackOwnerTarget() && target == owner.getLastHurtMob()) {
             return true;
         }
 
         // 3. Self-defense: target attacked the pet
-        if (target == pet.getLastHurtByMob()) {
+        if (PettingServerConfig.canPetsRetaliate() && target == pet.getLastHurtByMob()) {
             return true;
         }
 
@@ -289,25 +295,27 @@ public class PetHelper {
     }
 
     public static void injectGoals(Mob mob) {
-        mob.goalSelector.getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal);
+        mob.goalSelector.getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal
+                || wrappedGoal.getGoal() instanceof PetSitGoal
+                || wrappedGoal.getGoal() instanceof PetMeleeAttackGoal
+                || wrappedGoal.getGoal() instanceof PetFollowOwnerGoal);
         purgeBuiltInTargetGoals(mob);
-
-        boolean hasGoals = mob.goalSelector.getAvailableGoals().stream()
-                .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetFollowOwnerGoal);
-        if (hasGoals) {
-            return;
-        }
 
         mob.goalSelector.addGoal(1, new PetSitGoal(mob));
         if (mob instanceof PathfinderMob pathfinderMob) {
-            mob.goalSelector.addGoal(2, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
-            mob.goalSelector.addGoal(3, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
+            mob.goalSelector.addGoal(2, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
+            mob.goalSelector.addGoal(3, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
         }
 
-        boolean hasTargetGoals = mob.targetSelector.getAvailableGoals().stream()
+        boolean hasDefendGoal = mob.targetSelector.getAvailableGoals().stream()
                 .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetDefendOwnerTargetGoal);
-        if (!hasTargetGoals) {
+        if (!hasDefendGoal) {
             mob.targetSelector.addGoal(1, new PetDefendOwnerTargetGoal(mob));
+        }
+
+        boolean hasAttackGoal = mob.targetSelector.getAvailableGoals().stream()
+                .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetAttackOwnerTargetGoal);
+        if (!hasAttackGoal) {
             mob.targetSelector.addGoal(2, new PetAttackOwnerTargetGoal(mob));
         }
     }

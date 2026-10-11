@@ -173,10 +173,19 @@ public class PetSafetyEvents {
 
         // Verify current target is valid
         LivingEntity currentTarget = mob.getTarget();
-        if (currentTarget != null && !PetHelper.isValidPetTarget(mob, currentTarget)) {
-            mob.setTarget(null);
-            if (mob instanceof NeutralMob neutralMob) {
-                neutralMob.stopBeingAngry();
+        if (currentTarget != null) {
+            if (!PetHelper.isValidPetTarget(mob, currentTarget)) {
+                mob.setTarget(null);
+                if (mob instanceof NeutralMob neutralMob) {
+                    neutralMob.stopBeingAngry();
+                }
+            } else {
+                if (!mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
+                    mob.getBrain().setMemory(MemoryModuleType.ATTACK_TARGET, currentTarget);
+                    if (mob instanceof Warden warden) {
+                        warden.setAttackTarget(currentTarget);
+                    }
+                }
             }
         }
     }

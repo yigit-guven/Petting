@@ -10,8 +10,22 @@ All notable changes to this project will be documented in this file.
 - Added configurable friendly fire settings (`[friendlyFire]` in server config):
   - `ownerCanAttackPets`: Configures whether owners can attack and damage their own pets (default: `true`). Pets will still never attack or target their owner under any circumstances.
   - `petsCanAttackPets`: Configures whether pets belonging to the same owner can target or attack each other (default: `false`).
-- Added configurable built-in hostility prevention (`[behavior]` in server config):
+- Added configurable built-in hostility prevention and pet behavior controls (`[behavior]` in server config):
   - `disableBuiltInHostility`: Removes natural mob-type aggression and targeting (e.g. Iron Golems attacking monsters, Wolves hunting sheep/skeletons, or Withers targeting all living entities). Pets now strictly attack like tamed vanilla wolves (only defending their owner, attacking targets their owner hits, or defending themselves if attacked). Defaults to `true`.
+  - `defaultCombatMode`: Configures the default combat mode assigned to newly tamed pets (`AGGRESSIVE`, `DEFENSIVE`, or `PASSIVE`, default: `AGGRESSIVE`).
+  - `petsDefendOwner`: Configures whether pets automatically defend their owner when attacked (default: `true`).
+  - `petsAttackOwnerTarget`: Configures whether pets automatically assist their owner by attacking mobs the owner damages (default: `true`).
+  - `petsRetaliate`: Configures whether pets defend themselves and retaliate when damaged directly (default: `true`).
+  - `teleportDistance`: Configures how far an owner can get from their following pet before the pet teleports to catch up (default: `20.0` blocks).
+
+### Fixed
+- **Pet Combat AI & Responsiveness**:
+  - Resolved pets being overly passive when built-in hostility was disabled; pets now actively fight their owner's target, defend their owner, and defend themselves.
+  - Reordered goal priorities so attack goals take precedence over follow-owner movement during battle, and prevented follow AI from breaking off active combat unless the owner exceeds teleport range.
+  - Upgraded target acquisition to use combat targeting without strict raycast line-of-sight interruptions.
+  - Separated hurt timestamps in `PetDefendOwnerTargetGoal` to eliminate timestamp collisions between owner-defense and self-defense.
+  - Synced target assignments to Brain memory for brain-driven mobs like Wardens so their attack routines execute properly.
+  - Handled ranged mobs (e.g. skeletons holding bows) in `PetMeleeAttackGoal` so they can freely shoot with their bow rather than charging in for melee punches.
 
 ## [4.2.3-beta.4-forge-1.20.1] - 2026-06-25
 

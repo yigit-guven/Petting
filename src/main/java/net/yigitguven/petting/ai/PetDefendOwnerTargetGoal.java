@@ -16,12 +16,23 @@ import java.util.EnumSet;
 public class PetDefendOwnerTargetGoal extends TargetGoal {
     private final Mob mob;
     private LivingEntity attacker;
-    private int timestamp;
+    private int ownerLastHurtTimestamp;
+    private int mobLastHurtTimestamp;
 
     public PetDefendOwnerTargetGoal(Mob mob) {
         super(mob, false);
         this.mob = mob;
         this.setFlags(EnumSet.of(Flag.TARGET));
+    }
+
+    private boolean isValidAttacker(LivingEntity attacker, Player owner) {
+        if (attacker == null || !attacker.isAlive() || attacker == owner) {
+            return false;
+        }
+        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isOwner(attacker, owner)) {
+            return false;
+        }
+        return this.canAttack(attacker, TargetingConditions.forCombat().ignoreLineOfSight());
     }
 
     @Override
@@ -37,24 +48,25 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
             return false;
         }
 
-        this.attacker = owner.getLastHurtByMob();
-        int lastHurtTime = owner.getLastHurtByMobTimestamp();
-        if (lastHurtTime == this.timestamp || this.attacker == null) {
-            this.attacker = this.mob.getLastHurtByMob();
-            lastHurtTime = this.mob.getLastHurtByMobTimestamp();
-            if (lastHurtTime == this.timestamp || this.attacker == null) {
-                return false;
+        if (PettingServerConfig.canPetsDefendOwner()) {
+            LivingEntity ownerAttacker = owner.getLastHurtByMob();
+            int ownerTime = owner.getLastHurtByMobTimestamp();
+            if (ownerAttacker != null && ownerTime != this.ownerLastHurtTimestamp && isValidAttacker(ownerAttacker, owner)) {
+                this.attacker = ownerAttacker;
+                return true;
             }
         }
 
-        if (this.attacker == owner) {
-            return false;
-        }
-        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isOwner(this.attacker, owner)) {
-            return false;
+        if (PettingServerConfig.canPetsRetaliate()) {
+            LivingEntity mobAttacker = this.mob.getLastHurtByMob();
+            int mobTime = this.mob.getLastHurtByMobTimestamp();
+            if (mobAttacker != null && mobTime != this.mobLastHurtTimestamp && isValidAttacker(mobAttacker, owner)) {
+                this.attacker = mobAttacker;
+                return true;
+            }
         }
 
-        return this.canAttack(this.attacker, TargetingConditions.DEFAULT);
+        return false;
     }
 
     @Override
@@ -62,9 +74,10 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
         this.mob.setTarget(this.attacker);
         Player owner = PetHelper.getOwner(this.mob);
         if (owner != null && owner.getLastHurtByMob() == this.attacker) {
-            this.timestamp = owner.getLastHurtByMobTimestamp();
-        } else {
-            this.timestamp = this.mob.getLastHurtByMobTimestamp();
+            this.ownerLastHurtTimestamp = owner.getLastHurtByMobTimestamp();
+        }
+        if (this.mob.getLastHurtByMob() == this.attacker) {
+            this.mobLastHurtTimestamp = this.mob.getLastHurtByMobTimestamp();
         }
         super.start();
     }

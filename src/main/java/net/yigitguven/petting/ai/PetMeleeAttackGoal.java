@@ -18,7 +18,7 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
     }
 
     private boolean isValidTarget(LivingEntity target) {
-        if (target == null) {
+        if (target == null || !target.isAlive()) {
             return false;
         }
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
@@ -38,6 +38,9 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
 
     @Override
     public boolean canUse() {
+        if (this.mob.isVehicle()) {
+            return false;
+        }
         if (!PetHelper.isTamed(this.mob)) {
             return false;
         }
@@ -45,6 +48,9 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
             return false;
         }
         if (PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+            return false;
+        }
+        if (this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
             return false;
         }
         if (!isValidTarget(this.mob.getTarget())) {
@@ -55,7 +61,13 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
 
     @Override
     public boolean canContinueToUse() {
+        if (this.mob.isVehicle()) {
+            return false;
+        }
         if (PetHelper.getOrder(this.mob) == PetOrder.SIT || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+            return false;
+        }
+        if (this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
             return false;
         }
         if (!isValidTarget(this.mob.getTarget())) {

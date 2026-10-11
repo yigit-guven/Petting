@@ -12,6 +12,11 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue OWNER_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue DISABLE_BUILT_IN_HOSTILITY;
+    public static final ModConfigSpec.EnumValue<net.yigitguven.petting.data.CombatMode> DEFAULT_COMBAT_MODE;
+    public static final ModConfigSpec.BooleanValue PETS_DEFEND_OWNER;
+    public static final ModConfigSpec.BooleanValue PETS_ATTACK_OWNER_TARGET;
+    public static final ModConfigSpec.BooleanValue PETS_RETALIATE;
+    public static final ModConfigSpec.DoubleValue TELEPORT_DISTANCE;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -58,6 +63,26 @@ public class PettingServerConfig {
                 .translation("petting.configuration.behavior.disableBuiltInHostility")
                 .define("disableBuiltInHostility", true);
 
+        DEFAULT_COMBAT_MODE = builder
+                .translation("petting.configuration.behavior.defaultCombatMode")
+                .defineEnum("defaultCombatMode", net.yigitguven.petting.data.CombatMode.AGGRESSIVE);
+
+        PETS_DEFEND_OWNER = builder
+                .translation("petting.configuration.behavior.petsDefendOwner")
+                .define("petsDefendOwner", true);
+
+        PETS_ATTACK_OWNER_TARGET = builder
+                .translation("petting.configuration.behavior.petsAttackOwnerTarget")
+                .define("petsAttackOwnerTarget", true);
+
+        PETS_RETALIATE = builder
+                .translation("petting.configuration.behavior.petsRetaliate")
+                .define("petsRetaliate", true);
+
+        TELEPORT_DISTANCE = builder
+                .translation("petting.configuration.behavior.teleportDistance")
+                .defineInRange("teleportDistance", 20.0, 5.0, 200.0);
+
         builder.pop();
 
         SPEC = builder.build();
@@ -101,6 +126,26 @@ public class PettingServerConfig {
 
     public static boolean shouldDisableBuiltInHostility() {
         return SPEC.isLoaded() ? DISABLE_BUILT_IN_HOSTILITY.get() : true;
+    }
+
+    public static net.yigitguven.petting.data.CombatMode getDefaultCombatMode() {
+        return SPEC.isLoaded() ? DEFAULT_COMBAT_MODE.get() : net.yigitguven.petting.data.CombatMode.AGGRESSIVE;
+    }
+
+    public static boolean canPetsDefendOwner() {
+        return SPEC.isLoaded() ? PETS_DEFEND_OWNER.get() : true;
+    }
+
+    public static boolean canPetsAttackOwnerTarget() {
+        return SPEC.isLoaded() ? PETS_ATTACK_OWNER_TARGET.get() : true;
+    }
+
+    public static boolean canPetsRetaliate() {
+        return SPEC.isLoaded() ? PETS_RETALIATE.get() : true;
+    }
+
+    public static double getTeleportDistance() {
+        return SPEC.isLoaded() ? TELEPORT_DISTANCE.get() : 20.0;
     }
 
     public static boolean isUntameable(net.minecraft.world.entity.EntityType<?> entityType) {

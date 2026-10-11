@@ -43,14 +43,14 @@ public class PetData {
         this.ownerUUID = null;
         this.tamed = false;
         this.order = PetOrder.FOLLOW;
-        this.combatMode = CombatMode.DEFENSIVE;
+        this.combatMode = net.yigitguven.petting.config.PettingServerConfig.getDefaultCombatMode();
     }
 
     public PetData(Optional<UUID> ownerUUID, boolean tamed, PetOrder order, CombatMode combatMode) {
         this.ownerUUID = ownerUUID.orElse(null);
         this.tamed = tamed;
         this.order = order != null ? order : PetOrder.FOLLOW;
-        this.combatMode = combatMode != null ? combatMode : CombatMode.DEFENSIVE;
+        this.combatMode = combatMode != null ? combatMode : net.yigitguven.petting.config.PettingServerConfig.getDefaultCombatMode();
     }
 
     public UUID getOwnerUUID() {

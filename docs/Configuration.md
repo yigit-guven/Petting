@@ -85,6 +85,11 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | Setting | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `disableBuiltInHostility` | Boolean | `true` | When `true`, removes built-in mob aggression and targeting. Pets only attack like tamed wolves (to protect owner, attack owner's target, or defend themselves). |
+| `defaultCombatMode` | Enum | `AGGRESSIVE` | The default combat mode assigned to newly tamed pets (`AGGRESSIVE`, `DEFENSIVE`, `PASSIVE`). |
+| `petsDefendOwner` | Boolean | `true` | When `true`, pets will automatically attack and defend against mobs that damage their owner. |
+| `petsAttackOwnerTarget` | Boolean | `true` | When `true`, pets will automatically attack mobs that their owner damages. |
+| `petsRetaliate` | Boolean | `true` | When `true`, pets will retaliate and attack mobs that damage the pet itself. |
+| `teleportDistance` | Double | `20.0` | Distance in blocks before a following pet attempts to teleport to its owner (`5.0` – `200.0`). |
 
 #### Setting Details:
 
@@ -92,6 +97,31 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   Controls whether pets retain natural mob-type aggression or strictly behave like tamed wolves.
   - `true` (*Default*): Built-in mob targeting is completely disabled (Iron Golems will not attack monsters, Wolves will not hunt sheep/skeletons, Withers will not target everything, etc.). Pets will only attack to defend their owner, attack targets their owner hits, or defend themselves if attacked.
   - `false`: Pets retain their original mob AI targeting goals.
+
+- **`defaultCombatMode`**:
+  Controls the default combat mode assigned when a mob is tamed.
+  - `AGGRESSIVE` (*Default*): The pet attacks targets the owner attacks, defends the owner when hurt, and retaliates when hurt.
+  - `DEFENSIVE`: The pet only defends the owner and retaliates when hurt; it will not initiate attacks when the owner attacks.
+  - `PASSIVE`: The pet will never engage in combat.
+
+- **`petsDefendOwner`**:
+  Controls whether pets defend the owner when the owner takes damage from another mob.
+  - `true` (*Default*): Pets immediately attack any hostile entity that harms their owner.
+  - `false`: Pets will not react to their owner taking damage.
+
+- **`petsAttackOwnerTarget`**:
+  Controls whether pets attack whatever mob the owner strikes.
+  - `true` (*Default*): Pets attack whatever mob the owner damages.
+  - `false`: Pets will not assist when the owner initiates an attack.
+
+- **`petsRetaliate`**:
+  Controls self-defense for pets.
+  - `true` (*Default*): Pets fight back when struck by an attacker.
+  - `false`: Pets will not retaliate when damaged.
+
+- **`teleportDistance`**:
+  Controls how far away an owner can get before the following pet teleports to catch up.
+  - `20.0` (*Default*): 20 blocks. While engaged in active combat, pets will prioritize fighting rather than following, unless the owner exceeds this distance.
 
 ---
 

@@ -34,6 +34,11 @@ public class PetFollowOwnerGoal extends Goal {
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
+    private double getTeleportDistanceSqr() {
+        double dist = net.yigitguven.petting.config.PettingServerConfig.getTeleportDistance();
+        return dist * dist;
+    }
+
     @Override
     public boolean canUse() {
         if (this.mob.isVehicle()) {
@@ -49,7 +54,12 @@ public class PetFollowOwnerGoal extends Goal {
         if (this.owner == null || this.owner.isSpectator()) {
             return false;
         }
-        return this.mob.distanceToSqr(this.owner) >= (double) this.startDistanceSqr;
+        double distSqr = this.mob.distanceToSqr(this.owner);
+        net.minecraft.world.entity.LivingEntity target = this.mob.getTarget();
+        if (target != null && target.isAlive() && distSqr < getTeleportDistanceSqr()) {
+            return false;
+        }
+        return distSqr >= (double) this.startDistanceSqr;
     }
 
     @Override
@@ -66,7 +76,12 @@ public class PetFollowOwnerGoal extends Goal {
         if (this.owner == null || this.owner.isSpectator()) {
             return false;
         }
-        return this.mob.distanceToSqr(this.owner) > (double) this.stopDistanceSqr;
+        double distSqr = this.mob.distanceToSqr(this.owner);
+        net.minecraft.world.entity.LivingEntity target = this.mob.getTarget();
+        if (target != null && target.isAlive() && distSqr < getTeleportDistanceSqr()) {
+            return false;
+        }
+        return distSqr > (double) this.stopDistanceSqr;
     }
 
     @Override
@@ -92,7 +107,7 @@ public class PetFollowOwnerGoal extends Goal {
             this.timeToRecalcPath = 10;
             double distSqr = this.mob.distanceToSqr(this.owner);
 
-            if (distSqr >= (double) this.teleportDistanceSqr) {
+            if (distSqr >= getTeleportDistanceSqr()) {
                 tryTeleportToOwner();
             } else {
                 this.navigation.moveTo(this.owner, this.speedModifier);

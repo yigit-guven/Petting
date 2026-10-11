@@ -26,7 +26,10 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
 
     @Override
     public boolean canUse() {
-        if (!PetHelper.isTamed(this.mob) || PetHelper.getCombatMode(this.mob) != CombatMode.AGGRESSIVE) {
+        if (!PettingServerConfig.canPetsAttackOwnerTarget()) {
+            return false;
+        }
+        if (!PetHelper.isTamed(this.mob) || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
             return false;
         }
         if (PetHelper.getOrder(this.mob) == PetOrder.SIT) {
@@ -39,7 +42,7 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
 
         this.target = owner.getLastHurtMob();
         int lastHurtTime = owner.getLastHurtMobTimestamp();
-        if (lastHurtTime == this.timestamp || this.target == null) {
+        if (lastHurtTime == this.timestamp || this.target == null || !this.target.isAlive()) {
             return false;
         }
 
@@ -50,7 +53,7 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
             return false;
         }
 
-        return this.canAttack(this.target, TargetingConditions.DEFAULT);
+        return this.canAttack(this.target, TargetingConditions.forCombat().ignoreLineOfSight());
     }
 
     @Override
@@ -65,7 +68,7 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
 
     @Override
     public boolean canContinueToUse() {
-        if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT || PetHelper.getCombatMode(this.mob) != CombatMode.AGGRESSIVE) {
+        if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
             return false;
         }
         LivingEntity currentTarget = this.mob.getTarget();
