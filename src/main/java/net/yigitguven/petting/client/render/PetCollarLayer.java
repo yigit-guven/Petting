@@ -157,56 +157,168 @@ public class PetCollarLayer<S extends LivingEntityRenderState, M extends EntityM
     ) {
         int overlay = OverlayTexture.NO_OVERLAY;
 
+        // Strap UVs: rows 0..3 (V: 0.0 to 0.125)
+        // With uniform horizontal gradient, u0=0.0 and u1=1.0 gives seamless leather shading without vertical banding
+        float strapU0 = 0.0F;
+        float strapU1 = 1.0F;
+        float strapV0 = 0.0F;
+        float strapV1 = 4.0F / 32.0F;
+        float topV0 = 0.0F;
+        float topV1 = 1.0F / 32.0F;
+        float botV0 = 3.0F / 32.0F;
+        float botV1 = 4.0F / 32.0F;
+
         // 1. Front strap (North)
-        addBox(pose, consumer, bx0, by0, bz0, bx1, by1, bz0 + strapThick, strapColor, packedLight, overlay, 0.0F, 0.0F, 1.0F, 0.5F);
+        addStrapBox(pose, consumer, bx0, by0, bz0, bx1, by1, bz0 + strapThick, strapColor, packedLight, overlay, strapU0, strapV0, strapU1, strapV1, topV0, topV1, botV0, botV1);
 
         // 2. Back strap (South)
-        addBox(pose, consumer, bx0, by0, bz1 - strapThick, bx1, by1, bz1, strapColor, packedLight, overlay, 0.0F, 0.0F, 1.0F, 0.5F);
+        addStrapBox(pose, consumer, bx0, by0, bz1 - strapThick, bx1, by1, bz1, strapColor, packedLight, overlay, strapU0, strapV0, strapU1, strapV1, topV0, topV1, botV0, botV1);
 
         // 3. Left strap (West)
-        addBox(pose, consumer, bx0, by0, bz0 + strapThick, bx0 + strapThick, by1, bz1 - strapThick, strapColor, packedLight, overlay, 0.0F, 0.0F, 1.0F, 0.5F);
+        addStrapBox(pose, consumer, bx0, by0, bz0 + strapThick, bx0 + strapThick, by1, bz1 - strapThick, strapColor, packedLight, overlay, strapU0, strapV0, strapU1, strapV1, topV0, topV1, botV0, botV1);
 
         // 4. Right strap (East)
-        addBox(pose, consumer, bx1 - strapThick, by0, bz0 + strapThick, bx1, by1, bz1 - strapThick, strapColor, packedLight, overlay, 0.0F, 0.0F, 1.0F, 0.5F);
+        addStrapBox(pose, consumer, bx1 - strapThick, by0, bz0 + strapThick, bx1, by1, bz1 - strapThick, strapColor, packedLight, overlay, strapU0, strapV0, strapU1, strapV1, topV0, topV1, botV0, botV1);
 
-        // 5. Golden Buckle / Tag on the front center (~2 pixels wide, 2.2 pixels tall)
-        float tagW = Math.max(1.4F * invScale, Math.min(2.2F * invScale, (bx1 - bx0) * 0.22F));
-        float tagH = collarHeight * 1.1F;
-        float tagThick = 0.3F * invScale;
-        float tagMinX = centerX - tagW * 0.5F;
-        float tagMaxX = centerX + tagW * 0.5F;
-        float tagMinY = by0 + (0.3F * invScale);
-        float tagMaxY = tagMinY + tagH;
+        // 5. Golden Buckle / Tag on the front center (~2 pixels square, 1:1 pixel aspect ratio)
+        float tagSize = Math.max(1.6F * invScale, Math.min(2.2F * invScale, collarHeight * 1.15F));
+        float tagThick = 0.2F * invScale;
+        float tagMinX = centerX - tagSize * 0.5F;
+        float tagMaxX = centerX + tagSize * 0.5F;
+        float tagMinY = by0 + (collarHeight - tagSize) * 0.5F;
+        float tagMaxY = tagMinY + tagSize;
         float tagMinZ = bz0 - tagThick;
-        float tagMaxZ = bz0 + (0.05F * invScale);
+        float tagMaxZ = bz0 + (0.02F * invScale);
 
-        addBox(pose, consumer, tagMinX, tagMinY, tagMinZ, tagMaxX, tagMaxY, tagMaxZ, 0xFFFFFFFF, packedLight, overlay, 0.25F, 0.5625F, 0.75F, 1.0F);
+        // Buckle icon: rows 8..15 (U: 0.0..0.25, V: 0.25..0.5)
+        float buckleU0 = 0.0F;
+        float buckleU1 = 0.25F;
+        float buckleV0 = 0.25F;
+        float buckleV1 = 0.5F;
+
+        // Solid gold edges: X: 8..11, Y: 8..11 (U: 0.25..0.34375, V: 0.25..0.34375)
+        float goldU0 = 0.25F;
+        float goldU1 = 0.34375F;
+        float goldV0 = 0.25F;
+        float goldV1 = 0.34375F;
+
+        // Front face (North) with crisp pixel-art gold medallion
+        addQuad(pose, consumer,
+                tagMinX, tagMinY, tagMinZ,
+                tagMinX, tagMaxY, tagMinZ,
+                tagMaxX, tagMaxY, tagMinZ,
+                tagMaxX, tagMinY, tagMinZ,
+                0, 0, -1,
+                buckleU0, buckleV0, buckleU1, buckleV1,
+                0xFFFFFFFF, packedLight, overlay);
+
+        // Buckle back face (South)
+        addQuad(pose, consumer,
+                tagMaxX, tagMinY, tagMaxZ,
+                tagMaxX, tagMaxY, tagMaxZ,
+                tagMinX, tagMaxY, tagMaxZ,
+                tagMinX, tagMinY, tagMaxZ,
+                0, 0, 1,
+                goldU0, goldV0, goldU1, goldV1,
+                0xFFFFFFFF, packedLight, overlay);
+
+        // Buckle left face (West)
+        addQuad(pose, consumer,
+                tagMinX, tagMinY, tagMaxZ,
+                tagMinX, tagMaxY, tagMaxZ,
+                tagMinX, tagMaxY, tagMinZ,
+                tagMinX, tagMinY, tagMinZ,
+                -1, 0, 0,
+                goldU0, goldV0, goldU1, goldV1,
+                0xFFFFFFFF, packedLight, overlay);
+
+        // Buckle right face (East)
+        addQuad(pose, consumer,
+                tagMaxX, tagMinY, tagMinZ,
+                tagMaxX, tagMaxY, tagMinZ,
+                tagMaxX, tagMaxY, tagMaxZ,
+                tagMaxX, tagMinY, tagMaxZ,
+                1, 0, 0,
+                goldU0, goldV0, goldU1, goldV1,
+                0xFFFFFFFF, packedLight, overlay);
+
+        // Buckle top face
+        addQuad(pose, consumer,
+                tagMinX, tagMinY, tagMaxZ,
+                tagMinX, tagMinY, tagMinZ,
+                tagMaxX, tagMinY, tagMinZ,
+                tagMaxX, tagMinY, tagMaxZ,
+                0, -1, 0,
+                goldU0, goldV0, goldU1, goldV1,
+                0xFFFFFFFF, packedLight, overlay);
+
+        // Buckle bottom face
+        addQuad(pose, consumer,
+                tagMinX, tagMaxY, tagMinZ,
+                tagMinX, tagMaxY, tagMaxZ,
+                tagMaxX, tagMaxY, tagMaxZ,
+                tagMaxX, tagMaxY, tagMinZ,
+                0, 1, 0,
+                goldU0, goldV0, goldU1, goldV1,
+                0xFFFFFFFF, packedLight, overlay);
     }
 
-    private static void addBox(
+    private static void addStrapBox(
             PoseStack.Pose pose, VertexConsumer consumer,
             float minX, float minY, float minZ,
             float maxX, float maxY, float maxZ,
             int color, int packedLight, int overlay,
-            float u0, float v0, float u1, float v1
+            float u0, float v0, float u1, float v1,
+            float topV0, float topV1,
+            float botV0, float botV1
     ) {
         // North face (facing -Z)
-        addQuad(pose, consumer, maxX, minY, minZ, minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, 0, 0, -1, u0, v0, u1, v1, color, packedLight, overlay);
+        addQuad(pose, consumer,
+                minX, minY, minZ,
+                minX, maxY, minZ,
+                maxX, maxY, minZ,
+                maxX, minY, minZ,
+                0, 0, -1, u0, v0, u1, v1, color, packedLight, overlay);
 
         // South face (facing +Z)
-        addQuad(pose, consumer, minX, minY, maxZ, maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ, 0, 0, 1, u0, v0, u1, v1, color, packedLight, overlay);
+        addQuad(pose, consumer,
+                maxX, minY, maxZ,
+                maxX, maxY, maxZ,
+                minX, maxY, maxZ,
+                minX, minY, maxZ,
+                0, 0, 1, u0, v0, u1, v1, color, packedLight, overlay);
 
         // West face (facing -X)
-        addQuad(pose, consumer, minX, minY, minZ, minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, -1, 0, 0, u0, v0, u1, v1, color, packedLight, overlay);
+        addQuad(pose, consumer,
+                minX, minY, maxZ,
+                minX, maxY, maxZ,
+                minX, maxY, minZ,
+                minX, minY, minZ,
+                -1, 0, 0, u0, v0, u1, v1, color, packedLight, overlay);
 
         // East face (facing +X)
-        addQuad(pose, consumer, maxX, minY, maxZ, maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, 1, 0, 0, u0, v0, u1, v1, color, packedLight, overlay);
+        addQuad(pose, consumer,
+                maxX, minY, minZ,
+                maxX, maxY, minZ,
+                maxX, maxY, maxZ,
+                maxX, minY, maxZ,
+                1, 0, 0, u0, v0, u1, v1, color, packedLight, overlay);
 
         // Top face (facing -Y)
-        addQuad(pose, consumer, minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, 0, -1, 0, u0, v0, u1, v1, color, packedLight, overlay);
+        addQuad(pose, consumer,
+                minX, minY, maxZ,
+                minX, minY, minZ,
+                maxX, minY, minZ,
+                maxX, minY, maxZ,
+                0, -1, 0, u0, topV0, u1, topV1, color, packedLight, overlay);
 
         // Bottom face (facing +Y)
-        addQuad(pose, consumer, minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ, 0, 1, 0, u0, v0, u1, v1, color, packedLight, overlay);
+        addQuad(pose, consumer,
+                minX, maxY, minZ,
+                minX, maxY, maxZ,
+                maxX, maxY, maxZ,
+                maxX, maxY, minZ,
+                0, 1, 0, u0, botV0, u1, botV1, color, packedLight, overlay);
     }
 
     private static void addQuad(
