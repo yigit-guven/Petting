@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.util.PetHelper;
 
@@ -68,6 +69,10 @@ public class PetFollowOwnerGoal extends Goal {
         if (PetHelper.getOrder(this.mob) != PetOrder.FOLLOW) {
             return false;
         }
+        CombatMode mode = getSettings().combatMode();
+        if (mode == CombatMode.WANDER || mode == CombatMode.GUARD) {
+            return false;
+        }
         this.owner = PetHelper.getOwner(this.mob);
         if (this.owner == null || this.owner.isSpectator()) {
             return false;
@@ -89,6 +94,10 @@ public class PetFollowOwnerGoal extends Goal {
             return false;
         }
         if (PetHelper.getOrder(this.mob) != PetOrder.FOLLOW) {
+            return false;
+        }
+        CombatMode mode = getSettings().combatMode();
+        if (mode == CombatMode.WANDER || mode == CombatMode.GUARD) {
             return false;
         }
         if (this.owner == null || this.owner.isSpectator()) {

@@ -40,13 +40,20 @@ public class CollarItem extends Item {
                     case PASSIVE -> Component.translatable("petting.gui.collar.passive").withStyle(ChatFormatting.AQUA);
                     case DEFENSIVE -> Component.translatable("petting.gui.collar.defensive").withStyle(ChatFormatting.YELLOW);
                     case AGGRESSIVE -> Component.translatable("petting.gui.collar.aggressive").withStyle(ChatFormatting.RED);
+                    case WANDER -> Component.translatable("petting.gui.collar.wander").withStyle(ChatFormatting.GREEN);
+                    case GUARD -> Component.translatable("petting.gui.collar.guard").withStyle(ChatFormatting.GOLD);
                 };
                 tooltipAdder.accept(Component.literal(" • ").withStyle(ChatFormatting.DARK_GRAY)
                         .append(Component.translatable("petting.gui.collar.mode").withStyle(ChatFormatting.GRAY))
                         .append(": ").append(modeName));
 
+                String distKey = switch (settings.combatMode()) {
+                    case WANDER -> "petting.gui.collar.wander_radius";
+                    case GUARD -> "petting.gui.collar.guard_radius";
+                    default -> "petting.gui.collar.follow_distance";
+                };
                 tooltipAdder.accept(Component.literal(" • ").withStyle(ChatFormatting.DARK_GRAY)
-                        .append(Component.translatable("petting.gui.collar.follow_distance").withStyle(ChatFormatting.GRAY))
+                        .append(Component.translatable(distKey).withStyle(ChatFormatting.GRAY))
                         .append(": " + settings.followDistance() + " blocks"));
 
                 if (settings.teleportEnabled()) {

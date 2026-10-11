@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class PetIntSliderButton extends AbstractSliderButton {
-    private final String translationKey;
+    private String translationKey;
     private final String unit;
     private final int minValue;
     private final int maxValue;
@@ -42,6 +42,11 @@ public class PetIntSliderButton extends AbstractSliderButton {
     public void setIntValue(int val) {
         this.value = toRatio(val, this.minValue, this.maxValue);
         this.lastAppliedValue = val;
+        this.updateMessage();
+    }
+
+    public void setTranslationKey(String translationKey) {
+        this.translationKey = translationKey;
         this.updateMessage();
     }
 

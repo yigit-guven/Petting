@@ -122,15 +122,24 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             CombatMode next = switch (cur.combatMode()) {
                 case PASSIVE -> CombatMode.DEFENSIVE;
                 case DEFENSIVE -> CombatMode.AGGRESSIVE;
-                case AGGRESSIVE -> CombatMode.PASSIVE;
+                case AGGRESSIVE -> CombatMode.WANDER;
+                case WANDER -> CombatMode.GUARD;
+                case GUARD -> CombatMode.PASSIVE;
             };
             applyCollarSettings(cur.withCombatMode(next));
         }).bounds(xo + 10, yo + 40, 156, 18).build();
 
-        // 2. Follow distance slider
+        // 2. Follow distance / Wander / Guard radius slider
+        String distKey = initialSettings.combatMode() == CombatMode.WANDER ? "petting.gui.collar.wander_radius"
+                : initialSettings.combatMode() == CombatMode.GUARD ? "petting.gui.collar.guard_radius"
+                : "petting.gui.collar.follow_distance";
+        String distTooltipKey = initialSettings.combatMode() == CombatMode.WANDER ? "petting.gui.collar.wander_radius.tooltip"
+                : initialSettings.combatMode() == CombatMode.GUARD ? "petting.gui.collar.guard_radius.tooltip"
+                : "petting.gui.collar.follow_distance.tooltip";
+
         this.followDistanceSlider = new PetIntSliderButton(
                 xo + 10, yo + 61, 156, 18,
-                "petting.gui.collar.follow_distance",
+                distKey,
                 "blocks",
                 PettingServerConfig.getMinFollowDistance(),
                 PettingServerConfig.getMaxFollowDistance(),
@@ -140,7 +149,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                     applyCollarSettings(cur.withFollowDistance(dist));
                 }
         );
-        this.followDistanceSlider.setTooltip(Tooltip.create(Component.translatable("petting.gui.collar.follow_distance.tooltip")));
+        this.followDistanceSlider.setTooltip(Tooltip.create(Component.translatable(distTooltipKey)));
 
         // 3. Teleport distance slider
         this.teleportDistanceSlider = new PetIntSliderButton(
@@ -237,6 +246,17 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             this.combatModeButton.setMessage(getCombatModeText(settings.combatMode()));
             this.combatModeButton.setTooltip(Tooltip.create(getCombatModeTooltip(settings)));
 
+            if (settings.combatMode() == CombatMode.WANDER) {
+                this.followDistanceSlider.setTranslationKey("petting.gui.collar.wander_radius");
+                this.followDistanceSlider.setTooltip(Tooltip.create(Component.translatable("petting.gui.collar.wander_radius.tooltip")));
+            } else if (settings.combatMode() == CombatMode.GUARD) {
+                this.followDistanceSlider.setTranslationKey("petting.gui.collar.guard_radius");
+                this.followDistanceSlider.setTooltip(Tooltip.create(Component.translatable("petting.gui.collar.guard_radius.tooltip")));
+            } else {
+                this.followDistanceSlider.setTranslationKey("petting.gui.collar.follow_distance");
+                this.followDistanceSlider.setTooltip(Tooltip.create(Component.translatable("petting.gui.collar.follow_distance.tooltip")));
+            }
+
             this.followDistanceSlider.setIntValue(settings.followDistance());
             this.teleportDistanceSlider.setIntValue(settings.teleportDistance());
 
@@ -267,6 +287,8 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             case PASSIVE -> Component.translatable("petting.gui.collar.passive").withStyle(ChatFormatting.AQUA);
             case DEFENSIVE -> Component.translatable("petting.gui.collar.defensive").withStyle(ChatFormatting.YELLOW);
             case AGGRESSIVE -> Component.translatable("petting.gui.collar.aggressive").withStyle(ChatFormatting.RED);
+            case WANDER -> Component.translatable("petting.gui.collar.wander").withStyle(ChatFormatting.GREEN);
+            case GUARD -> Component.translatable("petting.gui.collar.guard").withStyle(ChatFormatting.GOLD);
         };
         return Component.translatable("petting.gui.collar.mode").append(": ").append(modeName);
     }
@@ -295,6 +317,20 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 tooltip.append(Component.translatable("petting.gui.collar.mode.aggressive.title").withStyle(ChatFormatting.RED, ChatFormatting.BOLD))
                         .append("\n")
                         .append(Component.translatable("petting.gui.collar.mode.aggressive.desc").withStyle(ChatFormatting.GRAY))
+                        .append("\n")
+                        .append(getTacticsStatusLine(settings));
+            }
+            case WANDER -> {
+                tooltip.append(Component.translatable("petting.gui.collar.mode.wander.title").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD))
+                        .append("\n")
+                        .append(Component.translatable("petting.gui.collar.mode.wander.desc").withStyle(ChatFormatting.GRAY))
+                        .append("\n")
+                        .append(getTacticsStatusLine(settings));
+            }
+            case GUARD -> {
+                tooltip.append(Component.translatable("petting.gui.collar.mode.guard.title").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
+                        .append("\n")
+                        .append(Component.translatable("petting.gui.collar.mode.guard.desc").withStyle(ChatFormatting.GRAY))
                         .append("\n")
                         .append(getTacticsStatusLine(settings));
             }

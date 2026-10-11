@@ -40,9 +40,18 @@ All notable changes to this project will be documented in this file.
   - Added dedicated keybind support (`J` key / configurable via Controls) to open pet inventory, decoupled from default shift right-click.
 - Added Collar Settings GUI scene with persistent data storage:
   - Settings are stored directly on the collar item stack via data components (`petting:collar_settings`), preserving configuration across un-equipping and transfers between pets.
-  - **Aggressiveness Button**: Cycles between `Passive`, `Defensive`, and `Aggressive` modes with dynamic real-time tactics summary.
-  - **Follow Distance Slider**: Configures distance before the pet starts pathfinding toward the owner.
-  - **Teleport Distance Slider**: Configures distance before the pet teleports to catch up.
+  - **Aggressiveness Button**: Cycles between 5 distinct combat and station modes with dynamic real-time tactics summary:
+    - **Passive Mode**: Pet never initiates combat or attacks; strictly follows owner.
+    - **Defensive Mode**: Pet follows owner and fights back when the owner or fellow pets are attacked.
+    - **Aggressive Mode**: Pet follows owner, attacks targets the owner strikes, and defends the owner.
+    - **Wander Mode**: Pet remains anchored to its stationed location and wanders freely within its configured wander radius without following the owner away or teleporting. Fights back if retaliate is enabled.
+    - **Guard Mode**: Pet stays anchored to its stationed post, patrols its configured patrol radius, and actively seeks out and eliminates untamed hostile monsters (`Enemy`). Retains a leash distance to never chase enemies far into the wilderness, returning back to guard its station once threats are eliminated.
+  - **Dynamic Distance / Radius Slider**: Automatically switches label and tooltip according to the active collar mode:
+    - Displays **"Follow Distance: X blocks"** in Passive, Defensive, and Aggressive modes.
+    - Displays **"Wander Radius: X blocks"** in Wander mode.
+    - Displays **"Patrol Radius: X blocks"** in Guard mode.
+  - **Intelligent Station Anchoring**: Leashing and leading a pet in Wander or Guard mode, or riding it to a new location, dynamically re-anchors its station post right where it was unleashed or dismounted.
+  - **Teleport Distance Slider**: Configures distance before the pet teleports to catch up (active in following modes).
   - **Teleport Toggle**: Toggles catch-up teleportation ON/OFF.
   - **Ranged Toggle**: Toggles preference for ranged attacks (keeping distance and firing bows/crossbows when armed).
   - **Defend Pets Toggle**: Toggles whether pet defends fellow pets belonging to the same owner.

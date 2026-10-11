@@ -10,12 +10,15 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.animal.equine.AbstractHorse;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.phys.Vec3;
 import net.yigitguven.petting.ai.PetAttackOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetDefendOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetFollowOwnerGoal;
+import net.yigitguven.petting.ai.PetGuardTargetGoal;
 import net.yigitguven.petting.ai.PetMeleeAttackGoal;
 import net.yigitguven.petting.ai.PetRangedAttackGoal;
 import net.yigitguven.petting.ai.PetSitGoal;
+import net.yigitguven.petting.ai.PetWanderGoal;
 import net.yigitguven.petting.data.CollarSettings;
 import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetData;
@@ -155,6 +158,7 @@ public class PetHelper {
                 setCollar(entity, collar);
             }
         }
+        syncHomeRestrictions(entity, getCollarSettings(entity));
     }
 
     public static ItemStack getCollar(LivingEntity entity) {
@@ -197,6 +201,24 @@ public class PetHelper {
             setCollar(entity, collar);
         }
         setCombatMode(entity, settings.combatMode());
+        syncHomeRestrictions(entity, settings);
+    }
+
+    public static void syncHomeRestrictions(LivingEntity entity, CollarSettings settings) {
+        if (entity instanceof Mob mob) {
+            if (settings.combatMode() == CombatMode.WANDER || settings.combatMode() == CombatMode.GUARD) {
+                int radius = Math.max(2, settings.followDistance());
+                if (!mob.hasHome()) {
+                    mob.setHomeTo(mob.blockPosition(), radius);
+                } else {
+                    mob.setHomeTo(mob.getHomePosition(), radius);
+                }
+            } else {
+                if (mob.hasHome()) {
+                    mob.clearHome();
+                }
+            }
+        }
     }
 
     public static boolean isPetRidingEnabledFor(@Nullable Mob pet) {
@@ -311,6 +333,9 @@ public class PetHelper {
     }
 
     public static void setUntamed(Mob mob) {
+        if (mob.hasHome()) {
+            mob.clearHome();
+        }
         if (mob.hasData(PettingModAttachments.PET_DATA)) {
             PetData data = mob.getData(PettingModAttachments.PET_DATA);
             ItemStack collar = data.getCollar();
@@ -356,7 +381,9 @@ public class PetHelper {
             return;
         }
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
-            mob.targetSelector.removeAllGoals(goal -> !(goal instanceof PetDefendOwnerTargetGoal) && !(goal instanceof PetAttackOwnerTargetGoal));
+            mob.targetSelector.removeAllGoals(goal -> !(goal instanceof PetDefendOwnerTargetGoal)
+                    && !(goal instanceof PetAttackOwnerTargetGoal)
+                    && !(goal instanceof PetGuardTargetGoal));
         }
     }
 
@@ -385,10 +412,24 @@ public class PetHelper {
         // If the pet already has this target and is alive
         if (pet instanceof Mob mob) {
             if (mob.getTarget() == target) {
+                CollarSettings cs = getCollarSettings(pet);
+                if (cs.combatMode() == CombatMode.GUARD && mob.hasHome()) {
+                    double leashDist = mob.getHomeRadius() + 10.0D;
+                    if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getHomePosition())) > leashDist * leashDist) {
+                        return false;
+                    }
+                }
                 return true;
             }
             if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                     && mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null) == target) {
+                CollarSettings cs = getCollarSettings(pet);
+                if (cs.combatMode() == CombatMode.GUARD && mob.hasHome()) {
+                    double leashDist = mob.getHomeRadius() + 10.0D;
+                    if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getHomePosition())) > leashDist * leashDist) {
+                        return false;
+                    }
+                }
                 return true;
             }
         }
@@ -417,6 +458,17 @@ public class PetHelper {
                     return true;
                 }
             }
+        }
+
+        // 5. Guard mode: untamed hostile monsters within patrol/leash area
+        if (settings.combatMode() == CombatMode.GUARD && target instanceof net.minecraft.world.entity.monster.Enemy && !isTamed(target)) {
+            if (pet instanceof Mob mob && mob.hasHome()) {
+                double leashDist = mob.getHomeRadius() + 10.0D;
+                if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getHomePosition())) > leashDist * leashDist) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         return false;
@@ -493,7 +545,8 @@ public class PetHelper {
                 || wrappedGoal.getGoal() instanceof net.minecraft.world.entity.ai.goal.FollowOwnerGoal
                 || wrappedGoal.getGoal() instanceof PetRangedAttackGoal
                 || wrappedGoal.getGoal() instanceof PetMeleeAttackGoal
-                || wrappedGoal.getGoal() instanceof PetFollowOwnerGoal);
+                || wrappedGoal.getGoal() instanceof PetFollowOwnerGoal
+                || wrappedGoal.getGoal() instanceof PetWanderGoal);
         purgeBuiltInTargetGoals(mob);
 
         mob.goalSelector.addGoal(1, new PetSitGoal(mob));
@@ -501,6 +554,9 @@ public class PetHelper {
             mob.goalSelector.addGoal(2, new PetRangedAttackGoal(pathfinderMob, 1.25D, 20, 16.0F));
             mob.goalSelector.addGoal(3, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
             mob.goalSelector.addGoal(4, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
+            mob.goalSelector.addGoal(5, new PetWanderGoal(pathfinderMob, 1.0D));
+        } else {
+            mob.goalSelector.addGoal(5, new PetWanderGoal(mob, 1.0D));
         }
 
         boolean hasDefendGoal = mob.targetSelector.getAvailableGoals().stream()
@@ -513,6 +569,12 @@ public class PetHelper {
                 .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetAttackOwnerTargetGoal);
         if (!hasAttackGoal) {
             mob.targetSelector.addGoal(2, new PetAttackOwnerTargetGoal(mob));
+        }
+
+        boolean hasGuardGoal = mob.targetSelector.getAvailableGoals().stream()
+                .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetGuardTargetGoal);
+        if (!hasGuardGoal) {
+            mob.targetSelector.addGoal(3, new PetGuardTargetGoal(mob));
         }
     }
 
