@@ -86,4 +86,13 @@ public class PettingClientEvents {
             }
         }
     }
+
+    @SubscribeEvent
+    public static void onRenderNameTag(net.neoforged.neoforge.client.event.RenderNameTagEvent.CanRender event) {
+        if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
+            if (PetHelper.getOrder(mob) == net.yigitguven.petting.data.PetOrder.SIT) {
+                event.getEntityRenderState().isDiscrete = true;
+            }
+        }
+    }
 }

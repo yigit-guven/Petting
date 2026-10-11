@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
   - **Hovering physics for flying pets**: Flying pets (Allays, Ghasts, Phantoms, Bats, Bees, Parrots, Blazes, Withers, Vexes, etc.) hover completely motionless in mid-air right where commanded to sit.
   - **Stillness physics for aquatic pets**: Swimming pets (and any pet submerged in water) remain completely stationary without sinking, floating up, or drifting in currents.
   - **Walking pets**: Remain firmly stationed on the ground like a sitting wolf in vanilla Minecraft.
+  - **Sitting Nametag Dimming (Sneak Visuals)**: When a named pet is sitting, its floating nametag text becomes darker and translucent (and suppresses see-through through walls) just like a crouching/sneaking player in vanilla Minecraft.
   - **Combat forgiveness on sit**: Ordering a pet to sit immediately clears attack targets, erases anger, halts attack goals, and suspends following and teleporting.
   - Fully configurable in server configuration (`[behavior]`):
     - `enablePetSitting`: Enable or disable the pet sitting mechanic globally (default: `true`).

@@ -110,8 +110,9 @@ public class PetHelper {
             tamable.setOrderedToSit(sit);
             tamable.setInSittingPose(sit);
         }
-        if (order != PetOrder.SIT && entity instanceof Mob mob) {
-            if (isFlyingPet(mob)) {
+        if (entity instanceof Mob mob) {
+            mob.setShiftKeyDown(order == PetOrder.SIT);
+            if (order != PetOrder.SIT && isFlyingPet(mob)) {
                 mob.setNoGravity(false);
             }
         }

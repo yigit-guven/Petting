@@ -44,6 +44,9 @@ public class PetGoalEvents {
     public static void onEntityTickPost(EntityTickEvent.Post event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             if (PetHelper.getOrder(mob) == PetOrder.SIT) {
+                if (!mob.isShiftKeyDown()) {
+                    mob.setShiftKeyDown(true);
+                }
                 boolean hoverFlying = PettingServerConfig.isFlyingPetsHoverWhenSitting() && PetHelper.isFlyingPet(mob);
                 boolean stillSwimming = PettingServerConfig.isSwimmingPetsStayStillWhenSitting() && PetHelper.isSwimmingPet(mob);
 
@@ -62,6 +65,8 @@ public class PetGoalEvents {
                     mob.setDeltaMovement(0.0, delta.y, 0.0);
                     mob.setPos(mob.xo, mob.getY(), mob.zo);
                 }
+            } else if (mob.isShiftKeyDown()) {
+                mob.setShiftKeyDown(false);
             }
         }
     }
