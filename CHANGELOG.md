@@ -15,6 +15,19 @@ All notable changes to this project will be documented in this file.
   - Removed obsolete fields (`petsDefendOwner`, `petsAttackOwnerTarget`, `petsRetaliate`, `teleportDistance`) from `[behavior]`.
   - Moved `defaultCombatMode` under `[collar]` and provided comprehensive collar defaults and slider boundary controls (`defaultCombatMode`, `defaultFollowDistance`, `minFollowDistance`, `maxFollowDistance`, `defaultTeleportDistance`, `minTeleportDistance`, `maxTeleportDistance`, `defaultTeleportEnabled`, `defaultPreferRangedAttack`, `defaultDefendOtherPets`, `defaultRetaliateWhenHurt`).
   - Added full translation keys and descriptive tooltips for NeoForge's in-game config UI (`ConfigurationSectionScreen`).
+- Added universal Pet Sitting system with dedicated keybind:
+  - **Sit / Stand Keybind (`key.petting.toggle_pet_sit`)**: Defaults to **Right-Click** (`MOUSE_BUTTON_RIGHT`). Remappable in Controls -> Key Binds -> Petting.
+  - Context-aware interaction: Automatically prioritizes item interactions (equipping collars, dyeing collars, feeding treats, naming with name tags, leashing, shearing) so held items function as expected.
+  - Vanilla `TamableAnimal` pets (wolves, cats) visually transition into sitting poses when sitting.
+  - **Hovering physics for flying pets**: Flying pets (Allays, Ghasts, Phantoms, Bats, Bees, Parrots, Blazes, Withers, Vexes, etc.) hover completely motionless in mid-air right where commanded to sit.
+  - **Stillness physics for aquatic pets**: Swimming pets (and any pet submerged in water) remain completely stationary without sinking, floating up, or drifting in currents.
+  - **Walking pets**: Remain firmly stationed on the ground like a sitting wolf in vanilla Minecraft.
+  - **Combat forgiveness on sit**: Ordering a pet to sit immediately clears attack targets, erases anger, halts attack goals, and suspends following and teleporting.
+  - Fully configurable in server configuration (`[behavior]`):
+    - `enablePetSitting`: Enable or disable the pet sitting mechanic globally (default: `true`).
+    - `forgiveAttacksOnSit`: Configures whether sitting immediately clears hostilities and stops combat (default: `true`).
+    - `flyingPetsHoverWhenSitting`: Configures whether flying pets hover stationary in mid-air (default: `true`).
+    - `swimmingPetsStayStillWhenSitting`: Configures whether aquatic pets remain stationary in water (default: `true`).
 - Added pet inventory side navigation tabs:
   - Added tab strip positioned seamlessly along the left container edge following vanilla recipe book tab conventions.
   - **Pet Inventory (Home)** tab: Displays pet equipment, entity model, and player inventory slots.

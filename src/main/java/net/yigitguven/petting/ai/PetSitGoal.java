@@ -1,8 +1,10 @@
 package net.yigitguven.petting.ai;
 
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.Vec3;
+import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.util.PetHelper;
 
@@ -10,6 +12,8 @@ import java.util.EnumSet;
 
 public class PetSitGoal extends Goal {
     private final Mob mob;
+    private boolean originalNoGravity;
+    private boolean isAlteredGravity;
 
     public PetSitGoal(Mob mob) {
         this.mob = mob;
@@ -18,13 +22,10 @@ public class PetSitGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        return PetHelper.isTamed(this.mob) && PetHelper.getOrder(this.mob) == PetOrder.SIT && !this.mob.isVehicle();
-    }
-
-    @Override
-    public void start() {
-        this.mob.getNavigation().stop();
-        this.mob.setDeltaMovement(Vec3.ZERO);
+        return PettingServerConfig.isPetSittingEnabled()
+                && PetHelper.isTamed(this.mob)
+                && PetHelper.getOrder(this.mob) == PetOrder.SIT
+                && !this.mob.isVehicle();
     }
 
     @Override
@@ -33,7 +34,57 @@ public class PetSitGoal extends Goal {
     }
 
     @Override
-    public void tick() {
+    public void start() {
         this.mob.getNavigation().stop();
+        if (this.mob instanceof TamableAnimal tamable) {
+            tamable.setInSittingPose(true);
+        }
+        if (PettingServerConfig.shouldForgiveAttacksOnSit()) {
+            PetHelper.forgiveAttacksAndClearTarget(this.mob);
+        }
+
+        this.originalNoGravity = this.mob.isNoGravity();
+        this.isAlteredGravity = false;
+        applySittingPhysics();
+    }
+
+    @Override
+    public void stop() {
+        if (this.mob instanceof TamableAnimal tamable) {
+            tamable.setInSittingPose(false);
+        }
+        if (this.isAlteredGravity) {
+            this.mob.setNoGravity(this.originalNoGravity);
+            this.isAlteredGravity = false;
+        }
+        this.mob.getNavigation().stop();
+    }
+
+    @Override
+    public void tick() {
+        applySittingPhysics();
+    }
+
+    private void applySittingPhysics() {
+        this.mob.getNavigation().stop();
+
+        boolean hoverFlying = PettingServerConfig.isFlyingPetsHoverWhenSitting() && PetHelper.isFlyingPet(this.mob);
+        boolean stillSwimming = PettingServerConfig.isSwimmingPetsStayStillWhenSitting() && PetHelper.isSwimmingPet(this.mob);
+
+        if (hoverFlying || stillSwimming) {
+            if (!this.mob.isNoGravity()) {
+                this.mob.setNoGravity(true);
+                this.isAlteredGravity = true;
+            }
+            this.mob.setDeltaMovement(Vec3.ZERO);
+            this.mob.fallDistance = 0.0F;
+        } else {
+            if (this.isAlteredGravity) {
+                this.mob.setNoGravity(this.originalNoGravity);
+                this.isAlteredGravity = false;
+            }
+            Vec3 delta = this.mob.getDeltaMovement();
+            this.mob.setDeltaMovement(0.0, delta.y, 0.0);
+        }
     }
 }

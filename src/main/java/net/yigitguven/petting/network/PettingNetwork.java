@@ -18,5 +18,10 @@ public class PettingNetwork {
                 UpdateCollarSettingsPayload.STREAM_CODEC,
                 UpdateCollarSettingsPayload::handle
         );
+        registrar.playToServer(
+                TogglePetSitPayload.TYPE,
+                TogglePetSitPayload.STREAM_CODEC,
+                TogglePetSitPayload::handle
+        );
     }
 }

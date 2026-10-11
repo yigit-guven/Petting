@@ -86,6 +86,10 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | :--- | :--- | :--- | :--- |
 | `disableBuiltInHostility` | Boolean | `true` | When `true`, removes built-in mob aggression and targeting. Pets will strictly attack according to their collar tactical settings. |
 | `enableCollarSlot` | Boolean | `true` | When `true`, all pet inventory GUIs provide a dedicated slot to equip collars. When `false`, the collar slot is removed from all pet GUIs. |
+| `enablePetSitting` | Boolean | `true` | When `true`, players can command owned pets to sit or stand using the configured keybind (default: Right-Click). |
+| `forgiveAttacksOnSit` | Boolean | `true` | When `true`, commanding a pet to sit clears its attack targets and calms active hostilities, immediately halting combat. |
+| `flyingPetsHoverWhenSitting` | Boolean | `true` | When `true`, flying pets commanded to sit will hover stationary in mid-air instead of falling to the ground. |
+| `swimmingPetsStayStillWhenSitting` | Boolean | `true` | When `true`, aquatic pets commanded to sit will remain stationary in water without floating up, sinking, or drifting. |
 
 #### Setting Details:
 
@@ -98,6 +102,26 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   Controls whether the universal collar slot is enabled in pet inventory GUIs.
   - `true` (*Default*): All pet inventory GUIs display a dedicated collar equipment slot.
   - `false`: Removes the collar equipment slot from all pet inventory GUIs.
+
+- **`enablePetSitting`**:
+  Controls whether the universal sitting mechanic is enabled for pets.
+  - `true` (*Default*): Players can command owned pets to sit or stand using the **Sit / Stand Pet** keybind (default: Right-Click).
+  - `false`: Sitting mechanic is disabled.
+
+- **`forgiveAttacksOnSit`**:
+  Controls whether sitting immediately halts ongoing combat.
+  - `true` (*Default*): Ordering a pet to sit immediately clears its attack targets, forgets entity anger, and stops all attack goals just like a tamed wolf in vanilla Minecraft.
+  - `false`: Pets do not clear targets when ordered to sit.
+
+- **`flyingPetsHoverWhenSitting`**:
+  Controls physical suspension for flying pets (e.g. Allays, Ghasts, Phantoms, Bats, Bees, Parrots, Blazes, Withers, Vexes) while sitting.
+  - `true` (*Default*): Flying pets hover completely stationary in mid-air right where they are commanded to sit, without losing altitude or falling.
+  - `false`: Flying pets fall to the ground subject to gravity.
+
+- **`swimmingPetsStayStillWhenSitting`**:
+  Controls stillness for aquatic pets (and pets in water) while sitting.
+  - `true` (*Default*): Swimming pets remain completely stationary in water without sinking, floating to the surface, or being swept away by water currents.
+  - `false`: Normal fluid physics and water currents apply while sitting.
 
 ### Section: `[riding]`
 

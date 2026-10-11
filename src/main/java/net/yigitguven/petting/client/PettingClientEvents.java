@@ -24,7 +24,9 @@ public class PettingClientEvents {
 
     private static final Set<String> POSITIVE_KEYS = Set.of(
             "petting.action.tamed_success",
-            "petting.action.pet_healed"
+            "petting.action.pet_healed",
+            "petting.action.pet_sitting",
+            "petting.action.pet_standing"
     );
 
     private static final Set<String> NEGATIVE_KEYS = Set.of(
@@ -46,6 +48,27 @@ public class PettingClientEvents {
                 if (target instanceof Mob mob && mob.isAlive()) {
                     if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
                         ClientPacketDistributor.sendToServer(new OpenPetInventoryPayload(mob.getId()));
+                    }
+                }
+            }
+        }
+
+        while (PettingClient.TOGGLE_PET_SIT.consumeClick()) {
+            Minecraft mc = Minecraft.getInstance();
+            if (mc.player != null && mc.level != null && mc.gui.screen() == null) {
+                Entity target = mc.crosshairPickEntity != null ? mc.crosshairPickEntity :
+                        (mc.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null);
+                if (target instanceof Mob mob && mob.isAlive()) {
+                    if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
+                        net.minecraft.world.item.ItemStack mainStack = mc.player.getMainHandItem();
+                        boolean isRightClick = PettingClient.TOGGLE_PET_SIT.getKey().getType() == com.mojang.blaze3d.platform.InputConstants.Type.MOUSE
+                                && PettingClient.TOGGLE_PET_SIT.getKey().getValue() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT
+                                && PettingClient.TOGGLE_PET_SIT.getKeyModifier() == net.neoforged.neoforge.client.settings.KeyModifier.NONE;
+                        if (isRightClick && PetHelper.isInteractionItem(mob, mainStack)) {
+                            continue;
+                        }
+                        mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT, false);
+                        ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.TogglePetSitPayload(mob.getId()));
                     }
                 }
             }

@@ -13,6 +13,10 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue DISABLE_BUILT_IN_HOSTILITY;
     public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_SLOT;
+    public static final ModConfigSpec.BooleanValue ENABLE_PET_SITTING;
+    public static final ModConfigSpec.BooleanValue FORGIVE_ATTACKS_ON_SIT;
+    public static final ModConfigSpec.BooleanValue FLYING_PETS_HOVER_WHEN_SITTING;
+    public static final ModConfigSpec.BooleanValue SWIMMING_PETS_STAY_STILL_WHEN_SITTING;
     public static final ModConfigSpec.EnumValue<net.yigitguven.petting.data.CombatMode> DEFAULT_COMBAT_MODE;
     public static final ModConfigSpec.BooleanValue ENABLE_PET_RIDING;
     public static final ModConfigSpec.BooleanValue RIDING_USE_WHITELIST;
@@ -77,6 +81,22 @@ public class PettingServerConfig {
         ENABLE_COLLAR_SLOT = builder
                 .translation("petting.configuration.behavior.enableCollarSlot")
                 .define("enableCollarSlot", true);
+
+        ENABLE_PET_SITTING = builder
+                .translation("petting.configuration.behavior.enablePetSitting")
+                .define("enablePetSitting", true);
+
+        FORGIVE_ATTACKS_ON_SIT = builder
+                .translation("petting.configuration.behavior.forgiveAttacksOnSit")
+                .define("forgiveAttacksOnSit", true);
+
+        FLYING_PETS_HOVER_WHEN_SITTING = builder
+                .translation("petting.configuration.behavior.flyingPetsHoverWhenSitting")
+                .define("flyingPetsHoverWhenSitting", true);
+
+        SWIMMING_PETS_STAY_STILL_WHEN_SITTING = builder
+                .translation("petting.configuration.behavior.swimmingPetsStayStillWhenSitting")
+                .define("swimmingPetsStayStillWhenSitting", true);
 
         builder.pop();
 
@@ -197,6 +217,22 @@ public class PettingServerConfig {
 
     public static boolean isCollarSlotEnabled() {
         return SPEC.isLoaded() ? ENABLE_COLLAR_SLOT.get() : true;
+    }
+
+    public static boolean isPetSittingEnabled() {
+        return SPEC.isLoaded() ? ENABLE_PET_SITTING.get() : true;
+    }
+
+    public static boolean shouldForgiveAttacksOnSit() {
+        return SPEC.isLoaded() ? FORGIVE_ATTACKS_ON_SIT.get() : true;
+    }
+
+    public static boolean isFlyingPetsHoverWhenSitting() {
+        return SPEC.isLoaded() ? FLYING_PETS_HOVER_WHEN_SITTING.get() : true;
+    }
+
+    public static boolean isSwimmingPetsStayStillWhenSitting() {
+        return SPEC.isLoaded() ? SWIMMING_PETS_STAY_STILL_WHEN_SITTING.get() : true;
     }
 
     public static boolean isUntameable(net.minecraft.world.entity.EntityType<?> entityType) {

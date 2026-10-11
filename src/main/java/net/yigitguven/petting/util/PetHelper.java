@@ -105,6 +105,12 @@ public class PetHelper {
             data.setOrder(order);
             entity.setData(PettingModAttachments.PET_DATA, data);
         }
+        if (entity instanceof TamableAnimal tamable) {
+            boolean sit = (order == PetOrder.SIT);
+            tamable.setOrderedToSit(sit);
+            tamable.setInSittingPose(sit);
+        }
+        syncModdedSit(entity, order == PetOrder.SIT);
     }
 
     public static CombatMode getCombatMode(LivingEntity entity) {
@@ -239,9 +245,27 @@ public class PetHelper {
             if (owner != null) {
                 tamable.setOwner(owner);
             }
+            boolean sit = (getOrder(mob) == PetOrder.SIT);
+            tamable.setOrderedToSit(sit);
+            tamable.setInSittingPose(sit);
         }
 
         syncModdedTame(mob, ownerUUID, owner);
+        syncModdedSit(mob, getOrder(mob) == PetOrder.SIT);
+    }
+
+    public static void syncModdedSit(LivingEntity entity, boolean sit) {
+        Class<?> clazz = entity.getClass();
+        try {
+            for (Method m : clazz.getMethods()) {
+                String name = m.getName();
+                if ((name.equals("setOrderedToSit") || name.equals("setInSittingPose") || name.equals("setSitting"))
+                        && m.getParameterCount() == 1 && m.getParameterTypes()[0] == boolean.class) {
+                    m.invoke(entity, sit);
+                }
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private static void syncModdedTame(Mob mob, @Nullable UUID ownerUUID, @Nullable Player owner) {
@@ -377,9 +401,65 @@ public class PetHelper {
         return false;
     }
 
+    public static boolean isFlyingPet(Mob mob) {
+        if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.FlyingPathNavigation) {
+            return true;
+        }
+        if (mob.getMoveControl() instanceof net.minecraft.world.entity.ai.control.FlyingMoveControl) {
+            return true;
+        }
+        if (mob instanceof net.minecraft.world.entity.monster.Ghast
+                || mob instanceof net.minecraft.world.entity.monster.Phantom
+                || mob instanceof net.minecraft.world.entity.boss.wither.WitherBoss
+                || mob instanceof net.minecraft.world.entity.monster.Blaze
+                || mob instanceof net.minecraft.world.entity.monster.Vex
+                || mob instanceof net.minecraft.world.entity.ambient.Bat
+                || mob instanceof net.minecraft.world.entity.animal.allay.Allay
+                || mob instanceof net.minecraft.world.entity.animal.bee.Bee
+                || mob instanceof net.minecraft.world.entity.animal.parrot.Parrot) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isSwimmingPet(Mob mob) {
+        if (mob instanceof net.minecraft.world.entity.animal.fish.WaterAnimal) {
+            return true;
+        }
+        if (mob instanceof net.minecraft.world.entity.monster.Guardian) {
+            return true;
+        }
+        if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation) {
+            return true;
+        }
+        return mob.isInWater();
+    }
+
+    public static void forgiveAttacksAndClearTarget(Mob mob) {
+        mob.setTarget(null);
+        mob.setLastHurtByMob(null);
+        mob.setLastHurtMob(null);
+        if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
+            mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+        }
+        if (mob.getBrain().hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)) {
+            mob.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+        }
+        if (mob instanceof NeutralMob neutralMob) {
+            neutralMob.stopBeingAngry();
+        }
+        mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
+        mob.goalSelector.getAvailableGoals().stream()
+                .filter(w -> w.getGoal() instanceof PetMeleeAttackGoal || w.getGoal() instanceof PetRangedAttackGoal)
+                .filter(WrappedGoal::isRunning)
+                .forEach(WrappedGoal::stop);
+    }
+
     public static void injectGoals(Mob mob) {
         mob.goalSelector.getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal
                 || wrappedGoal.getGoal() instanceof PetSitGoal
+                || wrappedGoal.getGoal() instanceof net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal
+                || wrappedGoal.getGoal() instanceof net.minecraft.world.entity.ai.goal.FollowOwnerGoal
                 || wrappedGoal.getGoal() instanceof PetRangedAttackGoal
                 || wrappedGoal.getGoal() instanceof PetMeleeAttackGoal
                 || wrappedGoal.getGoal() instanceof PetFollowOwnerGoal);
@@ -403,5 +483,31 @@ public class PetHelper {
         if (!hasAttackGoal) {
             mob.targetSelector.addGoal(2, new PetAttackOwnerTargetGoal(mob));
         }
+    }
+
+    public static boolean isInteractionItem(Mob mob, ItemStack stack) {
+        if (stack.isEmpty()) {
+            return false;
+        }
+        if (stack.getItem() instanceof net.yigitguven.petting.item.CollarItem && getCollar(mob).isEmpty()) {
+            return true;
+        }
+        if (net.minecraft.world.item.DyeColor.getColor(stack) != null) {
+            ItemStack currentCollar = getCollar(mob);
+            if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
+                if (currentItem.getColor() != net.minecraft.world.item.DyeColor.getColor(stack)) {
+                    return true;
+                }
+            }
+        }
+        if (PetEggHelper.canTame(mob, stack.getItem())) {
+            return true;
+        }
+        if (stack.is(net.minecraft.world.item.Items.NAME_TAG)
+                || stack.is(net.minecraft.world.item.Items.LEAD)
+                || stack.is(net.minecraft.world.item.Items.SHEARS)) {
+            return true;
+        }
+        return false;
     }
 }

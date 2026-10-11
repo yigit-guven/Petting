@@ -105,7 +105,15 @@ public class PetTamingEvents {
                         return;
                     }
                 }
+                if (PetHelper.isInteractionItem(mob, stack)) {
+                    PetHelper.syncEntityTameStatus(mob);
+                    return;
+                }
                 PetHelper.syncEntityTameStatus(mob);
+                if (PettingServerConfig.isPetSittingEnabled()) {
+                    event.setCancellationResult(InteractionResult.SUCCESS);
+                    event.setCanceled(true);
+                }
                 return;
             } else {
                 if (!isClient) {
