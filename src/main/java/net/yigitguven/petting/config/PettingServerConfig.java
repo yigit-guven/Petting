@@ -17,6 +17,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue PETS_ATTACK_OWNER_TARGET;
     public static final ModConfigSpec.BooleanValue PETS_RETALIATE;
     public static final ModConfigSpec.DoubleValue TELEPORT_DISTANCE;
+    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_SLOT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -83,6 +84,10 @@ public class PettingServerConfig {
                 .translation("petting.configuration.behavior.teleportDistance")
                 .defineInRange("teleportDistance", 20.0, 5.0, 200.0);
 
+        ENABLE_COLLAR_SLOT = builder
+                .translation("petting.configuration.behavior.enableCollarSlot")
+                .define("enableCollarSlot", true);
+
         builder.pop();
 
         SPEC = builder.build();
@@ -146,6 +151,10 @@ public class PettingServerConfig {
 
     public static double getTeleportDistance() {
         return SPEC.isLoaded() ? TELEPORT_DISTANCE.get() : 20.0;
+    }
+
+    public static boolean isCollarSlotEnabled() {
+        return SPEC.isLoaded() ? ENABLE_COLLAR_SLOT.get() : true;
     }
 
     public static boolean isUntameable(net.minecraft.world.entity.EntityType<?> entityType) {

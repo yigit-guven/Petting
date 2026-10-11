@@ -243,6 +243,9 @@ public class PetInventoryMenu extends AbstractContainerMenu {
 
         private ItemStack getItem(PetSlotType type) {
             if (this.pet == null) return ItemStack.EMPTY;
+            if (type == PetSlotType.COLLAR) {
+                return net.yigitguven.petting.util.PetHelper.getCollar(this.pet);
+            }
             if (type == PetSlotType.CHEST_STORAGE) {
                 if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
                     return new ItemStack(Items.CHEST);
@@ -267,6 +270,14 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                 return ItemStack.EMPTY;
             }
             PetSlotType type = this.slotTypes.get(slotIndex);
+            if (type == PetSlotType.COLLAR) {
+                ItemStack current = net.yigitguven.petting.util.PetHelper.getCollar(this.pet);
+                if (current.isEmpty()) return ItemStack.EMPTY;
+                ItemStack split = current.split(amount);
+                net.yigitguven.petting.util.PetHelper.setCollar(this.pet, current.isEmpty() ? ItemStack.EMPTY : current);
+                this.setChanged();
+                return split;
+            }
             if (type == PetSlotType.CHEST_STORAGE) {
                 if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
                     chested.setChest(false);
@@ -291,6 +302,12 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                 return ItemStack.EMPTY;
             }
             PetSlotType type = this.slotTypes.get(slotIndex);
+            if (type == PetSlotType.COLLAR) {
+                ItemStack current = net.yigitguven.petting.util.PetHelper.getCollar(this.pet);
+                if (current.isEmpty()) return ItemStack.EMPTY;
+                net.yigitguven.petting.util.PetHelper.setCollar(this.pet, ItemStack.EMPTY);
+                return current;
+            }
             if (type == PetSlotType.CHEST_STORAGE) {
                 if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
                     chested.setChest(false);
@@ -312,6 +329,11 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                 return;
             }
             PetSlotType type = this.slotTypes.get(slotIndex);
+            if (type == PetSlotType.COLLAR) {
+                net.yigitguven.petting.util.PetHelper.setCollar(this.pet, stack);
+                this.setChanged();
+                return;
+            }
             if (type == PetSlotType.CHEST_STORAGE) {
                 if (this.pet instanceof AbstractChestedHorse chested) {
                     chested.setChest(!stack.isEmpty());
@@ -348,7 +370,9 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         public void clearContent() {
             if (this.pet != null) {
                 for (PetSlotType type : this.slotTypes) {
-                    if (type == PetSlotType.CHEST_STORAGE) {
+                    if (type == PetSlotType.COLLAR) {
+                        net.yigitguven.petting.util.PetHelper.setCollar(this.pet, ItemStack.EMPTY);
+                    } else if (type == PetSlotType.CHEST_STORAGE) {
                         if (this.pet instanceof AbstractChestedHorse chested) {
                             chested.setChest(false);
                         }

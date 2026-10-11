@@ -17,6 +17,15 @@ All notable changes to this project will be documented in this file.
   - `petsAttackOwnerTarget`: Configures whether pets automatically assist their owner by attacking mobs the owner damages (default: `true`).
   - `petsRetaliate`: Configures whether pets defend themselves and retaliate when damaged directly (default: `true`).
   - `teleportDistance`: Configures how far an owner can get from their following pet before the pet teleports to catch up (default: `20.0` blocks).
+  - `enableCollarSlot`: Configures whether the collar slot is available in pet inventory GUIs (default: `true`).
+- Added new **Collar** items and all 16 Minecraft dye color variants:
+  - Default variant is the **Red Collar** (`collar`), along with 15 colored variants (`white_collar`, `orange_collar`, `magenta_collar`, `light_blue_collar`, `yellow_collar`, `lime_collar`, `pink_collar`, `gray_collar`, `light_gray_collar`, `cyan_collar`, `purple_collar`, `blue_collar`, `brown_collar`, `green_collar`, `black_collar`).
+  - Each variant features custom 16x16 pixel art with matched lighting, shading, and the iconic golden bell/buckle.
+  - All 16 colored collars can be crafted directly from scratch using leather, the respective dye in the center, and a gold nugget (`LLL / LDL /  G `). Any existing collar can also be redyed to any color using shapeless crafting with any vanilla dye.
+  - Owners can dye an equipped pet collar in real time by right-clicking their pet with any dye.
+  - Any collar variant can be equipped via the pet inventory GUI or by right-clicking a tamed pet directly in the world.
+  - Added dedicated universal Collar equipment slot to all pet inventory GUIs regardless of whether the mob has native equipment slots.
+  - Collars are safely dropped on the ground if the pet dies or is untamed.
 
 ### Fixed
 - **Pet Combat AI & Responsiveness**:

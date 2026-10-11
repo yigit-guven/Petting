@@ -9,6 +9,9 @@ import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,11 +21,12 @@ public class PetData {
                     UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(data -> Optional.ofNullable(data.ownerUUID)),
                     Codec.BOOL.fieldOf("tamed").forGetter(PetData::isTamed),
                     Codec.STRING.xmap(PetOrder::valueOf, PetOrder::name).fieldOf("order").forGetter(PetData::getOrder),
-                    Codec.STRING.xmap(CombatMode::valueOf, CombatMode::name).fieldOf("combat_mode").forGetter(PetData::getCombatMode)
+                    Codec.STRING.xmap(CombatMode::valueOf, CombatMode::name).fieldOf("combat_mode").forGetter(PetData::getCombatMode),
+                    ItemStack.OPTIONAL_CODEC.optionalFieldOf("collar", ItemStack.EMPTY).forGetter(PetData::getCollar)
             ).apply(instance, PetData::new)
     );
 
-    public static final StreamCodec<ByteBuf, PetData> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<RegistryFriendlyByteBuf, PetData> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC),
             data -> Optional.ofNullable(data.ownerUUID),
             ByteBufCodecs.BOOL,
@@ -31,6 +35,8 @@ public class PetData {
             PetData::getOrder,
             ByteBufCodecs.stringUtf8(32).map(CombatMode::valueOf, CombatMode::name),
             PetData::getCombatMode,
+            ItemStack.OPTIONAL_STREAM_CODEC,
+            PetData::getCollar,
             PetData::new
     );
 
@@ -38,19 +44,30 @@ public class PetData {
     private boolean tamed;
     private PetOrder order;
     private CombatMode combatMode;
+    private ItemStack collar;
 
     public PetData() {
         this.ownerUUID = null;
         this.tamed = false;
         this.order = PetOrder.FOLLOW;
         this.combatMode = net.yigitguven.petting.config.PettingServerConfig.getDefaultCombatMode();
+        this.collar = ItemStack.EMPTY;
     }
 
-    public PetData(Optional<UUID> ownerUUID, boolean tamed, PetOrder order, CombatMode combatMode) {
+    public PetData(Optional<UUID> ownerUUID, boolean tamed, PetOrder order, CombatMode combatMode, ItemStack collar) {
         this.ownerUUID = ownerUUID.orElse(null);
         this.tamed = tamed;
         this.order = order != null ? order : PetOrder.FOLLOW;
         this.combatMode = combatMode != null ? combatMode : net.yigitguven.petting.config.PettingServerConfig.getDefaultCombatMode();
+        this.collar = collar != null ? collar : ItemStack.EMPTY;
+    }
+
+    public ItemStack getCollar() {
+        return collar != null ? collar : ItemStack.EMPTY;
+    }
+
+    public void setCollar(ItemStack collar) {
+        this.collar = collar != null ? collar : ItemStack.EMPTY;
     }
 
     public UUID getOwnerUUID() {

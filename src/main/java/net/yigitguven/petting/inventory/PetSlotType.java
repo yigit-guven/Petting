@@ -37,7 +37,8 @@ public enum PetSlotType {
     MAINHAND(EquipmentSlot.MAINHAND, Identifier.withDefaultNamespace("container/slot/sword")),
     OFFHAND(EquipmentSlot.OFFHAND, Identifier.withDefaultNamespace("container/slot/shield")),
     SADDLE(EquipmentSlot.SADDLE, Identifier.withDefaultNamespace("container/slot/saddle")),
-    CHEST_STORAGE(null, null);
+    CHEST_STORAGE(null, null),
+    COLLAR(null, Identifier.fromNamespaceAndPath(net.yigitguven.petting.Petting.MODID, "container/slot/collar"));
 
     private final @Nullable EquipmentSlot slot;
     private final @Nullable Identifier defaultIcon;
@@ -65,6 +66,9 @@ public enum PetSlotType {
 
     public boolean mayPlace(ItemStack stack, @Nullable Mob pet) {
         if (stack.isEmpty()) return false;
+        if (this == COLLAR) {
+            return stack.getItem() instanceof net.yigitguven.petting.item.CollarItem;
+        }
         if (this == CHEST_STORAGE) {
             return stack.is(Items.CHEST) || stack.is(Items.TRAPPED_CHEST) || stack.is(Items.BARREL);
         }
@@ -114,6 +118,10 @@ public enum PetSlotType {
     public static List<PetSlotType> getRightSlots(@Nullable Mob pet) {
         List<PetSlotType> slots = new ArrayList<>();
         if (pet == null) return slots;
+
+        if (net.yigitguven.petting.config.PettingServerConfig.isCollarSlotEnabled()) {
+            slots.add(COLLAR);
+        }
 
         if (canUseHands(pet)) {
             if (pet.canUseSlot(EquipmentSlot.MAINHAND)) slots.add(MAINHAND);

@@ -18,6 +18,7 @@ import net.yigitguven.petting.ai.PetSitGoal;
 import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetData;
 import net.yigitguven.petting.data.PetOrder;
+import net.minecraft.world.item.ItemStack;
 import net.yigitguven.petting.init.PettingModAttachments;
 
 import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
@@ -118,6 +119,19 @@ public class PetHelper {
         }
     }
 
+    public static ItemStack getCollar(LivingEntity entity) {
+        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+            return ItemStack.EMPTY;
+        }
+        return entity.getData(PettingModAttachments.PET_DATA).getCollar();
+    }
+
+    public static void setCollar(LivingEntity entity, ItemStack collar) {
+        PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        data.setCollar(collar != null ? collar : ItemStack.EMPTY);
+        entity.setData(PettingModAttachments.PET_DATA, data);
+    }
+
     public static void setTamed(Mob mob, Player owner) {
         PetData data = mob.getData(PettingModAttachments.PET_DATA);
         data.setTamed(true);
@@ -203,6 +217,13 @@ public class PetHelper {
     public static void setUntamed(Mob mob) {
         if (mob.hasData(PettingModAttachments.PET_DATA)) {
             PetData data = mob.getData(PettingModAttachments.PET_DATA);
+            ItemStack collar = data.getCollar();
+            if (!collar.isEmpty()) {
+                if (mob.level() instanceof ServerLevel serverLevel) {
+                    mob.spawnAtLocation(serverLevel, collar);
+                }
+                data.setCollar(ItemStack.EMPTY);
+            }
             data.setTamed(false);
             data.setOwnerUUID(null);
             data.setOrder(PetOrder.FOLLOW);

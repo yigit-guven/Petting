@@ -1,0 +1,21 @@
+{
+  "replace": false,
+  "values": [
+    "petting:collar",
+    "petting:white_collar",
+    "petting:orange_collar",
+    "petting:magenta_collar",
+    "petting:light_blue_collar",
+    "petting:yellow_collar",
+    "petting:lime_collar",
+    "petting:pink_collar",
+    "petting:gray_collar",
+    "petting:light_gray_collar",
+    "petting:cyan_collar",
+    "petting:purple_collar",
+    "petting:blue_collar",
+    "petting:brown_collar",
+    "petting:green_collar",
+    "petting:black_collar"
+  ]
+}

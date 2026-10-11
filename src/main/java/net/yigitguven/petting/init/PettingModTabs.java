@@ -26,6 +26,22 @@ public class PettingModTabs {
                         output.accept(PettingModItems.GOLDEN_FUNGUS.get());
                         output.accept(PettingModItems.GOLDEN_EYE.get());
                         output.accept(PettingModItems.GOLDEN_SLIME.get());
+                        output.accept(PettingModItems.COLLAR.get());
+                        output.accept(PettingModItems.WHITE_COLLAR.get());
+                        output.accept(PettingModItems.ORANGE_COLLAR.get());
+                        output.accept(PettingModItems.MAGENTA_COLLAR.get());
+                        output.accept(PettingModItems.LIGHT_BLUE_COLLAR.get());
+                        output.accept(PettingModItems.YELLOW_COLLAR.get());
+                        output.accept(PettingModItems.LIME_COLLAR.get());
+                        output.accept(PettingModItems.PINK_COLLAR.get());
+                        output.accept(PettingModItems.GRAY_COLLAR.get());
+                        output.accept(PettingModItems.LIGHT_GRAY_COLLAR.get());
+                        output.accept(PettingModItems.CYAN_COLLAR.get());
+                        output.accept(PettingModItems.PURPLE_COLLAR.get());
+                        output.accept(PettingModItems.BLUE_COLLAR.get());
+                        output.accept(PettingModItems.BROWN_COLLAR.get());
+                        output.accept(PettingModItems.GREEN_COLLAR.get());
+                        output.accept(PettingModItems.BLACK_COLLAR.get());
                     })
                     .build());
 }

@@ -90,6 +90,7 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | `petsAttackOwnerTarget` | Boolean | `true` | When `true`, pets will automatically attack mobs that their owner damages. |
 | `petsRetaliate` | Boolean | `true` | When `true`, pets will retaliate and attack mobs that damage the pet itself. |
 | `teleportDistance` | Double | `20.0` | Distance in blocks before a following pet attempts to teleport to its owner (`5.0` – `200.0`). |
+| `enableCollarSlot` | Boolean | `true` | When `true`, all pet inventory GUIs provide a dedicated slot to equip collars. When `false`, the collar slot is removed from all pet GUIs. |
 
 #### Setting Details:
 
@@ -122,6 +123,11 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 - **`teleportDistance`**:
   Controls how far away an owner can get before the following pet teleports to catch up.
   - `20.0` (*Default*): 20 blocks. While engaged in active combat, pets will prioritize fighting rather than following, unless the owner exceeds this distance.
+
+- **`enableCollarSlot`**:
+  Controls whether the universal collar slot is enabled in pet inventory GUIs.
+  - `true` (*Default*): All pet inventory GUIs display a dedicated collar equipment slot.
+  - `false`: Removes the collar equipment slot from all pet inventory GUIs.
 
 ---
 

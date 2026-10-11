@@ -36,6 +36,11 @@ public class PetGoalEvents {
     public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             if (mob.level() instanceof ServerLevel serverLevel) {
+                net.minecraft.world.item.ItemStack collar = PetHelper.getCollar(mob);
+                if (!collar.isEmpty()) {
+                    mob.spawnAtLocation(serverLevel, collar);
+                    PetHelper.setCollar(mob, net.minecraft.world.item.ItemStack.EMPTY);
+                }
                 PetSavedData.get(serverLevel).removePet(mob.getUUID());
             }
         }
