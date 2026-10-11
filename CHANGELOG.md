@@ -34,8 +34,8 @@ All notable changes to this project will be documented in this file.
 - Added pet inventory side navigation tabs:
   - Added tab strip positioned seamlessly along the left container edge following vanilla recipe book tab conventions.
   - **Pet Inventory (Home)** tab: Displays pet equipment, entity model, and player inventory slots.
-  - **Collar Settings** tab: Appears dynamically when the pet is wearing a collar.
-  - **Riding Settings** tab: Displays when pet riding is enabled in config.
+  - **Collar Settings** tab: Appears dynamically in the sidebar only when the pet is wearing a collar.
+  - **Riding Settings** tab: Appears dynamically in the sidebar only when a saddle is equipped on the pet. Automatically returns to Home if the saddle is removed.
   - Automatically isolates slot rendering and mouse events to the Home tab so invisible slots are never highlighted or clicked in secondary tabs.
   - Added dedicated keybind support (`J` key / configurable via Controls) to open pet inventory, decoupled from default shift right-click.
 - Added Collar Settings GUI scene with persistent data storage:
@@ -57,15 +57,22 @@ All notable changes to this project will be documented in this file.
   - **Defend Pets Toggle**: Toggles whether pet defends fellow pets belonging to the same owner.
   - **Retaliate Toggle**: Toggles whether pet counter-attacks when directly taking damage.
   - **Reset Defaults**: Resets all collar options to server configuration defaults.
-- Added universal Pet Riding system with dedicated keybind and riding dashboard:
+- Added universal Pet Riding system with streamlined UI and reliable dismounting:
   - **Ride Keybind (`key.petting.ride_pet`)**: Defaults to **R** (`KEY_R`). Remappable in Controls -> Key Binds -> Petting. Pressing while looking at an owned pet mounts it; pressing while riding provides an instant dismount.
-  - **Saddle Slot in Riding UI**: Located directly within the Riding tab of the Pet Inventory GUI:
-    - **Saddled (Controlled)**: Equipping a saddle allows full steering and control over the pet's movement.
-    - **Unsaddled (Uncontrolled)**: Players can still mount the pet if enabled, but cannot steer it (the pet moves freely on its own autonomous AI).
+  - **Custom Saddle Slot in Main Pet Inventory (Home Tab)**:
+    - Located directly alongside the pet's equipment slots in the primary pet inventory UI.
+    - Automatically excluded for mobs that already have default saddle slots in vanilla (`AbstractHorse` - Horses, Donkeys, Mules, Skeleton/Zombie Horses, Camels).
+    - **Saddled (Controlled)**: Equipping a saddle enables full player steering, 3D flight/swim controls, and unlocks the Riding Settings sidebar tab.
+    - **Unsaddled (Uncontrolled)**: Players can mount allowed pets without a saddle if enabled by server configs, but cannot steer them.
     - Saddles drop on the ground if a pet dies or is untamed.
+  - **Redesigned Riding Settings Screen**:
+    - Completely removed player inventory slots and visual clutter from the riding tab.
+    - Features a clean, dedicated full-panel settings screen matching the collar dashboard, displaying the equipped saddle icon and pet header.
+    - Two clean, full-width toggle buttons: **Attack on Click** and **Auto-Attack Hostiles**.
+    - Embedded **Controls Guide** panel detailing mobility-specific navigation and keybindings for walking, flying, and swimming pets.
   - **Mob-Specific 3D Controls (respecting player's configured keybindings)**:
     - **Walking Pets**: Steer with movement keys (WASD), jump with Jump key, sprint for faster movement, dismount with Sneak. Includes step-height assist (1.06 blocks) to traverse single-block inclines smoothly.
-    - **Flying Pets**: Full 3D aerial navigation. WASD for horizontal movement, Jump ascends, Sneak descends, and releasing keys hovers motionless in mid-air. Sneaking in the air descends rather than dismounting; players only dismount when pressing Sneak while on the ground.
+    - **Flying Pets**: Full 3D aerial navigation. WASD for horizontal movement, Jump ascends, Sneak descends, and releasing keys hovers motionless in mid-air. Sneaking in the air descends rather than dismounting; upon reaching ground level or landing within 1.8 blocks of the ground, holding or pressing Sneak reliably and immediately dismounts the rider (resolving dismount issues when riding flying Withers).
     - **Aquatic / Swimming Pets**: Full 3D underwater navigation in water (WASD to swim, Jump to surface, Sneak to dive, with automatic Water Breathing for the rider). Outside of water, aquatic pets cannot fly and crawl along the ground.
   - **Riding Combat & Attacks**:
     - **Attack on Left-Click**: Pressing the Attack key while riding commands the ridden pet to attack in the player's crosshair direction.

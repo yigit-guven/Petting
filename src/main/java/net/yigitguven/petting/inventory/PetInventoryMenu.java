@@ -26,7 +26,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
     private final Player player;
     private final List<PetSlotType> petSlots;
     private final int petSlotCount;
-    private final PetSaddleSlot saddleSlot;
     private boolean isRidingTab = false;
     private boolean isCollarTab = false;
 
@@ -74,10 +73,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             this.addSlot(new DynamicPetSlot(petContainer, slotIndex++, 152, y, type, pet));
         }
 
-        // Saddle slot (used on Riding tab, positioned at x = 12, y = 20)
-        Container saddleContainer = new PetSaddleContainer(pet);
-        this.saddleSlot = (PetSaddleSlot) this.addSlot(new PetSaddleSlot(saddleContainer, 0, 12, 20, pet));
-
         // Player standard inventory (27 slots: 3 rows of 9 at x = 8, y = 103)
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
@@ -106,10 +101,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         return this.petSlotCount;
     }
 
-    public PetSaddleSlot getSaddleSlot() {
-        return this.saddleSlot;
-    }
-
     public void setTabState(boolean riding, boolean collar) {
         this.isRidingTab = riding;
         this.isCollarTab = collar;
@@ -119,12 +110,8 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         return !this.isRidingTab && !this.isCollarTab;
     }
 
-    public boolean isSaddleSlotActive() {
-        return this.isRidingTab;
-    }
-
     public boolean isPlayerInvActive() {
-        return !this.isCollarTab;
+        return !this.isCollarTab && !this.isRidingTab;
     }
 
     @Override
@@ -143,8 +130,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             ItemStack slotStack = slot.getItem();
             result = slotStack.copy();
 
-            int saddleIndex = this.petSlotCount;
-            int playerStart = this.petSlotCount + 1;
+            int playerStart = this.petSlotCount;
             int playerEnd = playerStart + 36;
 
             if (slotIndex < this.petSlotCount) {
@@ -152,32 +138,19 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                 if (!this.moveItemStackTo(slotStack, playerStart, playerEnd, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (slotIndex == saddleIndex) {
-                // From saddle slot to player inventory
-                if (!this.moveItemStackTo(slotStack, playerStart, playerEnd, true)) {
-                    return ItemStack.EMPTY;
-                }
             } else {
                 // From player inventory to pet slots
                 boolean moved = false;
 
-                // Try saddle slot first if stack is a saddle and slot is empty
-                if (this.saddleSlot.mayPlace(slotStack) && !this.saddleSlot.hasItem()) {
-                    if (this.moveItemStackTo(slotStack, saddleIndex, saddleIndex + 1, false)) {
-                        moved = true;
-                    }
-                }
-
-                // First pass: try equipment slots other than hands
-                if (!moved) {
-                    for (int i = 0; i < this.petSlotCount; i++) {
-                        PetSlotType type = this.petSlots.get(i);
-                        if (type != PetSlotType.MAINHAND && type != PetSlotType.OFFHAND) {
-                            if (type.mayPlace(slotStack, this.pet)) {
-                                if (this.moveItemStackTo(slotStack, i, i + 1, false)) {
-                                    moved = true;
-                                    break;
-                                }
+                // First pass: try equipment slots other than hands (including Collar and Saddle)
+                for (int i = 0; i < this.petSlotCount; i++) {
+                    PetSlotType type = this.petSlots.get(i);
+                    if (type != PetSlotType.MAINHAND && type != PetSlotType.OFFHAND) {
+                        Slot targetSlot = this.slots.get(i);
+                        if (!targetSlot.hasItem() && type.mayPlace(slotStack, this.pet)) {
+                            if (this.moveItemStackTo(slotStack, i, i + 1, false)) {
+                                moved = true;
+                                break;
                             }
                         }
                     }
@@ -307,6 +280,9 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             if (type == PetSlotType.COLLAR) {
                 return net.yigitguven.petting.util.PetHelper.getCollar(this.pet);
             }
+            if (type == PetSlotType.SADDLE) {
+                return net.yigitguven.petting.util.PetHelper.getSaddle(this.pet);
+            }
             if (type == PetSlotType.CHEST_STORAGE) {
                 if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
                     return new ItemStack(Items.CHEST);
@@ -336,6 +312,14 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                 if (current.isEmpty()) return ItemStack.EMPTY;
                 ItemStack split = current.split(amount);
                 net.yigitguven.petting.util.PetHelper.setCollar(this.pet, current.isEmpty() ? ItemStack.EMPTY : current);
+                this.setChanged();
+                return split;
+            }
+            if (type == PetSlotType.SADDLE) {
+                ItemStack current = net.yigitguven.petting.util.PetHelper.getSaddle(this.pet);
+                if (current.isEmpty()) return ItemStack.EMPTY;
+                ItemStack split = current.split(amount);
+                net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, current.isEmpty() ? ItemStack.EMPTY : current);
                 this.setChanged();
                 return split;
             }
@@ -369,6 +353,12 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                 net.yigitguven.petting.util.PetHelper.setCollar(this.pet, ItemStack.EMPTY);
                 return current;
             }
+            if (type == PetSlotType.SADDLE) {
+                ItemStack current = net.yigitguven.petting.util.PetHelper.getSaddle(this.pet);
+                if (current.isEmpty()) return ItemStack.EMPTY;
+                net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, ItemStack.EMPTY);
+                return current;
+            }
             if (type == PetSlotType.CHEST_STORAGE) {
                 if (this.pet instanceof AbstractChestedHorse chested && chested.hasChest()) {
                     chested.setChest(false);
@@ -392,6 +382,11 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             PetSlotType type = this.slotTypes.get(slotIndex);
             if (type == PetSlotType.COLLAR) {
                 net.yigitguven.petting.util.PetHelper.setCollar(this.pet, stack);
+                this.setChanged();
+                return;
+            }
+            if (type == PetSlotType.SADDLE) {
+                net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, stack);
                 this.setChanged();
                 return;
             }
@@ -433,6 +428,8 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                 for (PetSlotType type : this.slotTypes) {
                     if (type == PetSlotType.COLLAR) {
                         net.yigitguven.petting.util.PetHelper.setCollar(this.pet, ItemStack.EMPTY);
+                    } else if (type == PetSlotType.SADDLE) {
+                        net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, ItemStack.EMPTY);
                     } else if (type == PetSlotType.CHEST_STORAGE) {
                         if (this.pet instanceof AbstractChestedHorse chested) {
                             chested.setChest(false);
@@ -444,105 +441,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    public class PetSaddleSlot extends Slot {
-        private final @Nullable Mob pet;
-
-        public PetSaddleSlot(Container container, int index, int x, int y, @Nullable Mob pet) {
-            super(container, index, x, y);
-            this.pet = pet;
-        }
-
-        @Override
-        public boolean isActive() {
-            return PetInventoryMenu.this.isSaddleSlotActive();
-        }
-
-        @Override
-        public boolean mayPlace(ItemStack stack) {
-            if (stack.isEmpty()) return false;
-            return stack.is(Items.SADDLE) ||
-                    (stack.get(net.minecraft.core.component.DataComponents.EQUIPPABLE) != null &&
-                            stack.get(net.minecraft.core.component.DataComponents.EQUIPPABLE).slot() == EquipmentSlot.SADDLE);
-        }
-
-        @Override
-        public int getMaxStackSize() {
-            return 1;
-        }
-
-        @Override
-        public @Nullable Identifier getNoItemIcon() {
-            return Identifier.withDefaultNamespace("container/slot/saddle");
-        }
-    }
-
-    private static class PetSaddleContainer implements Container {
-        private final @Nullable Mob pet;
-
-        public PetSaddleContainer(@Nullable Mob pet) {
-            this.pet = pet;
-        }
-
-        @Override
-        public int getContainerSize() {
-            return 1;
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return this.pet == null || net.yigitguven.petting.util.PetHelper.getSaddle(this.pet).isEmpty();
-        }
-
-        @Override
-        public ItemStack getItem(int slotIndex) {
-            return this.pet != null ? net.yigitguven.petting.util.PetHelper.getSaddle(this.pet) : ItemStack.EMPTY;
-        }
-
-        @Override
-        public ItemStack removeItem(int slotIndex, int amount) {
-            if (this.pet == null) return ItemStack.EMPTY;
-            ItemStack current = net.yigitguven.petting.util.PetHelper.getSaddle(this.pet);
-            if (current.isEmpty()) return ItemStack.EMPTY;
-            ItemStack split = current.split(amount);
-            net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, current.isEmpty() ? ItemStack.EMPTY : current);
-            this.setChanged();
-            return split;
-        }
-
-        @Override
-        public ItemStack removeItemNoUpdate(int slotIndex) {
-            if (this.pet == null) return ItemStack.EMPTY;
-            ItemStack current = net.yigitguven.petting.util.PetHelper.getSaddle(this.pet);
-            if (current.isEmpty()) return ItemStack.EMPTY;
-            net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, ItemStack.EMPTY);
-            return current;
-        }
-
-        @Override
-        public void setItem(int slotIndex, ItemStack stack) {
-            if (this.pet != null) {
-                net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, stack);
-                this.setChanged();
-            }
-        }
-
-        @Override
-        public void setChanged() {
-        }
-
-        @Override
-        public boolean stillValid(Player player) {
-            return this.pet != null && this.pet.isAlive() && player.distanceTo(this.pet) <= 8.0D;
-        }
-
-        @Override
-        public void clearContent() {
-            if (this.pet != null) {
-                net.yigitguven.petting.util.PetHelper.setSaddle(this.pet, ItemStack.EMPTY);
             }
         }
     }

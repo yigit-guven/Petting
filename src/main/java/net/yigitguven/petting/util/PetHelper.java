@@ -286,6 +286,9 @@ public class PetHelper {
         if (pet == null) {
             return false;
         }
+        if (pet instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) {
+            return false;
+        }
         return PettingServerConfig.isPetRidingAllowed(pet.getType());
     }
 

@@ -115,12 +115,26 @@ public enum PetSlotType {
         return slots;
     }
 
+    public static boolean isDefaultSaddleable(@Nullable Mob mob) {
+        return mob instanceof AbstractHorse;
+    }
+
+    public static boolean canEquipCustomSaddle(@Nullable Mob mob) {
+        return mob != null
+                && net.yigitguven.petting.util.PetHelper.isPetRidingEnabledFor(mob)
+                && !isDefaultSaddleable(mob);
+    }
+
     public static List<PetSlotType> getRightSlots(@Nullable Mob pet) {
         List<PetSlotType> slots = new ArrayList<>();
         if (pet == null) return slots;
 
         if (net.yigitguven.petting.config.PettingServerConfig.isCollarSlotEnabled()) {
             slots.add(COLLAR);
+        }
+
+        if (canEquipCustomSaddle(pet)) {
+            slots.add(SADDLE);
         }
 
         if (canUseHands(pet)) {

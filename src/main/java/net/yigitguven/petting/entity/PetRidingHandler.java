@@ -118,27 +118,38 @@ public class PetRidingHandler {
     }
 
     public static boolean isGroundedOrCannotDescend(Mob mob) {
-        if (mob.onGround()) {
-            return true;
-        }
-        if (mob.verticalCollision || mob.verticalCollisionBelow) {
+        if (mob.onGround() || mob.verticalCollision || mob.verticalCollisionBelow) {
             return true;
         }
         AABB box = mob.getBoundingBox();
-        AABB check = box.move(0, -0.65D, 0);
-        if (!mob.level().noCollision(mob, check)) {
+        // 1. Direct downward collision check: if moving 0.1 down collides, mob cannot descend
+        if (!mob.level().noCollision(mob, box.move(0, -0.1D, 0))) {
             return true;
         }
-        double minY = box.minY;
-        net.minecraft.core.BlockPos posBelow = net.minecraft.core.BlockPos.containing(mob.getX(), minY - 0.25D, mob.getZ());
-        net.minecraft.world.level.block.state.BlockState stateBelow = mob.level().getBlockState(posBelow);
-        if (!stateBelow.isAir() && (stateBelow.isSolid() || stateBelow.entityCanStandOn(mob.level(), posBelow, mob))) {
+        // 2. Downward reach check within 1.8 blocks beneath base of mob
+        AABB groundBox = new AABB(box.minX, box.minY - 1.8D, box.minZ, box.maxX, box.minY, box.maxZ);
+        if (!mob.level().noCollision(mob, groundBox)) {
             return true;
         }
-        net.minecraft.core.BlockPos posAtFeet = net.minecraft.core.BlockPos.containing(mob.getX(), minY + 0.1D, mob.getZ());
-        net.minecraft.world.level.block.state.BlockState stateAtFeet = mob.level().getBlockState(posAtFeet);
-        if (!stateAtFeet.isAir() && (stateAtFeet.isSolid() || stateAtFeet.entityCanStandOn(mob.level(), posAtFeet, mob))) {
-            return true;
+        // 3. Scan block footprint beneath mob within 1.8 blocks
+        int minX = net.minecraft.util.Mth.floor(box.minX);
+        int maxX = net.minecraft.util.Mth.floor(box.maxX);
+        int minZ = net.minecraft.util.Mth.floor(box.minZ);
+        int maxZ = net.minecraft.util.Mth.floor(box.maxZ);
+        int minY = net.minecraft.util.Mth.floor(box.minY - 1.8D);
+        int maxY = net.minecraft.util.Mth.floor(box.minY);
+
+        net.minecraft.core.BlockPos.MutableBlockPos pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int y = maxY; y >= minY; y--) {
+            for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                    pos.set(x, y, z);
+                    net.minecraft.world.level.block.state.BlockState state = mob.level().getBlockState(pos);
+                    if (!state.isAir() && (state.isSolid() || state.entityCanStandOn(mob.level(), pos, mob) || !state.getCollisionShape(mob.level(), pos).isEmpty())) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
@@ -218,6 +229,13 @@ public class PetRidingHandler {
             mob.resetFallDistance();
             player.resetFallDistance();
             mob.setNoGravity(true);
+
+            // If mob reached ground after descending, dismount immediately if shift is held
+            if (input.shift() && isGroundedOrCannotDescend(mob)) {
+                allowForcedDismount(player);
+                player.stopRiding();
+                return;
+            }
         } else if (PetHelper.isSwimmingPet(mob)) {
             // Swimming mob controls: 3D swim in water, slow crawl on land
             if (mob.isInWater()) {
@@ -244,6 +262,13 @@ public class PetRidingHandler {
                 mob.move(MoverType.SELF, mob.getDeltaMovement());
                 mob.resetFallDistance();
                 player.resetFallDistance();
+
+                // If mob reached floor after diving, dismount immediately if shift is held
+                if (input.shift() && isGroundedOrCannotDescend(mob)) {
+                    allowForcedDismount(player);
+                    player.stopRiding();
+                    return;
+                }
             } else {
                 // Out of water: cannot fly; sneak dismounts immediately
                 if (input.shift()) {

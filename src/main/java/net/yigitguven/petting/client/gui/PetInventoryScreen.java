@@ -25,6 +25,7 @@ import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.inventory.PetInventoryMenu;
+import net.yigitguven.petting.inventory.PetSlotType;
 import net.yigitguven.petting.network.UpdateCollarSettingsPayload;
 import net.yigitguven.petting.network.UpdateRidingSettingsPayload;
 import net.yigitguven.petting.util.PetHelper;
@@ -227,7 +228,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                         this.refreshRidingWidgetStates();
                     }
                 }
-        ).bounds(xo + 11, yo + 40, 74, 18)
+        ).bounds(xo + 10, yo + 41, 156, 18)
          .tooltip(Tooltip.create(Component.translatable("petting.gui.riding.attack_on_click.tooltip")))
          .build();
 
@@ -242,7 +243,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                         this.refreshRidingWidgetStates();
                     }
                 }
-        ).bounds(xo + 91, yo + 40, 74, 18)
+        ).bounds(xo + 10, yo + 62, 156, 18)
          .tooltip(Tooltip.create(Component.translatable("petting.gui.riding.auto_attack.tooltip")))
          .build();
 
@@ -430,12 +431,12 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     private void updateTabButtons() {
         Mob pet = this.menu.getPet();
         boolean collarWorn = pet != null && !PetHelper.getCollar(pet).isEmpty();
-        boolean ridingAllowed = pet != null && PetHelper.isPetRidingEnabledFor(pet);
-        boolean hasOtherButtons = collarWorn || ridingAllowed;
+        boolean saddleWorn = pet != null && PetHelper.hasSaddle(pet) && PetSlotType.canEquipCustomSaddle(pet);
+        boolean hasOtherButtons = collarWorn || saddleWorn;
 
         this.homeTabButton.visible = hasOtherButtons;
         this.collarTabButton.visible = collarWorn;
-        this.ridingTabButton.visible = ridingAllowed;
+        this.ridingTabButton.visible = saddleWorn;
 
         int buttonY = this.topPos + 8;
         if (this.homeTabButton.visible) {
@@ -454,7 +455,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         // Return to HOME if current tab becomes unavailable
         if (this.currentTab == PetInventoryTab.COLLAR && !collarWorn) {
             this.setCurrentTab(PetInventoryTab.HOME);
-        } else if (this.currentTab == PetInventoryTab.RIDING && !ridingAllowed) {
+        } else if (this.currentTab == PetInventoryTab.RIDING && !saddleWorn) {
             this.setCurrentTab(PetInventoryTab.HOME);
         }
     }
@@ -470,7 +471,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.xMouse = mouseX;
         this.yMouse = mouseY;
         this.updateTabButtons();
-        if (this.currentTab == PetInventoryTab.COLLAR) {
+        if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             this.hoveredSlot = null;
         }
         super.extractRenderState(graphics, mouseX, mouseY, a);
@@ -480,21 +481,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         for (PetInventoryTabButton button : buttons) {
             if (button != null && button.visible) {
                 button.extractRenderState(graphics, mouseX, mouseY, a);
-            }
-        }
-
-        if (this.currentTab == PetInventoryTab.RIDING) {
-            int xo = this.leftPos;
-            int yo = this.topPos;
-            if (mouseX >= xo + 11 && mouseX <= xo + 165 && mouseY >= yo + 61 && mouseY <= yo + 85) {
-                java.util.List<Component> tooltip = java.util.List.of(
-                        Component.translatable("petting.gui.riding.controls.tooltip.title").withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD),
-                        Component.translatable("petting.gui.riding.controls.tooltip.move").withStyle(ChatFormatting.GRAY),
-                        Component.translatable("petting.gui.riding.controls.tooltip.vertical").withStyle(ChatFormatting.GRAY),
-                        Component.translatable("petting.gui.riding.controls.tooltip.dismount").withStyle(ChatFormatting.GRAY),
-                        Component.translatable("petting.gui.riding.controls.tooltip.attack").withStyle(ChatFormatting.GRAY)
-                );
-                graphics.setComponentTooltipForNextFrame(this.font, tooltip, mouseX, mouseY);
             }
         }
     }
@@ -562,56 +548,61 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             Component collarName = collar.getHoverName();
             graphics.text(this.font, collarName, xo + 32, yo + 24, 0xFF202020, false);
         } else {
-            // Riding tab container background & dashboard
+            // Riding tab container background & dashboard (full panel, removing player inventory)
             graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
-            // Inset panel for riding dashboard (xo + 7 to xo + 169, yo + 17 to yo + 88)
-            graphics.fill(xo + 7, yo + 17, xo + 169, yo + 88, 0xFFC6C6C6);
+            // Container panel fill & border (xo + 7, yo + 17 to xo + 169, yo + 179)
+            graphics.fill(xo + 7, yo + 17, xo + 169, yo + 179, 0xFFC6C6C6);
             graphics.fill(xo + 7, yo + 17, xo + 169, yo + 18, 0xFF373737);
-            graphics.fill(xo + 7, yo + 17, xo + 8, yo + 88, 0xFF373737);
-            graphics.fill(xo + 168, yo + 18, xo + 169, yo + 88, 0xFFFFFFFF);
-            graphics.fill(xo + 8, yo + 87, xo + 169, yo + 88, 0xFFFFFFFF);
+            graphics.fill(xo + 7, yo + 17, xo + 8, yo + 179, 0xFF373737);
+            graphics.fill(xo + 168, yo + 18, xo + 169, yo + 179, 0xFFFFFFFF);
+            graphics.fill(xo + 8, yo + 178, xo + 169, yo + 179, 0xFFFFFFFF);
 
-            // Row 1: Saddle slot sprite at (xo + 11, yo + 19)
-            graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, xo + 11, yo + 19, 18, 18);
-
-            // Row 1: Header status banner (xo + 33, yo + 19 to xo + 165, yo + 37)
-            graphics.fill(xo + 33, yo + 19, xo + 165, yo + 37, 0xFFB0B0B0);
-            graphics.fill(xo + 33, yo + 19, xo + 165, yo + 20, 0xFF8F8F8F);
-            graphics.fill(xo + 33, yo + 19, xo + 34, yo + 37, 0xFF8F8F8F);
-            graphics.fill(xo + 164, yo + 20, xo + 165, yo + 37, 0xFFD8D8D8);
-            graphics.fill(xo + 34, yo + 36, xo + 165, yo + 37, 0xFFD8D8D8);
+            // Header status banner (xo + 10, yo + 19 to xo + 166, yo + 37)
+            graphics.fill(xo + 10, yo + 19, xo + 166, yo + 37, 0xFFB0B0B0);
+            graphics.fill(xo + 10, yo + 19, xo + 166, yo + 20, 0xFF8F8F8F);
+            graphics.fill(xo + 10, yo + 19, xo + 11, yo + 37, 0xFF8F8F8F);
+            graphics.fill(xo + 165, yo + 20, xo + 166, yo + 37, 0xFFD8D8D8);
+            graphics.fill(xo + 11, yo + 36, xo + 166, yo + 37, 0xFFD8D8D8);
 
             Mob pet = this.menu.getPet();
-            boolean isSaddled = pet != null && PetHelper.hasSaddle(pet);
-            graphics.text(this.font, Component.translatable("petting.gui.riding.saddle_slot"), xo + 37, yo + 21, 0xFF202020, false);
-            if (isSaddled) {
-                graphics.text(this.font, Component.translatable("petting.gui.riding.status.controlled").withStyle(ChatFormatting.DARK_GREEN), xo + 37, yo + 29, 0xFF1B5E20, false);
-            } else {
-                graphics.text(this.font, Component.translatable("petting.gui.riding.status.uncontrolled").withStyle(ChatFormatting.GOLD), xo + 37, yo + 29, 0xFF8A3000, false);
+            ItemStack saddle = pet != null ? PetHelper.getSaddle(pet) : ItemStack.EMPTY;
+            if (saddle.isEmpty()) {
+                saddle = new ItemStack(Items.SADDLE);
             }
+            graphics.item(saddle, xo + 12, yo + 20);
 
-            // Row 3: Controls guide box (xo + 11, yo + 61 to xo + 165, yo + 85)
-            graphics.fill(xo + 11, yo + 61, xo + 165, yo + 85, 0xFFB0B0B0);
-            graphics.fill(xo + 11, yo + 61, xo + 165, yo + 62, 0xFF8F8F8F);
-            graphics.fill(xo + 11, yo + 61, xo + 12, yo + 85, 0xFF8F8F8F);
-            graphics.fill(xo + 164, yo + 62, xo + 165, yo + 85, 0xFFD8D8D8);
-            graphics.fill(xo + 12, yo + 84, xo + 165, yo + 85, 0xFFD8D8D8);
+            Component petTitle = pet != null ? pet.getDisplayName() : Component.translatable("petting.gui.scene.riding_settings");
+            graphics.text(this.font, petTitle, xo + 32, yo + 24, 0xFF202020, false);
 
-            Component line1;
-            Component line2;
+            // Controls & Guide recessed box (xo + 10, yo + 84 to xo + 166, yo + 175)
+            graphics.fill(xo + 10, yo + 84, xo + 166, yo + 175, 0xFFB0B0B0);
+            graphics.fill(xo + 10, yo + 84, xo + 166, yo + 85, 0xFF8F8F8F);
+            graphics.fill(xo + 10, yo + 84, xo + 11, yo + 175, 0xFF8F8F8F);
+            graphics.fill(xo + 165, yo + 85, xo + 166, yo + 175, 0xFFD8D8D8);
+            graphics.fill(xo + 11, yo + 174, xo + 166, yo + 175, 0xFFD8D8D8);
+
+            graphics.text(this.font, Component.translatable("petting.gui.riding.controls.header").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), xo + 14, yo + 88, 0xFF1B5E20, false);
+
             if (pet != null && PetHelper.isFlyingPet(pet)) {
-                line1 = Component.translatable("petting.gui.riding.controls.flying.line1");
-                line2 = Component.translatable("petting.gui.riding.controls.flying.line2");
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.steer"), xo + 14, yo + 102, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.ascend"), xo + 14, yo + 115, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.descend"), xo + 14, yo + 128, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.dismount"), xo + 14, yo + 141, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
             } else if (pet != null && PetHelper.isSwimmingPet(pet)) {
-                line1 = Component.translatable("petting.gui.riding.controls.swimming.line1");
-                line2 = Component.translatable("petting.gui.riding.controls.swimming.line2");
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.steer"), xo + 14, yo + 102, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.ascend"), xo + 14, yo + 115, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.descend"), xo + 14, yo + 128, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.dismount"), xo + 14, yo + 141, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
             } else {
-                line1 = Component.translatable("petting.gui.riding.controls.walking.line1");
-                line2 = Component.translatable("petting.gui.riding.controls.walking.line2");
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.steer"), xo + 14, yo + 102, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.jump"), xo + 14, yo + 115, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.sprint"), xo + 14, yo + 128, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.dismount"), xo + 14, yo + 141, 0xFF282828, false);
+                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
             }
-            graphics.text(this.font, line1, xo + 15, yo + 64, 0xFF202020, false);
-            graphics.text(this.font, line2, xo + 15, yo + 74, 0xFF353535, false);
         }
 
         // 3. Draw SELECTED tab background (in front of container frame, seamlessly connected)
@@ -653,20 +644,19 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             graphics.text(this.font, Component.translatable("petting.gui.scene.collar_settings"), this.titleLabelX, this.titleLabelY, 0xFF404040, false);
         } else if (this.currentTab == PetInventoryTab.RIDING) {
             graphics.text(this.font, Component.translatable("petting.gui.scene.riding_settings"), this.titleLabelX, this.titleLabelY, 0xFF404040, false);
-            graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
         }
     }
 
     @Override
     protected void extractSlots(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        if (this.currentTab != PetInventoryTab.COLLAR) {
+        if (this.currentTab == PetInventoryTab.HOME) {
             super.extractSlots(graphics, mouseX, mouseY);
         }
     }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (this.currentTab == PetInventoryTab.COLLAR) {
+        if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             for (GuiEventListener listener : this.children()) {
                 if (listener.mouseClicked(event, doubleClick)) {
                     this.setFocused(listener);
@@ -675,25 +665,13 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 }
             }
             return false;
-        } else if (this.currentTab == PetInventoryTab.RIDING) {
-            for (GuiEventListener listener : this.children()) {
-                if (listener == this.homeTabButton || listener == this.collarTabButton || listener == this.ridingTabButton
-                        || listener == this.rideAttackOnClickButton || listener == this.rideAutoAttackButton) {
-                    if (listener.mouseClicked(event, doubleClick)) {
-                        this.setFocused(listener);
-                        this.setDragging(true);
-                        return true;
-                    }
-                }
-            }
-            return super.mouseClicked(event, doubleClick);
         }
         return super.mouseClicked(event, doubleClick);
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
-        if (this.currentTab == PetInventoryTab.COLLAR) {
+        if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             if (this.getFocused() != null && this.isDragging()) {
                 return this.getFocused().mouseDragged(event, dx, dy);
             }
@@ -704,7 +682,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
 
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (this.currentTab == PetInventoryTab.COLLAR) {
+        if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             this.setDragging(false);
             if (this.getFocused() != null) {
                 return this.getFocused().mouseReleased(event);
@@ -716,7 +694,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (this.currentTab == PetInventoryTab.COLLAR) {
+        if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             if (this.minecraft.options.keyInventory.matches(event)) {
                 this.onClose();
                 return true;
@@ -727,7 +705,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
 
     @Override
     protected boolean isHovering(int x, int y, int width, int height, double mouseX, double mouseY) {
-        if (this.currentTab == PetInventoryTab.COLLAR) {
+        if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             return false;
         }
         return super.isHovering(x, y, width, height, mouseX, mouseY);
