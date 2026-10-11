@@ -57,6 +57,32 @@ All notable changes to this project will be documented in this file.
   - **Defend Pets Toggle**: Toggles whether pet defends fellow pets belonging to the same owner.
   - **Retaliate Toggle**: Toggles whether pet counter-attacks when directly taking damage.
   - **Reset Defaults**: Resets all collar options to server configuration defaults.
+- Added universal Pet Riding system with dedicated keybind and riding dashboard:
+  - **Ride Keybind (`key.petting.ride_pet`)**: Defaults to **R** (`KEY_R`). Remappable in Controls -> Key Binds -> Petting. Pressing while looking at an owned pet mounts it; pressing while riding provides an instant dismount.
+  - **Saddle Slot in Riding UI**: Located directly within the Riding tab of the Pet Inventory GUI:
+    - **Saddled (Controlled)**: Equipping a saddle allows full steering and control over the pet's movement.
+    - **Unsaddled (Uncontrolled)**: Players can still mount the pet if enabled, but cannot steer it (the pet moves freely on its own autonomous AI).
+    - Saddles drop on the ground if a pet dies or is untamed.
+  - **Mob-Specific 3D Controls (respecting player's configured keybindings)**:
+    - **Walking Pets**: Steer with movement keys (WASD), jump with Jump key, sprint for faster movement, dismount with Sneak. Includes step-height assist (1.06 blocks) to traverse single-block inclines smoothly.
+    - **Flying Pets**: Full 3D aerial navigation. WASD for horizontal movement, Jump ascends, Sneak descends, and releasing keys hovers motionless in mid-air. Sneaking in the air descends rather than dismounting; players only dismount when pressing Sneak while on the ground.
+    - **Aquatic / Swimming Pets**: Full 3D underwater navigation in water (WASD to swim, Jump to surface, Sneak to dive, with automatic Water Breathing for the rider). Outside of water, aquatic pets cannot fly and crawl along the ground.
+  - **Riding Combat & Attacks**:
+    - **Attack on Left-Click**: Pressing the Attack key while riding commands the ridden pet to attack in the player's crosshair direction.
+      - **Melee Pets** (Zombies, Iron Golems, Spiders, Wolves, etc.): Swings weapon/arms and deals direct melee damage to targets in front.
+      - **Ranged Pets** (Skeletons, Strays, or any pet holding a Bow/Crossbow): Launches arrows.
+      - **Ghasts**: Launches explosive `LargeFireball`s.
+      - **Blazes**: Shoots `SmallFireball`s.
+      - **Ender Dragons**: Shoots `DragonFireball`s.
+      - **Withers**: Shoots explosive `WitherSkull`s.
+    - **Auto-Attack Hostiles**: Toggleable setting in the Riding tab UI to allow ridden pets to automatically detect and attack nearby hostile monsters.
+  - **Server Configuration (`[riding]`)**:
+    - `enableRiding`: Toggle pet riding globally (default: `true`).
+    - `allowRidingWithoutSaddle`: Allow riding uncontrolled pets without a saddle (default: `true`).
+    - `riddenPetsAttackOnClick`: Enable attacking on left-click while riding (default: `true`).
+    - `flyingPetAscentSpeed`, `flyingPetDescentSpeed`, `flyingPetSpeedMultiplier`: Tune ascent, descent, and horizontal flight speeds.
+    - `swimmingPetSpeedMultiplier`: Tune underwater swim speed.
+    - `riddenAttackCooldownTicks`: Tune attack cooldown between ridden strikes (default: `15` ticks).
 - Added new **Collar** items and all 16 Minecraft dye color variants:
   - Default variant is the **Red Collar** (`collar`), along with 15 colored variants (`white_collar`, `orange_collar`, `magenta_collar`, `light_blue_collar`, `yellow_collar`, `lime_collar`, `pink_collar`, `gray_collar`, `light_gray_collar`, `cyan_collar`, `purple_collar`, `blue_collar`, `brown_collar`, `green_collar`, `black_collar`).
   - Each variant features custom 16x16 pixel art with matched lighting, shading, and the iconic golden bell/buckle.
@@ -71,6 +97,17 @@ All notable changes to this project will be documented in this file.
   - Collars are safely dropped on the ground if the pet dies or is untamed.
 
 ### Fixed
+- **Inverted Left / Right Riding Controls**:
+  - Corrected strafe direction vector calculation so pressing Right (D) steers right and pressing Left (A) steers left.
+- **Strict Pet Riding Controls & Autonomous Movement Suppression**:
+  - Ridden pets equipped with a saddle now strictly follow the player's steering inputs. Mob pathfinding (`navigation.stop()`), target acquisition, autonomous AI goals (`Goal.Flag.MOVE`, `JUMP`, `LOOK`), and `MoveControl`/`LookControl` are completely suppressed while mounted.
+  - When stationary (no movement keys pressed), pets remain completely still with zero autonomous drifting or wandering.
+- **Strict View and Rotation Synchronization**:
+  - Synced the ridden pet's body yaw, head yaw, and head pitch strictly to the rider's view direction in real time on both server and client.
+  - Render state modifiers and post-tick synchronization ensure the pet's body and head strictly face the player's crosshair with zero visual jitter or head deviation.
+- **Flying & Aquatic Pet Ground Dismount**:
+  - Fixed players getting stuck riding flying pets (such as the Wither Boss) or swimming pets when descending with Sneak to the ground.
+  - Sneaking in mid-air smoothly descends/dives, and as soon as the pet touches the ground or cannot descend further, pressing or holding Sneak immediately and reliably dismounts the rider.
 - **Flying Pet Hovering & Motion Freezing**:
   - Fixed an issue where flying pets (such as the Wither Boss, Ghasts, Blazes, etc.) continuously fell to the ground when sitting.
   - Resolved `FlyingMoveControl` resetting `noGravity` to `false` every tick during idling and downward drag in `WitherBoss.aiStep()` overriding goal selector velocity zeroing.

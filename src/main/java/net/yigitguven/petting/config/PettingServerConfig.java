@@ -22,6 +22,13 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue RIDING_USE_WHITELIST;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_WHITELIST;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_BLACKLIST;
+    public static final ModConfigSpec.BooleanValue ALLOW_RIDING_WITHOUT_SADDLE;
+    public static final ModConfigSpec.BooleanValue RIDDEN_PETS_ATTACK_ON_CLICK;
+    public static final ModConfigSpec.DoubleValue FLYING_PET_ASCENT_SPEED;
+    public static final ModConfigSpec.DoubleValue FLYING_PET_DESCENT_SPEED;
+    public static final ModConfigSpec.DoubleValue FLYING_PET_SPEED_MULTIPLIER;
+    public static final ModConfigSpec.DoubleValue SWIMMING_PET_SPEED_MULTIPLIER;
+    public static final ModConfigSpec.IntValue RIDDEN_ATTACK_COOLDOWN_TICKS;
     public static final ModConfigSpec.IntValue DEFAULT_FOLLOW_DISTANCE;
     public static final ModConfigSpec.IntValue MIN_FOLLOW_DISTANCE;
     public static final ModConfigSpec.IntValue MAX_FOLLOW_DISTANCE;
@@ -117,6 +124,34 @@ public class PettingServerConfig {
         RIDING_BLACKLIST = builder
                 .translation("petting.configuration.riding.blacklist")
                 .defineListAllowEmpty("blacklist", java.util.List.of(), () -> "", obj -> obj instanceof String);
+
+        ALLOW_RIDING_WITHOUT_SADDLE = builder
+                .translation("petting.configuration.riding.allowRidingWithoutSaddle")
+                .define("allowRidingWithoutSaddle", true);
+
+        RIDDEN_PETS_ATTACK_ON_CLICK = builder
+                .translation("petting.configuration.riding.riddenPetsAttackOnClick")
+                .define("riddenPetsAttackOnClick", true);
+
+        FLYING_PET_ASCENT_SPEED = builder
+                .translation("petting.configuration.riding.flyingPetAscentSpeed")
+                .defineInRange("flyingPetAscentSpeed", 0.35, 0.05, 2.0);
+
+        FLYING_PET_DESCENT_SPEED = builder
+                .translation("petting.configuration.riding.flyingPetDescentSpeed")
+                .defineInRange("flyingPetDescentSpeed", 0.35, 0.05, 2.0);
+
+        FLYING_PET_SPEED_MULTIPLIER = builder
+                .translation("petting.configuration.riding.flyingPetSpeedMultiplier")
+                .defineInRange("flyingPetSpeedMultiplier", 1.0, 0.1, 5.0);
+
+        SWIMMING_PET_SPEED_MULTIPLIER = builder
+                .translation("petting.configuration.riding.swimmingPetSpeedMultiplier")
+                .defineInRange("swimmingPetSpeedMultiplier", 1.0, 0.1, 5.0);
+
+        RIDDEN_ATTACK_COOLDOWN_TICKS = builder
+                .translation("petting.configuration.riding.riddenAttackCooldownTicks")
+                .defineInRange("riddenAttackCooldownTicks", 10, 1, 60);
 
         builder.pop();
 
@@ -335,5 +370,33 @@ public class PettingServerConfig {
 
     public static boolean isDefaultRetaliateWhenHurt() {
         return SPEC.isLoaded() ? DEFAULT_RETALIATE_WHEN_HURT.get() : true;
+    }
+
+    public static boolean isAllowRidingWithoutSaddle() {
+        return SPEC.isLoaded() ? ALLOW_RIDING_WITHOUT_SADDLE.get() : true;
+    }
+
+    public static boolean isRiddenPetsAttackOnClick() {
+        return SPEC.isLoaded() ? RIDDEN_PETS_ATTACK_ON_CLICK.get() : true;
+    }
+
+    public static double getFlyingPetAscentSpeed() {
+        return SPEC.isLoaded() ? FLYING_PET_ASCENT_SPEED.get() : 0.35D;
+    }
+
+    public static double getFlyingPetDescentSpeed() {
+        return SPEC.isLoaded() ? FLYING_PET_DESCENT_SPEED.get() : 0.35D;
+    }
+
+    public static double getFlyingPetSpeedMultiplier() {
+        return SPEC.isLoaded() ? FLYING_PET_SPEED_MULTIPLIER.get() : 1.0D;
+    }
+
+    public static double getSwimmingPetSpeedMultiplier() {
+        return SPEC.isLoaded() ? SWIMMING_PET_SPEED_MULTIPLIER.get() : 1.0D;
+    }
+
+    public static int getRiddenAttackCooldownTicks() {
+        return SPEC.isLoaded() ? RIDDEN_ATTACK_COOLDOWN_TICKS.get() : 10;
     }
 }

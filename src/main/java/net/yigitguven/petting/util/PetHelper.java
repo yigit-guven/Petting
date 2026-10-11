@@ -4,6 +4,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.TamableAnimal;
@@ -177,6 +178,66 @@ public class PetHelper {
         entity.setData(PettingModAttachments.PET_DATA, data);
     }
 
+    public static ItemStack getSaddle(LivingEntity entity) {
+        if (entity instanceof AbstractHorse horse) {
+            ItemStack horseSaddle = horse.getItemBySlot(EquipmentSlot.SADDLE);
+            if (!horseSaddle.isEmpty()) {
+                return horseSaddle;
+            }
+        }
+        if (entity.hasData(PettingModAttachments.PET_DATA)) {
+            return entity.getData(PettingModAttachments.PET_DATA).getSaddle();
+        }
+        return ItemStack.EMPTY;
+    }
+
+    public static void setSaddle(LivingEntity entity, ItemStack saddle) {
+        ItemStack item = saddle != null ? saddle : ItemStack.EMPTY;
+        if (entity instanceof AbstractHorse horse) {
+            horse.setItemSlot(EquipmentSlot.SADDLE, item);
+            horse.setDropChance(EquipmentSlot.SADDLE, 1.0F);
+        }
+        if (entity.hasData(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+            data.setSaddle(item);
+            entity.setData(PettingModAttachments.PET_DATA, data);
+        }
+    }
+
+    public static boolean hasSaddle(LivingEntity entity) {
+        return !getSaddle(entity).isEmpty();
+    }
+
+    public static boolean isRideAttackOnClick(LivingEntity entity) {
+        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+            return true;
+        }
+        return entity.getData(PettingModAttachments.PET_DATA).isRideAttackOnClick();
+    }
+
+    public static void setRideAttackOnClick(LivingEntity entity, boolean enabled) {
+        if (entity.hasData(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+            data.setRideAttackOnClick(enabled);
+            entity.setData(PettingModAttachments.PET_DATA, data);
+        }
+    }
+
+    public static boolean isRideAutoAttackHostiles(LivingEntity entity) {
+        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+            return false;
+        }
+        return entity.getData(PettingModAttachments.PET_DATA).isRideAutoAttackHostiles();
+    }
+
+    public static void setRideAutoAttackHostiles(LivingEntity entity, boolean enabled) {
+        if (entity.hasData(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+            data.setRideAutoAttackHostiles(enabled);
+            entity.setData(PettingModAttachments.PET_DATA, data);
+        }
+    }
+
     public static CollarSettings getCollarSettings(LivingEntity entity) {
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
@@ -344,6 +405,13 @@ public class PetHelper {
                     mob.spawnAtLocation(serverLevel, collar);
                 }
                 data.setCollar(ItemStack.EMPTY);
+            }
+            ItemStack saddle = data.getSaddle();
+            if (!saddle.isEmpty()) {
+                if (mob.level() instanceof ServerLevel serverLevel) {
+                    mob.spawnAtLocation(serverLevel, saddle);
+                }
+                data.setSaddle(ItemStack.EMPTY);
             }
             data.setTamed(false);
             data.setOwnerUUID(null);

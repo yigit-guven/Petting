@@ -97,6 +97,11 @@ public class PetGoalEvents {
                     mob.spawnAtLocation(serverLevel, collar);
                     PetHelper.setCollar(mob, net.minecraft.world.item.ItemStack.EMPTY);
                 }
+                net.minecraft.world.item.ItemStack saddle = PetHelper.getSaddle(mob);
+                if (!saddle.isEmpty()) {
+                    mob.spawnAtLocation(serverLevel, saddle);
+                    PetHelper.setSaddle(mob, net.minecraft.world.item.ItemStack.EMPTY);
+                }
                 PetSavedData.get(serverLevel).removePet(mob.getUUID());
             }
         }

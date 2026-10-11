@@ -128,10 +128,6 @@ public enum PetSlotType {
             if (canUseOffHand(pet) && pet.canUseSlot(EquipmentSlot.OFFHAND)) slots.add(OFFHAND);
         }
 
-        if (canEquipSaddle(pet)) {
-            slots.add(SADDLE);
-        }
-
         if (canEquipChest(pet)) {
             slots.add(CHEST_STORAGE);
         }

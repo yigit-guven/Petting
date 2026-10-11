@@ -40,8 +40,19 @@ public class PettingClientEvents {
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.player.getVehicle() instanceof Mob mob && PetHelper.isTamed(mob) && PetHelper.hasSaddle(mob)) {
+            mob.setYRot(mc.player.getYRot());
+            mob.yRotO = mc.player.getYRot();
+            mob.yBodyRot = mc.player.getYRot();
+            mob.yBodyRotO = mc.player.getYRot();
+            mob.setYHeadRot(mc.player.getYRot());
+            mob.yHeadRotO = mc.player.getYRot();
+            mob.setXRot(mc.player.getXRot());
+            mob.xRotO = mc.player.getXRot();
+        }
+
         while (PettingClient.OPEN_PET_INVENTORY.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && mc.level != null && mc.gui.screen() == null) {
                 Entity target = mc.crosshairPickEntity != null ? mc.crosshairPickEntity :
                         (mc.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null);
@@ -54,7 +65,6 @@ public class PettingClientEvents {
         }
 
         while (PettingClient.TOGGLE_PET_SIT.consumeClick()) {
-            Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && mc.level != null && mc.gui.screen() == null) {
                 Entity target = mc.crosshairPickEntity != null ? mc.crosshairPickEntity :
                         (mc.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null);
@@ -70,6 +80,37 @@ public class PettingClientEvents {
                         mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT, false);
                         ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.TogglePetSitPayload(mob.getId()));
                     }
+                }
+            }
+        }
+
+        while (PettingClient.RIDE_PET.consumeClick()) {
+            if (mc.player != null && mc.level != null && mc.gui.screen() == null) {
+                if (mc.player.getVehicle() instanceof Mob mob && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
+                    ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.MountPetPayload(mob.getId()));
+                    continue;
+                }
+
+                Entity target = mc.crosshairPickEntity != null ? mc.crosshairPickEntity :
+                        (mc.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null);
+                if (target instanceof Mob mob && mob.isAlive()) {
+                    if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
+                        ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.MountPetPayload(mob.getId()));
+                    }
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onInteractionKeyMappingTriggered(net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && event.isAttack()) {
+            if (mc.player.getVehicle() instanceof Mob mob && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
+                if (PetHelper.isRideAttackOnClick(mob) && net.yigitguven.petting.config.PettingServerConfig.isRiddenPetsAttackOnClick()) {
+                    event.setCanceled(true);
+                    event.setSwingHand(false);
+                    ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.RiddenPetAttackPayload(mob.getId()));
                 }
             }
         }

@@ -1,0 +1,72 @@
+package net.yigitguven.petting.event;
+
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityMountEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.yigitguven.petting.Petting;
+import net.yigitguven.petting.entity.PetRidingHandler;
+import net.yigitguven.petting.util.PetHelper;
+
+@EventBusSubscriber(modid = Petting.MODID)
+public class PetRidingEvents {
+
+    @SubscribeEvent
+    public static void onEntityTickPre(EntityTickEvent.Pre event) {
+        if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
+            if (mob.getFirstPassenger() instanceof Player player && PetHelper.isOwner(mob, player)) {
+                PetRidingHandler.tickRiddenMob(mob, player);
+            } else if (PetRidingHandler.isMarkedRiddenNoAi(mob)) {
+                PetRidingHandler.onDismount(mob);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityTickPost(EntityTickEvent.Post event) {
+        if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
+            if (mob.getFirstPassenger() instanceof Player player && PetHelper.isOwner(mob, player) && PetHelper.hasSaddle(mob)) {
+                PetRidingHandler.lockRotations(mob, player);
+                PetRidingHandler.suppressMobAi(mob, player);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityMount(EntityMountEvent event) {
+        if (event.getEntityMounting() instanceof Player player && event.getEntityBeingMounted() instanceof Mob mob) {
+            if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player)) {
+                if (event.isDismounting()) {
+                    // If forced dismount was triggered (e.g. via dedicated ride keybind or grounded sneak), allow immediate dismount
+                    if (PetRidingHandler.consumeForcedDismount(player)) {
+                        PetRidingHandler.onDismount(mob);
+                        return;
+                    }
+
+                    // Flying pets: if in air and CAN descend, sneak descends instead of dismounting
+                    if (PetHelper.isFlyingPet(mob)) {
+                        if (!PetRidingHandler.isGroundedOrCannotDescend(mob)) {
+                            event.setCanceled(true);
+                            return;
+                        }
+                    }
+
+                    // Swimming pets: if in water and CAN descend, sneak dives instead of dismounting
+                    if (PetHelper.isSwimmingPet(mob) && mob.isInWater()) {
+                        if (!PetRidingHandler.isGroundedOrCannotDescend(mob)) {
+                            event.setCanceled(true);
+                            return;
+                        }
+                    }
+
+                    // Normal dismount reached ground / completed
+                    PetRidingHandler.onDismount(mob);
+                } else if (event.isMounting()) {
+                    PetRidingHandler.onMount(mob, player);
+                }
+            }
+        }
+    }
+}

@@ -22,7 +22,10 @@ public class PetData {
                     Codec.BOOL.fieldOf("tamed").forGetter(PetData::isTamed),
                     Codec.STRING.xmap(PetOrder::valueOf, PetOrder::name).fieldOf("order").forGetter(PetData::getOrder),
                     Codec.STRING.xmap(CombatMode::valueOf, CombatMode::name).fieldOf("combat_mode").forGetter(PetData::getCombatMode),
-                    ItemStack.OPTIONAL_CODEC.optionalFieldOf("collar", ItemStack.EMPTY).forGetter(PetData::getCollar)
+                    ItemStack.OPTIONAL_CODEC.optionalFieldOf("collar", ItemStack.EMPTY).forGetter(PetData::getCollar),
+                    ItemStack.OPTIONAL_CODEC.optionalFieldOf("saddle", ItemStack.EMPTY).forGetter(PetData::getSaddle),
+                    Codec.BOOL.optionalFieldOf("ride_attack_on_click", true).forGetter(PetData::isRideAttackOnClick),
+                    Codec.BOOL.optionalFieldOf("ride_auto_attack_hostiles", false).forGetter(PetData::isRideAutoAttackHostiles)
             ).apply(instance, PetData::new)
     );
 
@@ -37,6 +40,12 @@ public class PetData {
             PetData::getCombatMode,
             ItemStack.OPTIONAL_STREAM_CODEC,
             PetData::getCollar,
+            ItemStack.OPTIONAL_STREAM_CODEC,
+            PetData::getSaddle,
+            ByteBufCodecs.BOOL,
+            PetData::isRideAttackOnClick,
+            ByteBufCodecs.BOOL,
+            PetData::isRideAutoAttackHostiles,
             PetData::new
     );
 
@@ -45,6 +54,9 @@ public class PetData {
     private PetOrder order;
     private CombatMode combatMode;
     private ItemStack collar;
+    private ItemStack saddle;
+    private boolean rideAttackOnClick;
+    private boolean rideAutoAttackHostiles;
 
     public PetData() {
         this.ownerUUID = null;
@@ -52,14 +64,20 @@ public class PetData {
         this.order = PetOrder.FOLLOW;
         this.combatMode = net.yigitguven.petting.config.PettingServerConfig.getDefaultCombatMode();
         this.collar = ItemStack.EMPTY;
+        this.saddle = ItemStack.EMPTY;
+        this.rideAttackOnClick = true;
+        this.rideAutoAttackHostiles = false;
     }
 
-    public PetData(Optional<UUID> ownerUUID, boolean tamed, PetOrder order, CombatMode combatMode, ItemStack collar) {
+    public PetData(Optional<UUID> ownerUUID, boolean tamed, PetOrder order, CombatMode combatMode, ItemStack collar, ItemStack saddle, boolean rideAttackOnClick, boolean rideAutoAttackHostiles) {
         this.ownerUUID = ownerUUID.orElse(null);
         this.tamed = tamed;
         this.order = order != null ? order : PetOrder.FOLLOW;
         this.combatMode = combatMode != null ? combatMode : net.yigitguven.petting.config.PettingServerConfig.getDefaultCombatMode();
         this.collar = collar != null ? collar : ItemStack.EMPTY;
+        this.saddle = saddle != null ? saddle : ItemStack.EMPTY;
+        this.rideAttackOnClick = rideAttackOnClick;
+        this.rideAutoAttackHostiles = rideAutoAttackHostiles;
     }
 
     public ItemStack getCollar() {
@@ -68,6 +86,30 @@ public class PetData {
 
     public void setCollar(ItemStack collar) {
         this.collar = collar != null ? collar : ItemStack.EMPTY;
+    }
+
+    public ItemStack getSaddle() {
+        return saddle != null ? saddle : ItemStack.EMPTY;
+    }
+
+    public void setSaddle(ItemStack saddle) {
+        this.saddle = saddle != null ? saddle : ItemStack.EMPTY;
+    }
+
+    public boolean isRideAttackOnClick() {
+        return rideAttackOnClick;
+    }
+
+    public void setRideAttackOnClick(boolean rideAttackOnClick) {
+        this.rideAttackOnClick = rideAttackOnClick;
+    }
+
+    public boolean isRideAutoAttackHostiles() {
+        return rideAutoAttackHostiles;
+    }
+
+    public void setRideAutoAttackHostiles(boolean rideAutoAttackHostiles) {
+        this.rideAutoAttackHostiles = rideAutoAttackHostiles;
     }
 
     public UUID getOwnerUUID() {

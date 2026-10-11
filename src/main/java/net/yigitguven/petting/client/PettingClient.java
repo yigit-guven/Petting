@@ -38,6 +38,15 @@ public class PettingClient {
             PETTING_CATEGORY
     );
 
+    public static final KeyMapping RIDE_PET = new KeyMapping(
+            "key.petting.ride_pet",
+            KeyConflictContext.IN_GAME,
+            KeyModifier.NONE,
+            InputConstants.Type.KEYBOARD,
+            InputConstants.KEY_R,
+            PETTING_CATEGORY
+    );
+
     public static void registerClientExtensions(ModContainer modContainer, IEventBus modEventBus) {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, PettingConfigurationScreen::new);
         modEventBus.addListener(RegisterKeyMappingsEvent.class, PettingClient::onRegisterKeyMappings);
@@ -52,6 +61,7 @@ public class PettingClient {
         event.registerCategory(PETTING_CATEGORY);
         event.register(OPEN_PET_INVENTORY);
         event.register(TOGGLE_PET_SIT);
+        event.register(RIDE_PET);
     }
 
     private static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {

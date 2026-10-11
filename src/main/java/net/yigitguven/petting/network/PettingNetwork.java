@@ -23,5 +23,20 @@ public class PettingNetwork {
                 TogglePetSitPayload.STREAM_CODEC,
                 TogglePetSitPayload::handle
         );
+        registrar.playToServer(
+                MountPetPayload.TYPE,
+                MountPetPayload.STREAM_CODEC,
+                MountPetPayload::handle
+        );
+        registrar.playToServer(
+                UpdateRidingSettingsPayload.TYPE,
+                UpdateRidingSettingsPayload.STREAM_CODEC,
+                UpdateRidingSettingsPayload::handle
+        );
+        registrar.playToServer(
+                RiddenPetAttackPayload.TYPE,
+                RiddenPetAttackPayload.STREAM_CODEC,
+                RiddenPetAttackPayload::handle
+        );
     }
 }

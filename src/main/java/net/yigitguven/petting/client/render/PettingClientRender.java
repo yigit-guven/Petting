@@ -62,6 +62,13 @@ public class PettingClientRender {
                             renderState.setRenderData(COLLAR_COLOR_KEY, collarItem.getColor());
                         }
 
+                        // Strict rotation lock when ridden with saddle
+                        if (entity instanceof net.minecraft.world.entity.Mob mob && mob.getFirstPassenger() instanceof net.minecraft.world.entity.player.Player rider && PetHelper.hasSaddle(mob)) {
+                            renderState.bodyRot = rider.getYRot();
+                            renderState.yRot = 0.0F;
+                            renderState.xRot = rider.getXRot();
+                        }
+
                         if (PetHelper.isSitting(entity) && !entity.isPassenger()) {
                             boolean isHumanoid = (renderState instanceof net.minecraft.client.renderer.entity.state.HumanoidRenderState);
                             boolean isIllager = (renderState instanceof net.minecraft.client.renderer.entity.state.IllagerRenderState);
