@@ -110,6 +110,11 @@ public class PetHelper {
             tamable.setOrderedToSit(sit);
             tamable.setInSittingPose(sit);
         }
+        if (order != PetOrder.SIT && entity instanceof Mob mob) {
+            if (isFlyingPet(mob)) {
+                mob.setNoGravity(false);
+            }
+        }
         syncModdedSit(entity, order == PetOrder.SIT);
     }
 
@@ -402,6 +407,9 @@ public class PetHelper {
     }
 
     public static boolean isFlyingPet(Mob mob) {
+        if (mob.isNoGravity()) {
+            return true;
+        }
         if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.FlyingPathNavigation) {
             return true;
         }
@@ -416,10 +424,12 @@ public class PetHelper {
                 || mob instanceof net.minecraft.world.entity.ambient.Bat
                 || mob instanceof net.minecraft.world.entity.animal.allay.Allay
                 || mob instanceof net.minecraft.world.entity.animal.bee.Bee
-                || mob instanceof net.minecraft.world.entity.animal.parrot.Parrot) {
+                || mob instanceof net.minecraft.world.entity.animal.parrot.Parrot
+                || mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
             return true;
         }
-        return false;
+        String name = mob.getClass().getSimpleName().toLowerCase();
+        return name.contains("fly") || name.contains("bird") || name.contains("dragon") || name.contains("drake");
     }
 
     public static boolean isSwimmingPet(Mob mob) {
@@ -447,6 +457,11 @@ public class PetHelper {
         }
         if (mob instanceof NeutralMob neutralMob) {
             neutralMob.stopBeingAngry();
+        }
+        if (mob instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
+            wither.setAlternativeTarget(0, 0);
+            wither.setAlternativeTarget(1, 0);
+            wither.setAlternativeTarget(2, 0);
         }
         mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
         mob.goalSelector.getAvailableGoals().stream()

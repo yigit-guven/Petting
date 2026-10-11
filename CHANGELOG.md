@@ -59,6 +59,12 @@ All notable changes to this project will be documented in this file.
   - Collars are safely dropped on the ground if the pet dies or is untamed.
 
 ### Fixed
+- **Flying Pet Hovering & Motion Freezing**:
+  - Fixed an issue where flying pets (such as the Wither Boss, Ghasts, Blazes, etc.) continuously fell to the ground when sitting.
+  - Resolved `FlyingMoveControl` resetting `noGravity` to `false` every tick during idling and downward drag in `WitherBoss.aiStep()` overriding goal selector velocity zeroing.
+  - Added pre-tick and post-tick entity motion freezing on both server and client, locking sitting flying and swimming pets stationary in place with zero falling, drift, or render jitter.
+  - Automatically clears and suppresses Wither side head target locks (`setAlternativeTarget`) so sitting Wither pets do not fire skulls while resting.
+  - Expanded interaction range check for sitting and inventory toggles from 8 blocks to 16 blocks (with interaction range checks) so players can easily command tall and floating mobs.
 - **Screen-Safe Clamped Tooltips (`ClampedTooltipPositioner`)**:
   - Implemented custom tooltip clamping to prevent tooltips from extending beyond the top, bottom, or sides of the viewport on any GUI scale or resolution.
   - Fixed combat mode tooltips getting cut off above the screen edge when hovering near the top of the GUI.

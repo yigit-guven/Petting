@@ -78,6 +78,11 @@ public class PetSitGoal extends Goal {
             }
             this.mob.setDeltaMovement(Vec3.ZERO);
             this.mob.fallDistance = 0.0F;
+            if (this.mob instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
+                wither.setAlternativeTarget(0, 0);
+                wither.setAlternativeTarget(1, 0);
+                wither.setAlternativeTarget(2, 0);
+            }
         } else {
             if (this.isAlteredGravity) {
                 this.mob.setNoGravity(this.originalNoGravity);

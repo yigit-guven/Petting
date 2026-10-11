@@ -36,7 +36,7 @@ public record TogglePetSitPayload(int entityId) implements CustomPacketPayload {
             if (context.player() instanceof ServerPlayer player) {
                 Entity entity = player.level().getEntity(payload.entityId());
                 if (entity instanceof Mob mob && mob.isAlive()) {
-                    if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player) && player.distanceTo(mob) <= 8.0D) {
+                    if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player) && (player.isWithinEntityInteractionRange(mob, 3.0D) || player.distanceTo(mob) <= 16.0D)) {
                         if (!PettingServerConfig.isPetSittingEnabled()) {
                             return;
                         }
@@ -47,6 +47,13 @@ public record TogglePetSitPayload(int entityId) implements CustomPacketPayload {
                         if (newOrder == PetOrder.SIT) {
                             if (PettingServerConfig.shouldForgiveAttacksOnSit()) {
                                 PetHelper.forgiveAttacksAndClearTarget(mob);
+                            }
+                            boolean hoverFlying = PettingServerConfig.isFlyingPetsHoverWhenSitting() && PetHelper.isFlyingPet(mob);
+                            boolean stillSwimming = PettingServerConfig.isSwimmingPetsStayStillWhenSitting() && PetHelper.isSwimmingPet(mob);
+                            if (hoverFlying || stillSwimming) {
+                                mob.setNoGravity(true);
+                                mob.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                                mob.fallDistance = 0.0F;
                             }
                             player.sendSystemMessage(Component.translatable("petting.action.pet_sitting", mob.getName()));
                         } else {
