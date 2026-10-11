@@ -180,86 +180,28 @@ public class PetCollarLayer<S extends LivingEntityRenderState, M extends EntityM
         // 4. Right strap (East)
         addStrapBox(pose, consumer, bx1 - strapThick, by0, bz0 + strapThick, bx1, by1, bz1 - strapThick, strapColor, packedLight, overlay, strapU0, strapV0, strapU1, strapV1, topV0, topV1, botV0, botV1);
 
-        // 5. Golden Buckle / Tag on the front center (~2 pixels square, 1:1 pixel aspect ratio)
+        // 5. Golden Circular Medallion Tag on the front center (~2 pixels square, 1:1 pixel aspect ratio)
         float tagSize = Math.max(1.6F * invScale, Math.min(2.2F * invScale, collarHeight * 1.15F));
-        float tagThick = 0.2F * invScale;
         float tagMinX = centerX - tagSize * 0.5F;
         float tagMaxX = centerX + tagSize * 0.5F;
         float tagMinY = by0 + (collarHeight - tagSize) * 0.5F;
         float tagMaxY = tagMinY + tagSize;
-        float tagMinZ = bz0 - tagThick;
-        float tagMaxZ = bz0 + (0.02F * invScale);
+        float tagZ = bz0 - (0.04F * invScale);
 
-        // Buckle icon: rows 8..15 (U: 0.0..0.25, V: 0.25..0.5)
+        // Medallion icon: rows 8..15 (U: 0.0..0.25, V: 0.25..0.5)
         float buckleU0 = 0.0F;
         float buckleU1 = 0.25F;
         float buckleV0 = 0.25F;
         float buckleV1 = 0.5F;
 
-        // Solid gold edges: X: 8..11, Y: 8..11 (U: 0.25..0.34375, V: 0.25..0.34375)
-        float goldU0 = 0.25F;
-        float goldU1 = 0.34375F;
-        float goldV0 = 0.25F;
-        float goldV1 = 0.34375F;
-
-        // Front face (North) with crisp pixel-art gold medallion
+        // Render circular medallion front face directly on collar front (no square box edges)
         addQuad(pose, consumer,
-                tagMinX, tagMinY, tagMinZ,
-                tagMinX, tagMaxY, tagMinZ,
-                tagMaxX, tagMaxY, tagMinZ,
-                tagMaxX, tagMinY, tagMinZ,
+                tagMinX, tagMinY, tagZ,
+                tagMinX, tagMaxY, tagZ,
+                tagMaxX, tagMaxY, tagZ,
+                tagMaxX, tagMinY, tagZ,
                 0, 0, -1,
                 buckleU0, buckleV0, buckleU1, buckleV1,
-                0xFFFFFFFF, packedLight, overlay);
-
-        // Buckle back face (South)
-        addQuad(pose, consumer,
-                tagMaxX, tagMinY, tagMaxZ,
-                tagMaxX, tagMaxY, tagMaxZ,
-                tagMinX, tagMaxY, tagMaxZ,
-                tagMinX, tagMinY, tagMaxZ,
-                0, 0, 1,
-                goldU0, goldV0, goldU1, goldV1,
-                0xFFFFFFFF, packedLight, overlay);
-
-        // Buckle left face (West)
-        addQuad(pose, consumer,
-                tagMinX, tagMinY, tagMaxZ,
-                tagMinX, tagMaxY, tagMaxZ,
-                tagMinX, tagMaxY, tagMinZ,
-                tagMinX, tagMinY, tagMinZ,
-                -1, 0, 0,
-                goldU0, goldV0, goldU1, goldV1,
-                0xFFFFFFFF, packedLight, overlay);
-
-        // Buckle right face (East)
-        addQuad(pose, consumer,
-                tagMaxX, tagMinY, tagMinZ,
-                tagMaxX, tagMaxY, tagMinZ,
-                tagMaxX, tagMaxY, tagMaxZ,
-                tagMaxX, tagMinY, tagMaxZ,
-                1, 0, 0,
-                goldU0, goldV0, goldU1, goldV1,
-                0xFFFFFFFF, packedLight, overlay);
-
-        // Buckle top face
-        addQuad(pose, consumer,
-                tagMinX, tagMinY, tagMaxZ,
-                tagMinX, tagMinY, tagMinZ,
-                tagMaxX, tagMinY, tagMinZ,
-                tagMaxX, tagMinY, tagMaxZ,
-                0, -1, 0,
-                goldU0, goldV0, goldU1, goldV1,
-                0xFFFFFFFF, packedLight, overlay);
-
-        // Buckle bottom face
-        addQuad(pose, consumer,
-                tagMinX, tagMaxY, tagMinZ,
-                tagMinX, tagMaxY, tagMaxZ,
-                tagMaxX, tagMaxY, tagMaxZ,
-                tagMaxX, tagMaxY, tagMinZ,
-                0, 1, 0,
-                goldU0, goldV0, goldU1, goldV1,
                 0xFFFFFFFF, packedLight, overlay);
     }
 
