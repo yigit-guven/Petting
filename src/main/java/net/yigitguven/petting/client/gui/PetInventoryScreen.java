@@ -55,7 +55,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         super.init();
 
         this.homeTabButton = new PetInventoryTabButton(
-                this.leftPos - 28, this.topPos + 8,
+                this.leftPos - 30, this.topPos + 8,
                 PetInventoryTab.HOME,
                 this,
                 Component.translatable("petting.gui.tab.home"),
@@ -64,7 +64,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         );
 
         this.collarTabButton = new PetInventoryTabButton(
-                this.leftPos - 28, this.topPos + 36,
+                this.leftPos - 30, this.topPos + 35,
                 PetInventoryTab.COLLAR,
                 this,
                 Component.translatable("petting.gui.tab.collar"),
@@ -77,7 +77,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         );
 
         this.ridingTabButton = new PetInventoryTabButton(
-                this.leftPos - 28, this.topPos + 64,
+                this.leftPos - 30, this.topPos + 62,
                 PetInventoryTab.RIDING,
                 this,
                 Component.translatable("petting.gui.tab.riding"),
@@ -85,9 +85,9 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 this::setCurrentTab
         );
 
-        this.addRenderableWidget(this.homeTabButton);
-        this.addRenderableWidget(this.collarTabButton);
-        this.addRenderableWidget(this.ridingTabButton);
+        this.addWidget(this.homeTabButton);
+        this.addWidget(this.collarTabButton);
+        this.addWidget(this.ridingTabButton);
 
         this.updateTabButtons();
     }
@@ -104,16 +104,16 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
 
         int buttonY = this.topPos + 8;
         if (this.homeTabButton.visible) {
-            this.homeTabButton.setPosition(this.leftPos - 28, buttonY);
-            buttonY += 28;
+            this.homeTabButton.setPosition(this.leftPos - 30, buttonY);
+            buttonY += 27;
         }
         if (this.collarTabButton.visible) {
-            this.collarTabButton.setPosition(this.leftPos - 28, buttonY);
-            buttonY += 28;
+            this.collarTabButton.setPosition(this.leftPos - 30, buttonY);
+            buttonY += 27;
         }
         if (this.ridingTabButton.visible) {
-            this.ridingTabButton.setPosition(this.leftPos - 28, buttonY);
-            buttonY += 28;
+            this.ridingTabButton.setPosition(this.leftPos - 30, buttonY);
+            buttonY += 27;
         }
 
         // Return to HOME if current tab becomes unavailable
@@ -139,6 +139,14 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             this.hoveredSlot = null;
         }
         super.extractRenderState(graphics, mouseX, mouseY, a);
+
+        // Queue tab tooltips and cursor states (sprites and icons are rendered during extractBackground)
+        PetInventoryTabButton[] buttons = {this.homeTabButton, this.collarTabButton, this.ridingTabButton};
+        for (PetInventoryTabButton button : buttons) {
+            if (button != null && button.visible) {
+                button.extractRenderState(graphics, mouseX, mouseY, a);
+            }
+        }
     }
 
     @Override
@@ -147,6 +155,10 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         int xo = this.leftPos;
         int yo = this.topPos;
 
+        // 1. Draw UNSELECTED tabs background FIRST (behind the main container frame, tucked under container border)
+        this.renderTabBackgrounds(graphics, false);
+
+        // 2. Draw Main container background (and scene contents)
         if (this.currentTab == PetInventoryTab.HOME) {
             graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
 
@@ -194,6 +206,33 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             Component placeholder = Component.translatable("petting.gui.scene.coming_soon");
             int textWidth = this.font.width(placeholder);
             graphics.text(this.font, placeholder, xo + (this.imageWidth - textWidth) / 2, yo + 98, 0xFF707070, false);
+        }
+
+        // 3. Draw SELECTED tab background (in front of container frame, seamlessly connected)
+        this.renderTabBackgrounds(graphics, true);
+
+        // 4. Draw tab item icons
+        this.renderTabIcons(graphics);
+    }
+
+    private void renderTabBackgrounds(GuiGraphicsExtractor graphics, boolean selectedOnly) {
+        PetInventoryTabButton[] buttons = {this.homeTabButton, this.collarTabButton, this.ridingTabButton};
+        for (PetInventoryTabButton button : buttons) {
+            if (button != null && button.visible) {
+                boolean isCurrent = button.getTab() == this.currentTab;
+                if (isCurrent == selectedOnly) {
+                    button.renderTabBackground(graphics);
+                }
+            }
+        }
+    }
+
+    private void renderTabIcons(GuiGraphicsExtractor graphics) {
+        PetInventoryTabButton[] buttons = {this.homeTabButton, this.collarTabButton, this.ridingTabButton};
+        for (PetInventoryTabButton button : buttons) {
+            if (button != null && button.visible) {
+                button.renderTabIcon(graphics);
+            }
         }
     }
 

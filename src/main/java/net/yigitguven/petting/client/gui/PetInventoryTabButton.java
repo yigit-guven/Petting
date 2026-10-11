@@ -56,14 +56,30 @@ public class PetInventoryTabButton extends AbstractWidget {
 
     @Override
     protected void extractWidgetRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        // Tab background and icons are rendered in extractBackground with vanilla layer order.
+        // We only request cursor state here.
+        this.handleCursor(graphics);
+    }
+
+    public void renderTabBackground(GuiGraphicsExtractor graphics) {
+        if (!this.visible) {
+            return;
+        }
         boolean selected = this.screen.getCurrentTab() == this.tab;
         Identifier sprite = selected ? TAB_SELECTED_SPRITE : TAB_SPRITE;
-
         graphics.blitSprite(RenderPipelines.GUI_TEXTURED, sprite, this.getX(), this.getY(), this.width, this.height);
+    }
 
+    public void renderTabIcon(GuiGraphicsExtractor graphics) {
+        if (!this.visible) {
+            return;
+        }
         ItemStack icon = this.iconSupplier.get();
         if (!icon.isEmpty()) {
-            graphics.item(icon, this.getX() + 9, this.getY() + 5);
+            boolean selected = this.screen.getCurrentTab() == this.tab;
+            int xOffset = selected ? 7 : 9;
+            int yOffset = 5;
+            graphics.fakeItem(icon, this.getX() + xOffset, this.getY() + yOffset);
         }
     }
 
