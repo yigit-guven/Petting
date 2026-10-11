@@ -33,6 +33,10 @@ public class PettingClient {
         modContainer.registerExtensionPoint(IConfigScreenFactory.class, PettingConfigurationScreen::new);
         modEventBus.addListener(RegisterKeyMappingsEvent.class, PettingClient::onRegisterKeyMappings);
         modEventBus.addListener(RegisterMenuScreensEvent.class, PettingClient::onRegisterMenuScreens);
+        modEventBus.addListener(net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent.class,
+                net.yigitguven.petting.client.render.PettingClientRender::onRegisterRenderStateModifiers);
+        modEventBus.addListener(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers.class,
+                net.yigitguven.petting.client.render.PettingClientRender::onAddLayers);
     }
 
     private static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {

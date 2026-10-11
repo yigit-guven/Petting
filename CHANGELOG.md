@@ -25,6 +25,10 @@ All notable changes to this project will be documented in this file.
   - Owners can dye an equipped pet collar in real time by right-clicking their pet with any dye.
   - Any collar variant can be equipped via the pet inventory GUI or by right-clicking a tamed pet directly in the world.
   - Added dedicated universal Collar equipment slot to all pet inventory GUIs regardless of whether the mob has native equipment slots.
+  - Added dynamic 3D worn collar entity rendering (`PetCollarLayer`):
+    - Automatically detects the head and neck position across any pet model (vanilla and modded mobs).
+    - Renders a 3D colored collar band wrapped around the pet's neck right below the head with matching dye color and an iconic golden buckle on the front.
+    - Dynamically follows all head movements, rotations, baby scaling, sitting, sleeping, and animations in real time.
   - Collars are safely dropped on the ground if the pet dies or is untamed.
 
 ### Fixed
