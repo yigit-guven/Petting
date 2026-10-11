@@ -13,5 +13,10 @@ public class PettingNetwork {
                 OpenPetInventoryPayload.STREAM_CODEC,
                 OpenPetInventoryPayload::handle
         );
+        registrar.playToServer(
+                UpdateCollarSettingsPayload.TYPE,
+                UpdateCollarSettingsPayload.STREAM_CODEC,
+                UpdateCollarSettingsPayload::handle
+        );
     }
 }

@@ -37,7 +37,8 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
 
     @Override
     public boolean canUse() {
-        if (!PetHelper.isTamed(this.mob) || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+        net.yigitguven.petting.data.CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        if (!PetHelper.isTamed(this.mob) || settings.combatMode() == CombatMode.PASSIVE) {
             return false;
         }
         if (PetHelper.getOrder(this.mob) == PetOrder.SIT) {
@@ -48,21 +49,31 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
             return false;
         }
 
-        if (PettingServerConfig.canPetsDefendOwner()) {
-            LivingEntity ownerAttacker = owner.getLastHurtByMob();
-            int ownerTime = owner.getLastHurtByMobTimestamp();
-            if (ownerAttacker != null && ownerTime != this.ownerLastHurtTimestamp && isValidAttacker(ownerAttacker, owner)) {
-                this.attacker = ownerAttacker;
-                return true;
-            }
+        LivingEntity ownerAttacker = owner.getLastHurtByMob();
+        int ownerTime = owner.getLastHurtByMobTimestamp();
+        if (ownerAttacker != null && ownerTime != this.ownerLastHurtTimestamp && isValidAttacker(ownerAttacker, owner)) {
+            this.attacker = ownerAttacker;
+            return true;
         }
 
-        if (PettingServerConfig.canPetsRetaliate()) {
+        if (settings.retaliateWhenHurt()) {
             LivingEntity mobAttacker = this.mob.getLastHurtByMob();
             int mobTime = this.mob.getLastHurtByMobTimestamp();
             if (mobAttacker != null && mobTime != this.mobLastHurtTimestamp && isValidAttacker(mobAttacker, owner)) {
                 this.attacker = mobAttacker;
                 return true;
+            }
+        }
+
+        if (settings.defendOtherPets()) {
+            for (LivingEntity otherPet : this.mob.level().getEntitiesOfClass(LivingEntity.class, this.mob.getBoundingBox().inflate(16.0D))) {
+                if (otherPet != this.mob && PetHelper.isTamed(otherPet) && PetHelper.isOwner(otherPet, owner)) {
+                    LivingEntity petAttacker = otherPet.getLastHurtByMob();
+                    if (petAttacker != null && isValidAttacker(petAttacker, owner)) {
+                        this.attacker = petAttacker;
+                        return true;
+                    }
+                }
             }
         }
 
@@ -84,7 +95,8 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
 
     @Override
     public boolean canContinueToUse() {
-        if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+        net.yigitguven.petting.data.CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT || settings.combatMode() == CombatMode.PASSIVE) {
             return false;
         }
         LivingEntity currentTarget = this.mob.getTarget();

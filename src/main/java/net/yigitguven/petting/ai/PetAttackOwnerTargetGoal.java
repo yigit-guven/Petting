@@ -26,10 +26,8 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
 
     @Override
     public boolean canUse() {
-        if (!PettingServerConfig.canPetsAttackOwnerTarget()) {
-            return false;
-        }
-        if (!PetHelper.isTamed(this.mob) || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+        net.yigitguven.petting.data.CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        if (!PetHelper.isTamed(this.mob) || settings.combatMode() != CombatMode.AGGRESSIVE) {
             return false;
         }
         if (PetHelper.getOrder(this.mob) == PetOrder.SIT) {
@@ -68,7 +66,8 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
 
     @Override
     public boolean canContinueToUse() {
-        if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+        net.yigitguven.petting.data.CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT || settings.combatMode() != CombatMode.AGGRESSIVE) {
             return false;
         }
         LivingEntity currentTarget = this.mob.getTarget();

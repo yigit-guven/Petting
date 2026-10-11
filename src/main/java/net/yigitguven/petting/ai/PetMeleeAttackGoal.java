@@ -5,6 +5,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.player.Player;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.data.CollarSettings;
 import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.util.PetHelper;
@@ -47,10 +48,11 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
         if (PetHelper.getOrder(this.mob) == PetOrder.SIT) {
             return false;
         }
-        if (PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+        CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        if (settings.combatMode() == CombatMode.PASSIVE) {
             return false;
         }
-        if (this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
+        if (settings.preferRangedAttack() && this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
             return false;
         }
         if (!isValidTarget(this.mob.getTarget())) {
@@ -64,10 +66,11 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
         if (this.mob.isVehicle()) {
             return false;
         }
-        if (PetHelper.getOrder(this.mob) == PetOrder.SIT || PetHelper.getCombatMode(this.mob) == CombatMode.PASSIVE) {
+        CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        if (PetHelper.getOrder(this.mob) == PetOrder.SIT || settings.combatMode() == CombatMode.PASSIVE) {
             return false;
         }
-        if (this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
+        if (settings.preferRangedAttack() && this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
             return false;
         }
         if (!isValidTarget(this.mob.getTarget())) {

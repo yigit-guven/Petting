@@ -9,8 +9,10 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -59,6 +61,32 @@ public class PetInventoryTabButton extends AbstractWidget {
         // Tab background and icons are rendered in extractBackground with vanilla layer order.
         // We only request cursor state here.
         this.handleCursor(graphics);
+    }
+
+    private Tooltip customTooltip;
+
+    @Override
+    public void setTooltip(Tooltip tooltip) {
+        super.setTooltip(tooltip);
+        this.customTooltip = tooltip;
+    }
+
+    @Override
+    protected void extractTooltipForNextRenderPass(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (this.customTooltip != null && this.isHovered()) {
+            Minecraft mc = Minecraft.getInstance();
+            List<FormattedCharSequence> lines = this.customTooltip.toCharSequence(mc);
+            graphics.setTooltipForNextFrame(
+                    mc.font,
+                    lines,
+                    this.customTooltip.component(),
+                    ClampedTooltipPositioner.INSTANCE,
+                    mouseX,
+                    mouseY,
+                    false,
+                    this.customTooltip.style()
+            );
+        }
     }
 
     public void renderTabBackground(GuiGraphicsExtractor graphics) {

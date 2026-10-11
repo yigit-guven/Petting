@@ -84,45 +84,15 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 
 | Setting | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `disableBuiltInHostility` | Boolean | `true` | When `true`, removes built-in mob aggression and targeting. Pets only attack like tamed wolves (to protect owner, attack owner's target, or defend themselves). |
-| `defaultCombatMode` | Enum | `AGGRESSIVE` | The default combat mode assigned to newly tamed pets (`AGGRESSIVE`, `DEFENSIVE`, `PASSIVE`). |
-| `petsDefendOwner` | Boolean | `true` | When `true`, pets will automatically attack and defend against mobs that damage their owner. |
-| `petsAttackOwnerTarget` | Boolean | `true` | When `true`, pets will automatically attack mobs that their owner damages. |
-| `petsRetaliate` | Boolean | `true` | When `true`, pets will retaliate and attack mobs that damage the pet itself. |
-| `teleportDistance` | Double | `20.0` | Distance in blocks before a following pet attempts to teleport to its owner (`5.0` – `200.0`). |
+| `disableBuiltInHostility` | Boolean | `true` | When `true`, removes built-in mob aggression and targeting. Pets will strictly attack according to their collar tactical settings. |
 | `enableCollarSlot` | Boolean | `true` | When `true`, all pet inventory GUIs provide a dedicated slot to equip collars. When `false`, the collar slot is removed from all pet GUIs. |
 
 #### Setting Details:
 
 - **`disableBuiltInHostility`**:
-  Controls whether pets retain natural mob-type aggression or strictly behave like tamed wolves.
-  - `true` (*Default*): Built-in mob targeting is completely disabled (Iron Golems will not attack monsters, Wolves will not hunt sheep/skeletons, Withers will not target everything, etc.). Pets will only attack to defend their owner, attack targets their owner hits, or defend themselves if attacked.
+  Controls whether pets retain natural mob-type aggression or strictly obey their collar behavioral settings.
+  - `true` (*Default*): Built-in mob targeting is completely disabled (Iron Golems will not attack monsters, Wolves will not hunt sheep/skeletons, Withers will not target everything, etc.). Pets will strictly follow their configured tactical rules.
   - `false`: Pets retain their original mob AI targeting goals.
-
-- **`defaultCombatMode`**:
-  Controls the default combat mode assigned when a mob is tamed.
-  - `AGGRESSIVE` (*Default*): The pet attacks targets the owner attacks, defends the owner when hurt, and retaliates when hurt.
-  - `DEFENSIVE`: The pet only defends the owner and retaliates when hurt; it will not initiate attacks when the owner attacks.
-  - `PASSIVE`: The pet will never engage in combat.
-
-- **`petsDefendOwner`**:
-  Controls whether pets defend the owner when the owner takes damage from another mob.
-  - `true` (*Default*): Pets immediately attack any hostile entity that harms their owner.
-  - `false`: Pets will not react to their owner taking damage.
-
-- **`petsAttackOwnerTarget`**:
-  Controls whether pets attack whatever mob the owner strikes.
-  - `true` (*Default*): Pets attack whatever mob the owner damages.
-  - `false`: Pets will not assist when the owner initiates an attack.
-
-- **`petsRetaliate`**:
-  Controls self-defense for pets.
-  - `true` (*Default*): Pets fight back when struck by an attacker.
-  - `false`: Pets will not retaliate when damaged.
-
-- **`teleportDistance`**:
-  Controls how far away an owner can get before the following pet teleports to catch up.
-  - `20.0` (*Default*): 20 blocks. While engaged in active combat, pets will prioritize fighting rather than following, unless the owner exceeds this distance.
 
 - **`enableCollarSlot`**:
   Controls whether the universal collar slot is enabled in pet inventory GUIs.
@@ -137,6 +107,24 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | `useWhitelist` | Boolean | `false` | When `true`, only entities in `whitelist` can be ridden. When `false`, all entities except those in `blacklist` can be ridden. |
 | `whitelist` | List<String> | `[]` | List of entity registry IDs (e.g. `["minecraft:creeper"]`) permitted for riding when `useWhitelist` is `true`. |
 | `blacklist` | List<String> | `[]` | List of entity registry IDs (e.g. `["minecraft:bat"]`) blocked from riding when `useWhitelist` is `false`. |
+
+### Section: `[collar]`
+
+This section manages server-wide defaults and slider limit bounds for collar settings configured through the Collar tab in Pet Inventory GUIs.
+
+| Setting | Type | Default | Range | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| `defaultCombatMode` | Enum | `AGGRESSIVE` | `AGGRESSIVE`, `DEFENSIVE`, `PASSIVE` | The default combat mode assigned to new collars and newly tamed pets. |
+| `defaultFollowDistance` | Integer | `4` | `1` – `32` | The default follow distance in blocks assigned to new collars. |
+| `minFollowDistance` | Integer | `2` | `1` – `16` | The minimum follow distance selectable on collar sliders. |
+| `maxFollowDistance` | Integer | `32` | `4` – `64` | The maximum follow distance selectable on collar sliders. |
+| `defaultTeleportDistance` | Integer | `20` | `5` – `128` | The default teleport distance in blocks assigned to new collars. |
+| `minTeleportDistance` | Integer | `8` | `5` – `32` | The minimum teleport distance selectable on collar sliders. |
+| `maxTeleportDistance` | Integer | `64` | `16` – `200` | The maximum teleport distance selectable on collar sliders. |
+| `defaultTeleportEnabled` | Boolean | `true` | `true` / `false` | Whether teleporting to the owner is enabled by default on new collars. |
+| `defaultPreferRangedAttack` | Boolean | `true` | `true` / `false` | Whether pets equipped with a collar prefer ranged attacks first when holding a bow or crossbow. |
+| `defaultDefendOtherPets` | Boolean | `true` | `true` / `false` | Whether pets defend other pets of the same owner when attacked. |
+| `defaultRetaliateWhenHurt` | Boolean | `true` | `true` / `false` | Whether pets retaliate against attackers who directly damage the pet. |
 
 ---
 

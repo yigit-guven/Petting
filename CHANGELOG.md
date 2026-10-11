@@ -10,14 +10,28 @@ All notable changes to this project will be documented in this file.
 - Added configurable friendly fire settings (`[friendlyFire]` in server config):
   - `ownerCanAttackPets`: Configures whether owners can attack and damage their own pets (default: `true`). Pets will still never attack or target their owner under any circumstances.
   - `petsCanAttackPets`: Configures whether pets belonging to the same owner can target or attack each other (default: `false`).
-- Added configurable built-in hostility prevention and pet behavior controls (`[behavior]` in server config):
-  - `disableBuiltInHostility`: Removes natural mob-type aggression and targeting (e.g. Iron Golems attacking monsters, Wolves hunting sheep/skeletons, or Withers targeting all living entities). Pets now strictly attack like tamed vanilla wolves (only defending their owner, attacking targets their owner hits, or defending themselves if attacked). Defaults to `true`.
-  - `defaultCombatMode`: Configures the default combat mode assigned to newly tamed pets (`AGGRESSIVE`, `DEFENSIVE`, or `PASSIVE`, default: `AGGRESSIVE`).
-  - `petsDefendOwner`: Configures whether pets automatically defend their owner when attacked (default: `true`).
-  - `petsAttackOwnerTarget`: Configures whether pets automatically assist their owner by attacking mobs the owner damages (default: `true`).
-  - `petsRetaliate`: Configures whether pets defend themselves and retaliate when damaged directly (default: `true`).
-  - `teleportDistance`: Configures how far an owner can get from their following pet before the pet teleports to catch up (default: `20.0` blocks).
-  - `enableCollarSlot`: Configures whether the collar slot is available in pet inventory GUIs (default: `true`).
+- Streamlined and modernized server configuration (`[behavior]` and `[collar]`):
+  - Consolidated tactical AI settings to eliminate duplication between global configs and per-collar settings.
+  - Removed obsolete fields (`petsDefendOwner`, `petsAttackOwnerTarget`, `petsRetaliate`, `teleportDistance`) from `[behavior]`.
+  - Moved `defaultCombatMode` under `[collar]` and provided comprehensive collar defaults and slider boundary controls (`defaultCombatMode`, `defaultFollowDistance`, `minFollowDistance`, `maxFollowDistance`, `defaultTeleportDistance`, `minTeleportDistance`, `maxTeleportDistance`, `defaultTeleportEnabled`, `defaultPreferRangedAttack`, `defaultDefendOtherPets`, `defaultRetaliateWhenHurt`).
+  - Added full translation keys and descriptive tooltips for NeoForge's in-game config UI (`ConfigurationSectionScreen`).
+- Added pet inventory side navigation tabs:
+  - Added tab strip positioned seamlessly along the left container edge following vanilla recipe book tab conventions.
+  - **Pet Inventory (Home)** tab: Displays pet equipment, entity model, and player inventory slots.
+  - **Collar Settings** tab: Appears dynamically when the pet is wearing a collar.
+  - **Riding Settings** tab: Displays when pet riding is enabled in config.
+  - Automatically isolates slot rendering and mouse events to the Home tab so invisible slots are never highlighted or clicked in secondary tabs.
+  - Added dedicated keybind support (`J` key / configurable via Controls) to open pet inventory, decoupled from default shift right-click.
+- Added Collar Settings GUI scene with persistent data storage:
+  - Settings are stored directly on the collar item stack via data components (`petting:collar_settings`), preserving configuration across un-equipping and transfers between pets.
+  - **Aggressiveness Button**: Cycles between `Passive`, `Defensive`, and `Aggressive` modes with dynamic real-time tactics summary.
+  - **Follow Distance Slider**: Configures distance before the pet starts pathfinding toward the owner.
+  - **Teleport Distance Slider**: Configures distance before the pet teleports to catch up.
+  - **Teleport Toggle**: Toggles catch-up teleportation ON/OFF.
+  - **Ranged Toggle**: Toggles preference for ranged attacks (keeping distance and firing bows/crossbows when armed).
+  - **Defend Pets Toggle**: Toggles whether pet defends fellow pets belonging to the same owner.
+  - **Retaliate Toggle**: Toggles whether pet counter-attacks when directly taking damage.
+  - **Reset Defaults**: Resets all collar options to server configuration defaults.
 - Added new **Collar** items and all 16 Minecraft dye color variants:
   - Default variant is the **Red Collar** (`collar`), along with 15 colored variants (`white_collar`, `orange_collar`, `magenta_collar`, `light_blue_collar`, `yellow_collar`, `lime_collar`, `pink_collar`, `gray_collar`, `light_gray_collar`, `cyan_collar`, `purple_collar`, `blue_collar`, `brown_collar`, `green_collar`, `black_collar`).
   - Each variant features custom 16x16 pixel art with matched lighting, shading, and the iconic golden bell/buckle.
@@ -32,6 +46,15 @@ All notable changes to this project will be documented in this file.
   - Collars are safely dropped on the ground if the pet dies or is untamed.
 
 ### Fixed
+- **Screen-Safe Clamped Tooltips (`ClampedTooltipPositioner`)**:
+  - Implemented custom tooltip clamping to prevent tooltips from extending beyond the top, bottom, or sides of the viewport on any GUI scale or resolution.
+  - Fixed combat mode tooltips getting cut off above the screen edge when hovering near the top of the GUI.
+- **Button Text Overflow**:
+  - Shortened collar toggle button labels (`Ranged: ON/OFF` and `Defend: ON/OFF`) to fit cleanly within 76px button widths without text clipping.
+- **Dynamic Combat Mode Tooltips**:
+  - Replaced long static mode descriptions with concise 3-line tooltips displaying mode behavior and real-time active tactical toggle states.
+- **Ranged Pet Combat AI (`PetRangedAttackGoal`)**:
+  - Added dedicated bow and crossbow combat AI for armed pets when Ranged is enabled, maintaining optimal firing distance and shooting projectiles.
 - **Pet Combat AI & Responsiveness**:
   - Resolved pets being overly passive when built-in hostility was disabled; pets now actively fight their owner's target, defend their owner, and defend themselves.
   - Reordered goal priorities so attack goals take precedence over follow-owner movement during battle, and prevented follow AI from breaking off active combat unless the owner exceeds teleport range.

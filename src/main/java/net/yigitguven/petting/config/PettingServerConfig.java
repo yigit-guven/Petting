@@ -12,16 +12,22 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue OWNER_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue DISABLE_BUILT_IN_HOSTILITY;
-    public static final ModConfigSpec.EnumValue<net.yigitguven.petting.data.CombatMode> DEFAULT_COMBAT_MODE;
-    public static final ModConfigSpec.BooleanValue PETS_DEFEND_OWNER;
-    public static final ModConfigSpec.BooleanValue PETS_ATTACK_OWNER_TARGET;
-    public static final ModConfigSpec.BooleanValue PETS_RETALIATE;
-    public static final ModConfigSpec.DoubleValue TELEPORT_DISTANCE;
     public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_SLOT;
+    public static final ModConfigSpec.EnumValue<net.yigitguven.petting.data.CombatMode> DEFAULT_COMBAT_MODE;
     public static final ModConfigSpec.BooleanValue ENABLE_PET_RIDING;
     public static final ModConfigSpec.BooleanValue RIDING_USE_WHITELIST;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_WHITELIST;
     public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_BLACKLIST;
+    public static final ModConfigSpec.IntValue DEFAULT_FOLLOW_DISTANCE;
+    public static final ModConfigSpec.IntValue MIN_FOLLOW_DISTANCE;
+    public static final ModConfigSpec.IntValue MAX_FOLLOW_DISTANCE;
+    public static final ModConfigSpec.IntValue DEFAULT_TELEPORT_DISTANCE;
+    public static final ModConfigSpec.IntValue MIN_TELEPORT_DISTANCE;
+    public static final ModConfigSpec.IntValue MAX_TELEPORT_DISTANCE;
+    public static final ModConfigSpec.BooleanValue DEFAULT_TELEPORT_ENABLED;
+    public static final ModConfigSpec.BooleanValue DEFAULT_PREFER_RANGED_ATTACK;
+    public static final ModConfigSpec.BooleanValue DEFAULT_DEFEND_OTHER_PETS;
+    public static final ModConfigSpec.BooleanValue DEFAULT_RETALIATE_WHEN_HURT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -68,26 +74,6 @@ public class PettingServerConfig {
                 .translation("petting.configuration.behavior.disableBuiltInHostility")
                 .define("disableBuiltInHostility", true);
 
-        DEFAULT_COMBAT_MODE = builder
-                .translation("petting.configuration.behavior.defaultCombatMode")
-                .defineEnum("defaultCombatMode", net.yigitguven.petting.data.CombatMode.AGGRESSIVE);
-
-        PETS_DEFEND_OWNER = builder
-                .translation("petting.configuration.behavior.petsDefendOwner")
-                .define("petsDefendOwner", true);
-
-        PETS_ATTACK_OWNER_TARGET = builder
-                .translation("petting.configuration.behavior.petsAttackOwnerTarget")
-                .define("petsAttackOwnerTarget", true);
-
-        PETS_RETALIATE = builder
-                .translation("petting.configuration.behavior.petsRetaliate")
-                .define("petsRetaliate", true);
-
-        TELEPORT_DISTANCE = builder
-                .translation("petting.configuration.behavior.teleportDistance")
-                .defineInRange("teleportDistance", 20.0, 5.0, 200.0);
-
         ENABLE_COLLAR_SLOT = builder
                 .translation("petting.configuration.behavior.enableCollarSlot")
                 .define("enableCollarSlot", true);
@@ -111,6 +97,54 @@ public class PettingServerConfig {
         RIDING_BLACKLIST = builder
                 .translation("petting.configuration.riding.blacklist")
                 .defineListAllowEmpty("blacklist", java.util.List.of(), () -> "", obj -> obj instanceof String);
+
+        builder.pop();
+
+        builder.push("collar");
+
+        DEFAULT_COMBAT_MODE = builder
+                .translation("petting.configuration.collar.defaultCombatMode")
+                .defineEnum("defaultCombatMode", net.yigitguven.petting.data.CombatMode.AGGRESSIVE);
+
+        DEFAULT_FOLLOW_DISTANCE = builder
+                .translation("petting.configuration.collar.defaultFollowDistance")
+                .defineInRange("defaultFollowDistance", 4, 1, 32);
+
+        MIN_FOLLOW_DISTANCE = builder
+                .translation("petting.configuration.collar.minFollowDistance")
+                .defineInRange("minFollowDistance", 2, 1, 16);
+
+        MAX_FOLLOW_DISTANCE = builder
+                .translation("petting.configuration.collar.maxFollowDistance")
+                .defineInRange("maxFollowDistance", 32, 4, 64);
+
+        DEFAULT_TELEPORT_DISTANCE = builder
+                .translation("petting.configuration.collar.defaultTeleportDistance")
+                .defineInRange("defaultTeleportDistance", 20, 5, 128);
+
+        MIN_TELEPORT_DISTANCE = builder
+                .translation("petting.configuration.collar.minTeleportDistance")
+                .defineInRange("minTeleportDistance", 8, 5, 32);
+
+        MAX_TELEPORT_DISTANCE = builder
+                .translation("petting.configuration.collar.maxTeleportDistance")
+                .defineInRange("maxTeleportDistance", 64, 16, 200);
+
+        DEFAULT_TELEPORT_ENABLED = builder
+                .translation("petting.configuration.collar.defaultTeleportEnabled")
+                .define("defaultTeleportEnabled", true);
+
+        DEFAULT_PREFER_RANGED_ATTACK = builder
+                .translation("petting.configuration.collar.defaultPreferRangedAttack")
+                .define("defaultPreferRangedAttack", true);
+
+        DEFAULT_DEFEND_OTHER_PETS = builder
+                .translation("petting.configuration.collar.defaultDefendOtherPets")
+                .define("defaultDefendOtherPets", true);
+
+        DEFAULT_RETALIATE_WHEN_HURT = builder
+                .translation("petting.configuration.collar.defaultRetaliateWhenHurt")
+                .define("defaultRetaliateWhenHurt", true);
 
         builder.pop();
 
@@ -159,22 +193,6 @@ public class PettingServerConfig {
 
     public static net.yigitguven.petting.data.CombatMode getDefaultCombatMode() {
         return SPEC.isLoaded() ? DEFAULT_COMBAT_MODE.get() : net.yigitguven.petting.data.CombatMode.AGGRESSIVE;
-    }
-
-    public static boolean canPetsDefendOwner() {
-        return SPEC.isLoaded() ? PETS_DEFEND_OWNER.get() : true;
-    }
-
-    public static boolean canPetsAttackOwnerTarget() {
-        return SPEC.isLoaded() ? PETS_ATTACK_OWNER_TARGET.get() : true;
-    }
-
-    public static boolean canPetsRetaliate() {
-        return SPEC.isLoaded() ? PETS_RETALIATE.get() : true;
-    }
-
-    public static double getTeleportDistance() {
-        return SPEC.isLoaded() ? TELEPORT_DISTANCE.get() : 20.0;
     }
 
     public static boolean isCollarSlotEnabled() {
@@ -241,5 +259,45 @@ public class PettingServerConfig {
             }
             return true;
         }
+    }
+
+    public static int getDefaultFollowDistance() {
+        return SPEC.isLoaded() ? DEFAULT_FOLLOW_DISTANCE.get() : 4;
+    }
+
+    public static int getMinFollowDistance() {
+        return SPEC.isLoaded() ? MIN_FOLLOW_DISTANCE.get() : 2;
+    }
+
+    public static int getMaxFollowDistance() {
+        return SPEC.isLoaded() ? MAX_FOLLOW_DISTANCE.get() : 32;
+    }
+
+    public static int getDefaultTeleportDistance() {
+        return SPEC.isLoaded() ? DEFAULT_TELEPORT_DISTANCE.get() : 20;
+    }
+
+    public static int getMinTeleportDistance() {
+        return SPEC.isLoaded() ? MIN_TELEPORT_DISTANCE.get() : 8;
+    }
+
+    public static int getMaxTeleportDistance() {
+        return SPEC.isLoaded() ? MAX_TELEPORT_DISTANCE.get() : 64;
+    }
+
+    public static boolean isDefaultTeleportEnabled() {
+        return SPEC.isLoaded() ? DEFAULT_TELEPORT_ENABLED.get() : true;
+    }
+
+    public static boolean isDefaultPreferRangedAttack() {
+        return SPEC.isLoaded() ? DEFAULT_PREFER_RANGED_ATTACK.get() : true;
+    }
+
+    public static boolean isDefaultDefendOtherPets() {
+        return SPEC.isLoaded() ? DEFAULT_DEFEND_OTHER_PETS.get() : true;
+    }
+
+    public static boolean isDefaultRetaliateWhenHurt() {
+        return SPEC.isLoaded() ? DEFAULT_RETALIATE_WHEN_HURT.get() : true;
     }
 }

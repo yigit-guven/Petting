@@ -14,11 +14,14 @@ import net.yigitguven.petting.ai.PetAttackOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetDefendOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetFollowOwnerGoal;
 import net.yigitguven.petting.ai.PetMeleeAttackGoal;
+import net.yigitguven.petting.ai.PetRangedAttackGoal;
 import net.yigitguven.petting.ai.PetSitGoal;
+import net.yigitguven.petting.data.CollarSettings;
 import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetData;
 import net.yigitguven.petting.data.PetOrder;
 import net.minecraft.world.item.ItemStack;
+import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModAttachments;
 
 import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
@@ -105,6 +108,10 @@ public class PetHelper {
     }
 
     public static CombatMode getCombatMode(LivingEntity entity) {
+        ItemStack collar = getCollar(entity);
+        if (!collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
+            return collar.get(PettingDataComponents.COLLAR_SETTINGS).combatMode();
+        }
         if (!entity.hasData(PettingModAttachments.PET_DATA)) {
             return PettingServerConfig.getDefaultCombatMode();
         }
@@ -116,6 +123,14 @@ public class PetHelper {
             PetData data = entity.getData(PettingModAttachments.PET_DATA);
             data.setCombatMode(mode);
             entity.setData(PettingModAttachments.PET_DATA, data);
+        }
+        ItemStack collar = getCollar(entity);
+        if (!collar.isEmpty()) {
+            CollarSettings current = getCollarSettings(entity);
+            if (current.combatMode() != mode) {
+                collar.set(PettingDataComponents.COLLAR_SETTINGS, current.withCombatMode(mode));
+                setCollar(entity, collar);
+            }
         }
     }
 
@@ -129,7 +144,36 @@ public class PetHelper {
     public static void setCollar(LivingEntity entity, ItemStack collar) {
         PetData data = entity.getData(PettingModAttachments.PET_DATA);
         data.setCollar(collar != null ? collar : ItemStack.EMPTY);
+        if (collar != null && !collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
+            data.setCombatMode(collar.get(PettingDataComponents.COLLAR_SETTINGS).combatMode());
+        }
         entity.setData(PettingModAttachments.PET_DATA, data);
+    }
+
+    public static CollarSettings getCollarSettings(LivingEntity entity) {
+        ItemStack collar = getCollar(entity);
+        if (!collar.isEmpty()) {
+            if (collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
+                return collar.get(PettingDataComponents.COLLAR_SETTINGS);
+            }
+            CollarSettings defaults = CollarSettings.fromConfig();
+            if (entity.hasData(PettingModAttachments.PET_DATA)) {
+                defaults = defaults.withCombatMode(entity.getData(PettingModAttachments.PET_DATA).getCombatMode());
+            }
+            collar.set(PettingDataComponents.COLLAR_SETTINGS, defaults);
+            setCollar(entity, collar);
+            return defaults;
+        }
+        return CollarSettings.fromConfig();
+    }
+
+    public static void setCollarSettings(LivingEntity entity, CollarSettings settings) {
+        ItemStack collar = getCollar(entity);
+        if (!collar.isEmpty()) {
+            collar.set(PettingDataComponents.COLLAR_SETTINGS, settings);
+            setCollar(entity, collar);
+        }
+        setCombatMode(entity, settings.combatMode());
     }
 
     public static boolean isPetRidingEnabledFor(@Nullable Mob pet) {
@@ -304,19 +348,30 @@ public class PetHelper {
             }
         }
 
+        CollarSettings settings = getCollarSettings(pet);
+
         // 1. Protect owner: target attacked the owner
-        if (PettingServerConfig.canPetsDefendOwner() && target == owner.getLastHurtByMob()) {
+        if (target == owner.getLastHurtByMob()) {
             return true;
         }
 
-        // 2. Attack for owner: owner attacked the target
-        if (PettingServerConfig.canPetsAttackOwnerTarget() && target == owner.getLastHurtMob()) {
+        // 2. Attack for owner: owner attacked the target (Aggressive mode only)
+        if (settings.combatMode() == CombatMode.AGGRESSIVE && target == owner.getLastHurtMob()) {
             return true;
         }
 
         // 3. Self-defense: target attacked the pet
-        if (PettingServerConfig.canPetsRetaliate() && target == pet.getLastHurtByMob()) {
+        if (settings.retaliateWhenHurt() && target == pet.getLastHurtByMob()) {
             return true;
+        }
+
+        // 4. Defend fellow pets
+        if (settings.defendOtherPets()) {
+            for (LivingEntity otherPet : pet.level().getEntitiesOfClass(LivingEntity.class, pet.getBoundingBox().inflate(16.0D))) {
+                if (otherPet != pet && isTamed(otherPet) && isOwner(otherPet, owner) && target == otherPet.getLastHurtByMob()) {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -325,14 +380,16 @@ public class PetHelper {
     public static void injectGoals(Mob mob) {
         mob.goalSelector.getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal
                 || wrappedGoal.getGoal() instanceof PetSitGoal
+                || wrappedGoal.getGoal() instanceof PetRangedAttackGoal
                 || wrappedGoal.getGoal() instanceof PetMeleeAttackGoal
                 || wrappedGoal.getGoal() instanceof PetFollowOwnerGoal);
         purgeBuiltInTargetGoals(mob);
 
         mob.goalSelector.addGoal(1, new PetSitGoal(mob));
         if (mob instanceof PathfinderMob pathfinderMob) {
-            mob.goalSelector.addGoal(2, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
-            mob.goalSelector.addGoal(3, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
+            mob.goalSelector.addGoal(2, new PetRangedAttackGoal(pathfinderMob, 1.25D, 20, 16.0F));
+            mob.goalSelector.addGoal(3, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
+            mob.goalSelector.addGoal(4, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
         }
 
         boolean hasDefendGoal = mob.targetSelector.getAvailableGoals().stream()

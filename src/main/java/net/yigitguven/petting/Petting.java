@@ -24,6 +24,7 @@ public class Petting {
     public Petting(IEventBus modEventBus, ModContainer modContainer) {
         PettingModAttachments.ATTACHMENT_TYPES.register(modEventBus);
         PettingModItems.ITEMS.register(modEventBus);
+        net.yigitguven.petting.init.PettingDataComponents.DATA_COMPONENTS.register(modEventBus);
         PettingModMenus.MENUS.register(modEventBus);
         PettingModTabs.CREATIVE_MODE_TABS.register(modEventBus);
 

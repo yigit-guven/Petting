@@ -34,8 +34,26 @@ public class PetFollowOwnerGoal extends Goal {
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
+    private net.yigitguven.petting.data.CollarSettings getSettings() {
+        return PetHelper.getCollarSettings(this.mob);
+    }
+
+    private double getStartDistanceSqr() {
+        double dist = getSettings().followDistance();
+        return dist * dist;
+    }
+
+    private double getStopDistanceSqr() {
+        double dist = Math.max(1.5D, getSettings().followDistance() * 0.5D);
+        return dist * dist;
+    }
+
     private double getTeleportDistanceSqr() {
-        double dist = net.yigitguven.petting.config.PettingServerConfig.getTeleportDistance();
+        net.yigitguven.petting.data.CollarSettings settings = getSettings();
+        if (!settings.teleportEnabled()) {
+            return Double.MAX_VALUE;
+        }
+        double dist = settings.teleportDistance();
         return dist * dist;
     }
 
@@ -59,7 +77,7 @@ public class PetFollowOwnerGoal extends Goal {
         if (target != null && target.isAlive() && distSqr < getTeleportDistanceSqr()) {
             return false;
         }
-        return distSqr >= (double) this.startDistanceSqr;
+        return distSqr >= getStartDistanceSqr();
     }
 
     @Override
@@ -81,7 +99,7 @@ public class PetFollowOwnerGoal extends Goal {
         if (target != null && target.isAlive() && distSqr < getTeleportDistanceSqr()) {
             return false;
         }
-        return distSqr > (double) this.stopDistanceSqr;
+        return distSqr > getStopDistanceSqr();
     }
 
     @Override
