@@ -93,6 +93,7 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | `swimmingPetsStayStillWhenSitting` | Boolean | `true` | When `true`, aquatic pets commanded to sit will remain stationary in water without floating up, sinking, or drifting. |
 | `hideTamedBossBars` | Boolean | `true` | When `true`, boss health bars for tamed pets (such as Wither, Ender Dragon, and other boss pets) are hidden from the screen. |
 | `tamedMonstersPreventSleep` | Boolean | `false` | When `true`, tamed monster pets (such as Zombies, Skeletons, Withers, etc.) nearby will prevent players from sleeping like vanilla monsters do. When `false` (default), players can sleep peacefully near their friendly tamed pets. |
+| `enablePetDeathMessages` | Boolean | `true` | When `true`, players receive a chat notification when their pet dies or respawns at a bound bed/cushion. When `false`, death and respawn notifications are disabled on the server. |
 
 #### Setting Details:
 
@@ -141,6 +142,11 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   - `false` (*Default*): Tamed monsters do not prevent players from sleeping, allowing players to rest peacefully near their pets.
   - `true`: Tamed monsters prevent players from resting just like wild monsters in vanilla Minecraft.
 
+- **`enablePetDeathMessages`**:
+  Controls whether death and respawn notifications are sent to the pet's owner from the server.
+  - `true` (*Default*): The server sends a chat notification to the owner whenever their pet dies permanently, respawns at a bound bed/cushion, or fails to respawn because the bed/cushion was missing.
+  - `false`: Death and respawn notifications are not sent by the server.
+
 ### Section: `[riding]`
 
 | Setting | Type | Default | Description |
@@ -186,16 +192,41 @@ These settings control client-side interface behavior and chat feedback.
 
 | Setting | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `enablePositiveFeedback` | Boolean | `false` | Whether to display positive feedback messages in chat (e.g., successful taming or pet healing). |
-| `enableNegativeFeedback` | Boolean | `false` | Whether to display negative feedback and warning messages in chat (e.g., failure notifications, mob too healthy, or already tamed). |
+| `enableTamedSuccessFeedback` | Boolean | `false` | Whether to display notifications in chat when successfully taming a mob (`petting.action.tamed_success`). |
+| `enablePetHealedFeedback` | Boolean | `false` | Whether to display notifications in chat when healing a pet (`petting.action.pet_healed`). |
+| `enablePetSittingFeedback` | Boolean | `false` | Whether to display notifications in chat when commanding a pet to sit (`petting.action.pet_sitting`). |
+| `enablePetStandingFeedback` | Boolean | `false` | Whether to display notifications in chat when commanding a pet to stand and follow (`petting.action.pet_standing`). |
+| `enableCollarBoundFeedback` | Boolean | `false` | Whether to display notifications in chat when binding a collar to a bed or cushion (`petting.action.collar_bound`). |
+| `enableMountControlledFeedback` | Boolean | `false` | Whether to display steering control notifications in chat when mounting a saddled pet (`petting.action.mount_controlled`). |
+| `enableTamingFailedFeedback` | Boolean | `false` | Whether to display notifications in chat when a taming attempt fails (`petting.action.taming_failed`). |
+| `enableTooHealthyFeedback` | Boolean | `false` | Whether to display warnings in chat when a mob has too much health to be tamed (`petting.action.too_healthy`). |
+| `enableAlreadyVanillaTamedFeedback` | Boolean | `false` | Whether to display warnings in chat when attempting to tame a mob already bonded through vanilla taming (`petting.action.already_vanilla_tamed`). |
+| `enableAlreadyTamedOtherFeedback` | Boolean | `false` | Whether to display warnings in chat when attempting to tame a mob that belongs to another player (`petting.action.already_tamed_other`). |
+| `enablePetFullHealthFeedback` | Boolean | `false` | Whether to display messages in chat when attempting to heal a pet already at full health (`petting.action.pet_full_health`). |
+| `enablePetLimitReachedFeedback` | Boolean | `false` | Whether to display warnings in chat when your pet limit has been reached (`petting.action.pet_limit_reached`). |
+| `enableSaddleRequiredFeedback` | Boolean | `false` | Whether to display warnings in chat when attempting to mount a pet without a required saddle (`petting.action.saddle_required`). |
+| `enableMountUncontrolledFeedback` | Boolean | `false` | Whether to display warnings in chat when mounting a pet without steering control (`petting.action.mount_uncontrolled`). |
+| `enablePetDeathMessages` | Boolean | `false` | Master toggle: Whether to display all pet death and respawn notification messages in chat. |
+| `enablePetDiedFeedback` | Boolean | `false` | Whether to display notifications in chat when your pet dies (`petting.action.pet_died`). |
+| `enablePetRespawnedFeedback` | Boolean | `false` | Whether to display notifications in chat when your pet respawns at a bound bed or cushion (`petting.action.pet_respawned`). |
+| `enablePetRespawnFailedFeedback` | Boolean | `false` | Whether to display notifications in chat when your pet fails to respawn because its bed or cushion was missing (`petting.action.pet_respawn_failed`). |
 
 #### Setting Details:
 
-- **`enablePositiveFeedback`**:
-  When enabled (`true`), chat notifications appear upon successfully taming or healing a pet. Disabled (`false`) by default to keep chat clear.
+> [!NOTE]
+> All feedback messages are disabled (`false`) by default to keep chat clean. You can selectively enable whichever individual messages you want to see.
 
-- **`enableNegativeFeedback`**:
-  When enabled (`true`), warning and status messages appear in chat if a taming attempt fails, if a mob is too healthy to be tamed, or if a mob already has an owner. Disabled (`false`) by default.
+- **Positive Feedback Options**:
+  - Granular toggles (`enableTamedSuccessFeedback`, `enablePetHealedFeedback`, `enablePetSittingFeedback`, `enablePetStandingFeedback`, `enableCollarBoundFeedback`, `enableMountControlledFeedback`) let you selectively enable specific positive notifications.
+
+- **Negative Feedback Options**:
+  - Granular toggles (`enableTamingFailedFeedback`, `enableTooHealthyFeedback`, `enableAlreadyVanillaTamedFeedback`, `enableAlreadyTamedOtherFeedback`, `enablePetFullHealthFeedback`, `enablePetLimitReachedFeedback`, `enableSaddleRequiredFeedback`, `enableMountUncontrolledFeedback`) let you selectively enable specific warnings and failure notifications.
+
+- **Pet Death & Respawn Options**:
+  - `enablePetDeathMessages`: Master toggle to show all pet death and collar respawn notifications.
+  - Granular toggles (`enablePetDiedFeedback`, `enablePetRespawnedFeedback`, `enablePetRespawnFailedFeedback`) let you selectively enable permanent death, respawn, or failed respawn messages.
+
+
 
 ---
 
