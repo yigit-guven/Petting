@@ -1,0 +1,42 @@
+name: Sync Docs to Wiki
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Main Repository
+        uses: actions/checkout@v4
+        with:
+          path: main-repo
+
+      - name: Checkout Wiki Repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki-repo
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync and Push
+        run: |
+          rsync -av --delete --exclude '.git' main-repo/docs/ wiki-repo/
+          
+          cd wiki-repo
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          git add .
+          
+          if git diff-index --quiet HEAD; then
+            echo "No changes to sync."
+          else
+            git commit -m "Auto-sync docs to wiki [skip ci]"
+            git push
+          fi

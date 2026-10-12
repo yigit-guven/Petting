@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
   <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/logo.png" width="96" height="96" alt="Petting Logo">
 
@@ -398,5 +398,13 @@ Petting is licensed under the **GNU Lesser General Public License v3.0**. See [L
 ---
 
 <div align="center">
-  Made by <a href="https://github.com/yigit-guven"><b>Yigit Guven</b></a> · <a href="https://discord.gg/aPk7Qs5d4H">Join the Discord</a>
+  <p>🚀 <b>Project Links:</b> 
+    <a href="https://modrinth.com/mod/petting">Modrinth</a> | 
+    <a href="https://www.curseforge.com/minecraft/mc-mods/petting">CurseForge</a> | 
+    <a href="https://github.com/yigit-guven/Petting">Source Code</a> | 
+    <a href="https://github.com/yigit-guven/Petting/wiki">Documentation (Wiki)</a> | 
+    <a href="https://github.com/yigit-guven/Petting/issues">Bug Reports</a> |
+    <a href="https://discord.gg/aPk7Qs5d4H">Discord</a>
+  </p>
+  <i>Made with ❤️ by <a href="https://github.com/yigit-guven"><b>Yigit Guven</b></a></i>
 </div>
