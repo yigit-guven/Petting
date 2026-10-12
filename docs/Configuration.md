@@ -90,6 +90,7 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | `forgiveAttacksOnSit` | Boolean | `true` | When `true`, commanding a pet to sit clears its attack targets and calms active hostilities, immediately halting combat. |
 | `flyingPetsHoverWhenSitting` | Boolean | `true` | When `true`, flying pets commanded to sit will hover stationary in mid-air instead of falling to the ground. |
 | `swimmingPetsStayStillWhenSitting` | Boolean | `true` | When `true`, aquatic pets commanded to sit will remain stationary in water without floating up, sinking, or drifting. |
+| `hideTamedBossBars` | Boolean | `true` | When `true`, boss health bars for tamed pets (such as Wither, Ender Dragon, and other boss pets) are hidden from the screen. |
 
 #### Setting Details:
 
@@ -122,6 +123,11 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   Controls stillness for aquatic pets (and pets in water) while sitting.
   - `true` (*Default*): Swimming pets remain completely stationary in water without sinking, floating to the surface, or being swept away by water currents.
   - `false`: Normal fluid physics and water currents apply while sitting.
+
+- **`hideTamedBossBars`**:
+  Controls the display of boss health bars for tamed pets on players' screens.
+  - `true` (*Default*): Boss health bars for tamed pets (e.g. Wither, Ender Dragon, or other boss pets) are hidden from the screen, preventing HUD clutter.
+  - `false`: Boss health bars are displayed normally for all boss entities even when tamed.
 
 ### Section: `[riding]`
 
