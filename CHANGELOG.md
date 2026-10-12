@@ -107,8 +107,13 @@ All notable changes to this project will be documented in this file.
   - Added dynamic 3D worn collar entity rendering (`PetCollarLayer`):
     - Automatically detects the head and neck position across any pet model (vanilla and modded mobs).
     - Renders a 3D colored collar band wrapped around the pet's neck right below the head with matching dye color and an iconic golden buckle on the front.
-    - Dynamically follows all head movements, rotations, baby scaling, sitting, sleeping, and animations in real time.
   - Collars are safely dropped on the ground if the pet dies or is untamed.
+  - **Collar Bed & Cushion Binding and Respawn System**:
+    - Right-clicking any Bed (`BlockTags.BEDS`) or Cushion (vanilla cushion entity/block or modded cushions) while holding a collar binds the collar to that location.
+    - Successfully binding a collar grants it an enchanted shimmer/glint visual both in inventory screens and on the worn 3D pet model, and adds a purple location tooltip ("Bound to Bed / Cushion [x, y, z]").
+    - When a tamed pet wearing a bound collar dies, death is canceled and the pet instantly respawns safely seated on its bound bed or cushion with full health, negative status effects and fire cleared, accompanied by Totem of Undying visual particles and sound effects.
+    - If the bound bed or cushion is destroyed or broken, the pet will not respawn and will experience normal death (dropping its collar/saddle and notifying the owner).
+    - Fully configurable via `enableCollarRespawn` under `[collar]` in server config (default: `true`).
 
 ### Fixed
 - **Inverted Left / Right Riding Controls**:
@@ -148,6 +153,17 @@ All notable changes to this project will be documented in this file.
   - Fixed an issue where tamed monster pets (such as Zombies, Skeletons, Withers, etc.) sitting or standing nearby prevented players from sleeping with the vanilla "You may not rest now, there are monsters nearby" warning.
   - Implemented `MonsterMixin` to override `isPreventingPlayerRest` for tamed friendly monster pets while strictly preserving vanilla sleep denial if an untamed hostile monster is nearby or if a pet is actively attacking the player.
   - Added configurable toggle (`tamedMonstersPreventSleep` in server config `[behavior]`, default: `false`) so servers can choose whether tamed monster pets prevent sleep or allow players to sleep peacefully nearby.
+- **Collar Respawn Instant Relocation & Desync Fix**:
+  - Fixed a client-server synchronization bug where a pet dying with a bound collar would remain sitting at the death location on the client instead of appearing at its bed/cushion.
+  - Resolved `ChunkMap` entity tracking retaining stale client pairings on same-dimension teleports by cycling `removeEntity` and `addEntity` on the chunk source, immediately removing the entity from the death location and re-adding it at the bound bed coordinates for all tracking players.
+  - Stopped mob pathfinding navigation and cleared residual post-damage knockback velocity (`syncVelocity = false`, `setDeltaMovement(Vec3.ZERO)`) to ensure the respawned pet sits directly and securely on its bed or cushion without sliding or snapping.
+- **Friendly Fire & Config Enforcement Fixes**:
+  - Fixed an issue where enabling `ownerCanAttackPets` did not allow owners to damage their pets because pet-vs-pet friendly fire checks and ally mixins incorrectly treated the owner and pet relationship as fellow pets.
+  - Introduced `arePetsOfSameOwner` to cleanly distinguish fellow pets belonging to the same owner from the owner-pet relationship, allowing owners to strike or shoot their pets when `ownerCanAttackPets` is enabled while keeping pets completely peaceful toward their owner.
+  - Fixed `petsCanAttackPets` targeting being prematurely blocked in `LivingChangeTargetEvent` and `canAttack` mixins.
+  - Enforced `enableCollarSlot` config check when attempting to equip collars by right-clicking in the world.
+  - Enforced `enablePetRiding`, riding whitelist/blacklist, and saddle requirements in `EntityMountEvent` to prevent unauthorized mounting.
+  - Added server-side validation for `riddenPetsAttackOnClick` in `RiddenPetAttackPayload`.
 
 ## [4.2.3-beta.4-forge-1.20.1] - 2026-06-25
 
