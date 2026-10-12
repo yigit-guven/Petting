@@ -31,6 +31,7 @@ All notable changes to this project will be documented in this file.
     - `forgiveAttacksOnSit`: Configures whether sitting immediately clears hostilities and stops combat (default: `true`).
     - `flyingPetsHoverWhenSitting`: Configures whether flying pets hover stationary in mid-air (default: `true`).
     - `swimmingPetsStayStillWhenSitting`: Configures whether aquatic pets remain stationary in water (default: `true`).
+    - `hideTamedBossBars`: Configures whether boss health bars for tamed pets (e.g. Wither, Ender Dragon, or modded boss pets) are hidden from players' screens (default: `true`).
 - Added pet inventory side navigation tabs:
   - Added tab strip positioned seamlessly along the left container edge following vanilla recipe book tab conventions.
   - **Pet Inventory (Home)** tab: Displays pet equipment, entity model, and player inventory slots.
