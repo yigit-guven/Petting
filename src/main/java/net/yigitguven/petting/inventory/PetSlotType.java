@@ -102,7 +102,7 @@ public enum PetSlotType {
 
     public static List<PetSlotType> getLeftSlots(@Nullable Mob pet) {
         List<PetSlotType> slots = new ArrayList<>();
-        if (pet == null) return slots;
+        if (pet == null || !net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) return slots;
 
         if (canEquipHumanoidArmor(pet)) {
             if (pet.canUseSlot(EquipmentSlot.HEAD)) slots.add(HEAD);
@@ -127,7 +127,7 @@ public enum PetSlotType {
 
     public static List<PetSlotType> getRightSlots(@Nullable Mob pet) {
         List<PetSlotType> slots = new ArrayList<>();
-        if (pet == null) return slots;
+        if (pet == null || !net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) return slots;
 
         if (net.yigitguven.petting.config.PettingServerConfig.isCollarSlotEnabled()) {
             slots.add(COLLAR);

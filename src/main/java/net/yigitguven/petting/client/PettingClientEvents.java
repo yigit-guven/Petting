@@ -7,6 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientChatReceivedEvent;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingClientConfig;
+import net.yigitguven.petting.config.PettingServerConfig;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.Entity;
@@ -54,6 +55,9 @@ public class PettingClientEvents {
         }
 
         while (PettingClient.OPEN_PET_INVENTORY.consumeClick()) {
+            if (!PettingServerConfig.isPetInventoryEnabled()) {
+                continue;
+            }
             if (mc.player != null && mc.level != null && mc.gui.screen() == null) {
                 Entity target = mc.crosshairPickEntity != null ? mc.crosshairPickEntity :
                         (mc.hitResult instanceof EntityHitResult ehr ? ehr.getEntity() : null);
@@ -86,6 +90,9 @@ public class PettingClientEvents {
         }
 
         while (PettingClient.RIDE_PET.consumeClick()) {
+            if (!PettingServerConfig.isPetInventoryEnabled()) {
+                continue;
+            }
             if (mc.player != null && mc.level != null && mc.gui.screen() == null) {
                 if (mc.player.getVehicle() instanceof Mob mob && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
                     PetRidingHandler.allowForcedDismount(mc.player);

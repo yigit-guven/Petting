@@ -34,6 +34,9 @@ public record UpdateCollarSettingsPayload(int entityId, CollarSettings settings)
 
     public static void handle(UpdateCollarSettingsPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
+            if (!net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) {
+                return;
+            }
             if (context.player() instanceof ServerPlayer player) {
                 Entity entity = player.level().getEntity(payload.entityId());
                 if (entity instanceof Mob mob && mob.isAlive()) {

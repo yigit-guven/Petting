@@ -46,37 +46,39 @@ public class PetTamingEvents {
 
         if (PetHelper.isTamed(mob)) {
             if (PetHelper.isOwner(mob, player)) {
-                if (stack.getItem() instanceof net.yigitguven.petting.item.CollarItem) {
-                    if (PetHelper.getCollar(mob).isEmpty()) {
-                        if (!isClient) {
-                            PetHelper.setCollar(mob, stack.copyWithCount(1));
-                            if (!player.getAbilities().instabuild) {
-                                stack.shrink(1);
-                            }
-                            mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, 1.0F);
-                        }
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                        event.setCanceled(true);
-                        return;
-                    }
-                }
-
-                DyeColor dyeColor = DyeColor.getColor(stack);
-                if (dyeColor != null) {
-                    ItemStack currentCollar = PetHelper.getCollar(mob);
-                    if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
-                        if (currentItem.getColor() != dyeColor) {
+                if (PettingServerConfig.isPetInventoryEnabled()) {
+                    if (stack.getItem() instanceof net.yigitguven.petting.item.CollarItem) {
+                        if (PetHelper.getCollar(mob).isEmpty()) {
                             if (!isClient) {
-                                net.minecraft.world.item.Item newCollarItem = net.yigitguven.petting.init.PettingModItems.getCollar(dyeColor).get();
-                                PetHelper.setCollar(mob, new ItemStack(newCollarItem));
+                                PetHelper.setCollar(mob, stack.copyWithCount(1));
                                 if (!player.getAbilities().instabuild) {
                                     stack.shrink(1);
                                 }
-                                mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+                                mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, 1.0F);
                             }
                             event.setCancellationResult(InteractionResult.SUCCESS);
                             event.setCanceled(true);
                             return;
+                        }
+                    }
+
+                    DyeColor dyeColor = DyeColor.getColor(stack);
+                    if (dyeColor != null) {
+                        ItemStack currentCollar = PetHelper.getCollar(mob);
+                        if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
+                            if (currentItem.getColor() != dyeColor) {
+                                if (!isClient) {
+                                    net.minecraft.world.item.Item newCollarItem = net.yigitguven.petting.init.PettingModItems.getCollar(dyeColor).get();
+                                    PetHelper.setCollar(mob, new ItemStack(newCollarItem));
+                                    if (!player.getAbilities().instabuild) {
+                                        stack.shrink(1);
+                                    }
+                                    mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
+                                }
+                                event.setCancellationResult(InteractionResult.SUCCESS);
+                                event.setCanceled(true);
+                                return;
+                            }
                         }
                     }
                 }

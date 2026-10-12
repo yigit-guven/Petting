@@ -291,6 +291,9 @@ public class PetHelper {
     }
 
     public static CombatMode getCombatMode(LivingEntity entity) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return PettingServerConfig.getDefaultCombatMode();
+        }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
             return collar.get(PettingDataComponents.COLLAR_SETTINGS).combatMode();
@@ -319,6 +322,9 @@ public class PetHelper {
     }
 
     public static ItemStack getCollar(LivingEntity entity) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return ItemStack.EMPTY;
+        }
         if (!entity.hasData(PettingModAttachments.PET_DATA)) {
             return ItemStack.EMPTY;
         }
@@ -326,6 +332,9 @@ public class PetHelper {
     }
 
     public static void setCollar(LivingEntity entity, ItemStack collar) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return;
+        }
         PetData data = entity.getData(PettingModAttachments.PET_DATA);
         data.setCollar(collar != null ? collar : ItemStack.EMPTY);
         if (collar != null && !collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
@@ -335,6 +344,9 @@ public class PetHelper {
     }
 
     public static ItemStack getSaddle(LivingEntity entity) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return ItemStack.EMPTY;
+        }
         if (entity instanceof AbstractHorse horse) {
             ItemStack horseSaddle = horse.getItemBySlot(EquipmentSlot.SADDLE);
             if (!horseSaddle.isEmpty()) {
@@ -348,6 +360,9 @@ public class PetHelper {
     }
 
     public static void setSaddle(LivingEntity entity, ItemStack saddle) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return;
+        }
         ItemStack item = saddle != null ? saddle : ItemStack.EMPTY;
         if (entity instanceof AbstractHorse horse) {
             horse.setItemSlot(EquipmentSlot.SADDLE, item);
@@ -395,6 +410,9 @@ public class PetHelper {
     }
 
     public static CollarSettings getCollarSettings(LivingEntity entity) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return CollarSettings.fromConfig();
+        }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
             if (collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
@@ -412,6 +430,9 @@ public class PetHelper {
     }
 
     public static void setCollarSettings(LivingEntity entity, CollarSettings settings) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return;
+        }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
             collar.set(PettingDataComponents.COLLAR_SETTINGS, settings);
@@ -439,6 +460,9 @@ public class PetHelper {
     }
 
     public static boolean isPetRidingEnabledFor(@Nullable Mob pet) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return false;
+        }
         if (pet == null) {
             return false;
         }
@@ -454,6 +478,10 @@ public class PetHelper {
         data.setOwnerUUID(owner.getUUID());
         data.setOrder(PetOrder.FOLLOW);
         data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            data.setCollar(ItemStack.EMPTY);
+            data.setSaddle(ItemStack.EMPTY);
+        }
         mob.setData(PettingModAttachments.PET_DATA, data);
 
         mob.setPersistenceRequired();
@@ -810,14 +838,16 @@ public class PetHelper {
         if (stack.isEmpty()) {
             return false;
         }
-        if (stack.getItem() instanceof net.yigitguven.petting.item.CollarItem && getCollar(mob).isEmpty()) {
-            return true;
-        }
-        if (net.minecraft.world.item.DyeColor.getColor(stack) != null) {
-            ItemStack currentCollar = getCollar(mob);
-            if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
-                if (currentItem.getColor() != net.minecraft.world.item.DyeColor.getColor(stack)) {
-                    return true;
+        if (PettingServerConfig.isPetInventoryEnabled()) {
+            if (stack.getItem() instanceof net.yigitguven.petting.item.CollarItem && getCollar(mob).isEmpty()) {
+                return true;
+            }
+            if (net.minecraft.world.item.DyeColor.getColor(stack) != null) {
+                ItemStack currentCollar = getCollar(mob);
+                if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
+                    if (currentItem.getColor() != net.minecraft.world.item.DyeColor.getColor(stack)) {
+                        return true;
+                    }
                 }
             }
         }

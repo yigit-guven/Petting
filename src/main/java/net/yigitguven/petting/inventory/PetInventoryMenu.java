@@ -15,6 +15,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.init.PettingModMenus;
 import org.jspecify.annotations.Nullable;
 
@@ -87,6 +88,9 @@ public class PetInventoryMenu extends AbstractContainerMenu {
     }
 
     public static void open(ServerPlayer player, Mob pet) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return;
+        }
         player.openMenu(new SimpleMenuProvider(
                 (windowId, playerInv, p) -> new PetInventoryMenu(windowId, playerInv, pet),
                 pet.getDisplayName()
@@ -116,6 +120,9 @@ public class PetInventoryMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
+        if (!PettingServerConfig.isPetInventoryEnabled()) {
+            return false;
+        }
         if (this.pet == null || !this.pet.isAlive()) {
             return false;
         }

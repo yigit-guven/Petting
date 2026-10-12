@@ -33,6 +33,9 @@ public record MountPetPayload(int entityId) implements CustomPacketPayload {
 
     public static void handle(MountPetPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
+            if (!PettingServerConfig.isPetInventoryEnabled()) {
+                return;
+            }
             if (context.player() instanceof ServerPlayer player) {
                 // If player is already riding a pet, pressing ride triggers dismount
                 if (player.getVehicle() instanceof Mob riddenMob && PetHelper.isTamed(riddenMob) && PetHelper.isOwner(riddenMob, player)) {

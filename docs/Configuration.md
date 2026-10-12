@@ -85,6 +85,7 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | Setting | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
 | `disableBuiltInHostility` | Boolean | `true` | When `true`, removes built-in mob aggression and targeting. Pets will strictly attack according to their collar tactical settings. |
+| `enablePetInventory` | Boolean | `true` | When `true`, pet inventory, collar equipment, and pet riding are enabled. When `false`, pet inventory is completely disabled: pets follow default settings, cannot wear collars or equipment, and cannot be ridden. |
 | `enableCollarSlot` | Boolean | `true` | When `true`, all pet inventory GUIs provide a dedicated slot to equip collars. When `false`, the collar slot is removed from all pet GUIs. |
 | `enablePetSitting` | Boolean | `true` | When `true`, players can command owned pets to sit or stand using the configured keybind (default: Right-Click). |
 | `forgiveAttacksOnSit` | Boolean | `true` | When `true`, commanding a pet to sit clears its attack targets and calms active hostilities, immediately halting combat. |
@@ -99,6 +100,11 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   Controls whether pets retain natural mob-type aggression or strictly obey their collar behavioral settings.
   - `true` (*Default*): Built-in mob targeting is completely disabled (Iron Golems will not attack monsters, Wolves will not hunt sheep/skeletons, Withers will not target everything, etc.). Pets will strictly follow their configured tactical rules.
   - `false`: Pets retain their original mob AI targeting goals.
+
+- **`enablePetInventory`**:
+  Controls whether the pet inventory, equipment, and riding system is enabled.
+  - `true` (*Default*): Full pet inventory GUI is accessible, collars and gear can be equipped, and allowed pets can be ridden.
+  - `false`: Completely disables the pet inventory feature. Newly and existing tamed pets operate strictly on default configuration settings (`defaultCombatMode`, collar defaults). Pets cannot wear collars, saddles, or items, pet inventory GUIs cannot be opened, and attempting to ride a pet does nothing.
 
 - **`enableCollarSlot`**:
   Controls whether the universal collar slot is enabled in pet inventory GUIs.

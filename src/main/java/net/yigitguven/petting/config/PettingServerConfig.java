@@ -12,6 +12,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue OWNER_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
     public static final ModConfigSpec.BooleanValue DISABLE_BUILT_IN_HOSTILITY;
+    public static final ModConfigSpec.BooleanValue ENABLE_PET_INVENTORY;
     public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_SLOT;
     public static final ModConfigSpec.BooleanValue ENABLE_PET_SITTING;
     public static final ModConfigSpec.BooleanValue FORGIVE_ATTACKS_ON_SIT;
@@ -86,6 +87,10 @@ public class PettingServerConfig {
         DISABLE_BUILT_IN_HOSTILITY = builder
                 .translation("petting.configuration.behavior.disableBuiltInHostility")
                 .define("disableBuiltInHostility", true);
+
+        ENABLE_PET_INVENTORY = builder
+                .translation("petting.configuration.behavior.enablePetInventory")
+                .define("enablePetInventory", true);
 
         ENABLE_COLLAR_SLOT = builder
                 .translation("petting.configuration.behavior.enableCollarSlot")
@@ -258,6 +263,10 @@ public class PettingServerConfig {
 
     public static net.yigitguven.petting.data.CombatMode getDefaultCombatMode() {
         return SPEC.isLoaded() ? DEFAULT_COMBAT_MODE.get() : net.yigitguven.petting.data.CombatMode.AGGRESSIVE;
+    }
+
+    public static boolean isPetInventoryEnabled() {
+        return SPEC.isLoaded() ? ENABLE_PET_INVENTORY.get() : true;
     }
 
     public static boolean isCollarSlotEnabled() {

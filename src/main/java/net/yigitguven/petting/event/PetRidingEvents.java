@@ -7,6 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityMountEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.yigitguven.petting.Petting;
+import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.entity.PetRidingHandler;
 import net.yigitguven.petting.util.PetHelper;
 
@@ -72,6 +73,10 @@ public class PetRidingEvents {
                     // Normal dismount reached ground / completed
                     PetRidingHandler.onDismount(mob);
                 } else if (event.isMounting()) {
+                    if (!(mob instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) && !PettingServerConfig.isPetInventoryEnabled()) {
+                        event.setCanceled(true);
+                        return;
+                    }
                     PetRidingHandler.onMount(mob, player);
                 }
             }

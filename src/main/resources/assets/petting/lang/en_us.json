@@ -55,6 +55,8 @@
   "petting.configuration.section.behavior.title": "Behavior Settings",
   "petting.configuration.behavior.disableBuiltInHostility": "Disable Built-In Hostility",
   "petting.configuration.behavior.disableBuiltInHostility.tooltip": "When enabled, pets will not naturally attack mobs based on their mob type (e.g. Iron Golems attacking monsters, Wolves hunting sheep, or Withers attacking all living entities). Pets will strictly attack according to their collar tactical settings.",
+  "petting.configuration.behavior.enablePetInventory": "Enable Pet Inventory",
+  "petting.configuration.behavior.enablePetInventory.tooltip": "When enabled, pets have an inventory GUI, can wear collars and equipment, and can be ridden if allowed. When disabled, the pet inventory system is completely disabled, pets operate strictly on default configuration settings, cannot wear collars or items, and cannot be ridden.",
   "petting.configuration.behavior.enableCollarSlot": "Enable Collar Slot",
   "petting.configuration.behavior.enableCollarSlot.tooltip": "When enabled, a collar slot is available in all pet inventory GUIs. When disabled, the collar slot is removed from pet inventory GUIs.",
   "petting.configuration.behavior.enablePetSitting": "Enable Pet Sitting",
