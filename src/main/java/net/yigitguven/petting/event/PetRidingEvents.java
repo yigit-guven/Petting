@@ -39,23 +39,31 @@ public class PetRidingEvents {
         if (event.getEntityMounting() instanceof Player player && event.getEntityBeingMounted() instanceof Mob mob) {
             if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player)) {
                 if (event.isDismounting()) {
-                    // If forced dismount was triggered (e.g. via dedicated ride keybind or grounded sneak), allow immediate dismount
-                    if (PetRidingHandler.consumeForcedDismount(player)) {
+                    // 1. If forced dismount was triggered (e.g. via keybind, grounded sneak, or DismountPetPayload), allow immediately
+                    if (PetRidingHandler.isForcedDismountAllowed(player)) {
                         PetRidingHandler.onDismount(mob);
                         return;
                     }
 
-                    // Flying pets: if in air and CAN descend, sneak descends instead of dismounting
+                    // 2. On client side: if this dismount is NOT from the player actively holding sneak,
+                    // it is from a server packet (e.g. ClientboundSetPassengersPacket) or entity removal.
+                    // NEVER cancel a server-ordered dismount on the client!
+                    if (event.getLevel().isClientSide() && !player.isShiftKeyDown()) {
+                        PetRidingHandler.onDismount(mob);
+                        return;
+                    }
+
+                    // 3. Flying pets: if actively holding sneak and CAN descend in air, sneak descends instead of dismounting
                     if (PetHelper.isFlyingPet(mob)) {
-                        if (!PetRidingHandler.isGroundedOrCannotDescend(mob)) {
+                        if (player.isShiftKeyDown() && !PetRidingHandler.isGroundedOrCannotDescend(mob)) {
                             event.setCanceled(true);
                             return;
                         }
                     }
 
-                    // Swimming pets: if in water and CAN descend, sneak dives instead of dismounting
+                    // 4. Swimming pets: if actively holding sneak and CAN descend in water, sneak dives instead of dismounting
                     if (PetHelper.isSwimmingPet(mob) && mob.isInWater()) {
-                        if (!PetRidingHandler.isGroundedOrCannotDescend(mob)) {
+                        if (player.isShiftKeyDown() && !PetRidingHandler.isGroundedOrCannotDescend(mob)) {
                             event.setCanceled(true);
                             return;
                         }

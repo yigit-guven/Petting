@@ -38,5 +38,10 @@ public class PettingNetwork {
                 RiddenPetAttackPayload.STREAM_CODEC,
                 RiddenPetAttackPayload::handle
         );
+        registrar.playToClient(
+                DismountPetPayload.TYPE,
+                DismountPetPayload.STREAM_CODEC,
+                DismountPetPayload::handle
+        );
     }
 }

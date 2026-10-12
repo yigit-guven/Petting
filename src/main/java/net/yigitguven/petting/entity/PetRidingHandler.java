@@ -1,5 +1,8 @@
 package net.yigitguven.petting.entity;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundSetPassengersPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -10,6 +13,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
@@ -26,9 +30,13 @@ import net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball;
 import net.minecraft.world.entity.projectile.hurtingprojectile.WitherSkull;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.network.PacketDistributor;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.network.DismountPetPayload;
 import net.yigitguven.petting.util.PetHelper;
 
 import java.util.Collections;
@@ -40,16 +48,32 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class PetRidingHandler {
-    private static final Set<UUID> FORCED_DISMOUNT = Collections.synchronizedSet(new HashSet<>());
+    private static final Map<UUID, Long> FORCED_DISMOUNT_TICKS = new ConcurrentHashMap<>();
     private static final Set<UUID> RIDDEN_PETS_NO_AI = Collections.synchronizedSet(new HashSet<>());
     private static final Map<UUID, Long> COOLDOWNS = new ConcurrentHashMap<>();
 
     public static void allowForcedDismount(Player player) {
-        FORCED_DISMOUNT.add(player.getUUID());
+        FORCED_DISMOUNT_TICKS.put(player.getUUID(), System.currentTimeMillis() + 1500L);
+    }
+
+    public static boolean isForcedDismountAllowed(Player player) {
+        Long expiry = FORCED_DISMOUNT_TICKS.get(player.getUUID());
+        if (expiry != null) {
+            if (System.currentTimeMillis() <= expiry) {
+                return true;
+            } else {
+                FORCED_DISMOUNT_TICKS.remove(player.getUUID());
+            }
+        }
+        return false;
     }
 
     public static boolean consumeForcedDismount(Player player) {
-        return FORCED_DISMOUNT.remove(player.getUUID());
+        return isForcedDismountAllowed(player);
+    }
+
+    public static void clearForcedDismount(Player player) {
+        FORCED_DISMOUNT_TICKS.remove(player.getUUID());
     }
 
     public static boolean isMarkedRiddenNoAi(Mob mob) {
@@ -122,29 +146,29 @@ public class PetRidingHandler {
             return true;
         }
         AABB box = mob.getBoundingBox();
-        // 1. Direct downward collision check: if moving 0.1 down collides, mob cannot descend
-        if (!mob.level().noCollision(mob, box.move(0, -0.1D, 0))) {
+        // 1. Direct downward collision check: if moving 0.2 down collides, mob cannot descend
+        if (!mob.level().noCollision(mob, box.move(0, -0.2D, 0))) {
             return true;
         }
-        // 2. Downward reach check within 1.8 blocks beneath base of mob
-        AABB groundBox = new AABB(box.minX, box.minY - 1.8D, box.minZ, box.maxX, box.minY, box.maxZ);
+        // 2. Downward reach check within 2.5 blocks beneath base of mob
+        AABB groundBox = new AABB(box.minX, box.minY - 2.5D, box.minZ, box.maxX, box.minY, box.maxZ);
         if (!mob.level().noCollision(mob, groundBox)) {
             return true;
         }
-        // 3. Scan block footprint beneath mob within 1.8 blocks
+        // 3. Scan block footprint beneath mob within 2.5 blocks
         int minX = net.minecraft.util.Mth.floor(box.minX);
         int maxX = net.minecraft.util.Mth.floor(box.maxX);
         int minZ = net.minecraft.util.Mth.floor(box.minZ);
         int maxZ = net.minecraft.util.Mth.floor(box.maxZ);
-        int minY = net.minecraft.util.Mth.floor(box.minY - 1.8D);
+        int minY = net.minecraft.util.Mth.floor(box.minY - 2.5D);
         int maxY = net.minecraft.util.Mth.floor(box.minY);
 
-        net.minecraft.core.BlockPos.MutableBlockPos pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
         for (int y = maxY; y >= minY; y--) {
             for (int x = minX; x <= maxX; x++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     pos.set(x, y, z);
-                    net.minecraft.world.level.block.state.BlockState state = mob.level().getBlockState(pos);
+                    BlockState state = mob.level().getBlockState(pos);
                     if (!state.isAir() && (state.isSolid() || state.entityCanStandOn(mob.level(), pos, mob) || !state.getCollisionShape(mob.level(), pos).isEmpty())) {
                         return true;
                     }
@@ -156,6 +180,67 @@ public class PetRidingHandler {
 
     public static boolean isDirectlyAboveGround(Mob mob) {
         return isGroundedOrCannotDescend(mob);
+    }
+
+    public static Vec3 findSafeDismountPosition(Player player, Mob mob) {
+        Level level = mob.level();
+        double[][] candidateOffsets = {
+                {1.5D, 0.0D},
+                {-1.5D, 0.0D},
+                {0.0D, 1.5D},
+                {0.0D, -1.5D},
+                {1.2D, 1.2D},
+                {-1.2D, 1.2D},
+                {1.2D, -1.2D},
+                {-1.2D, -1.2D},
+                {0.0D, 0.0D}
+        };
+
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        int baseBlockY = net.minecraft.util.Mth.floor(mob.getY());
+
+        for (double[] offset : candidateOffsets) {
+            double cx = mob.getX() + offset[0];
+            double cz = mob.getZ() + offset[1];
+            int blockX = net.minecraft.util.Mth.floor(cx);
+            int blockZ = net.minecraft.util.Mth.floor(cz);
+
+            // Search downwards up to 5 blocks beneath mob for a solid standing surface
+            for (int dy = 1; dy >= -5; dy--) {
+                int testY = baseBlockY + dy;
+                pos.set(blockX, testY, blockZ);
+                BlockState groundState = level.getBlockState(pos);
+
+                if (!groundState.isAir() && (groundState.isSolid() || groundState.entityCanStandOn(level, pos, player) || !groundState.getCollisionShape(level, pos).isEmpty())) {
+                    BlockPos above1 = pos.above();
+                    BlockPos above2 = above1.above();
+                    BlockState state1 = level.getBlockState(above1);
+                    BlockState state2 = level.getBlockState(above2);
+
+                    if (state1.getCollisionShape(level, above1).isEmpty() && state2.getCollisionShape(level, above2).isEmpty()) {
+                        double standY = testY + (groundState.getCollisionShape(level, pos).isEmpty() ? 1.0D : groundState.getCollisionShape(level, pos).max(Direction.Axis.Y));
+                        return new Vec3(cx, standY, cz);
+                    }
+                }
+            }
+        }
+
+        return new Vec3(mob.getX(), mob.getY(), mob.getZ());
+    }
+
+    public static void dismountPlayer(ServerPlayer player, Mob mob) {
+        allowForcedDismount(player);
+        PacketDistributor.sendToPlayer(player, new DismountPetPayload(mob.getId()));
+
+        player.stopRiding();
+        mob.ejectPassengers();
+        onDismount(mob);
+        player.connection.send(new ClientboundSetPassengersPacket(mob));
+
+        Vec3 safePos = findSafeDismountPosition(player, mob);
+        player.teleportTo(safePos.x, safePos.y, safePos.z);
+        player.setPose(Pose.STANDING);
+        player.resetFallDistance();
     }
 
     public static void tickRiddenMob(Mob mob, Player player) {
@@ -173,6 +258,9 @@ public class PetRidingHandler {
             if (RIDDEN_PETS_NO_AI.remove(mob.getUUID())) {
                 mob.setNoAi(false);
                 restoreMobAi(mob);
+            }
+            if (input.shift()) {
+                dismountPlayer(serverPlayer, mob);
             }
             return;
         }
@@ -208,8 +296,7 @@ public class PetRidingHandler {
             // Flying mob controls: WASD horizontal, Jump ascends, Sneak descends, neutral hovers
             if (input.shift()) {
                 if (isGroundedOrCannotDescend(mob)) {
-                    allowForcedDismount(player);
-                    player.stopRiding();
+                    dismountPlayer(serverPlayer, mob);
                     return;
                 }
             }
@@ -232,8 +319,7 @@ public class PetRidingHandler {
 
             // If mob reached ground after descending, dismount immediately if shift is held
             if (input.shift() && isGroundedOrCannotDescend(mob)) {
-                allowForcedDismount(player);
-                player.stopRiding();
+                dismountPlayer(serverPlayer, mob);
                 return;
             }
         } else if (PetHelper.isSwimmingPet(mob)) {
@@ -242,8 +328,7 @@ public class PetRidingHandler {
                 player.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false, true));
                 if (input.shift()) {
                     if (isGroundedOrCannotDescend(mob)) {
-                        allowForcedDismount(player);
-                        player.stopRiding();
+                        dismountPlayer(serverPlayer, mob);
                         return;
                     }
                 }
@@ -265,15 +350,13 @@ public class PetRidingHandler {
 
                 // If mob reached floor after diving, dismount immediately if shift is held
                 if (input.shift() && isGroundedOrCannotDescend(mob)) {
-                    allowForcedDismount(player);
-                    player.stopRiding();
+                    dismountPlayer(serverPlayer, mob);
                     return;
                 }
             } else {
                 // Out of water: cannot fly; sneak dismounts immediately
                 if (input.shift()) {
-                    allowForcedDismount(player);
-                    player.stopRiding();
+                    dismountPlayer(serverPlayer, mob);
                     return;
                 }
 
@@ -295,8 +378,7 @@ public class PetRidingHandler {
         } else {
             // Walking mob controls: WASD horizontal, Jump jumps, Sneak dismounts
             if (input.shift()) {
-                allowForcedDismount(player);
-                player.stopRiding();
+                dismountPlayer(serverPlayer, mob);
                 return;
             }
 

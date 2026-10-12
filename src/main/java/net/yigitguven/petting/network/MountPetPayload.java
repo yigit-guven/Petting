@@ -36,8 +36,7 @@ public record MountPetPayload(int entityId) implements CustomPacketPayload {
             if (context.player() instanceof ServerPlayer player) {
                 // If player is already riding a pet, pressing ride triggers dismount
                 if (player.getVehicle() instanceof Mob riddenMob && PetHelper.isTamed(riddenMob) && PetHelper.isOwner(riddenMob, player)) {
-                    PetRidingHandler.allowForcedDismount(player);
-                    player.stopRiding();
+                    PetRidingHandler.dismountPlayer(player, riddenMob);
                     return;
                 }
 

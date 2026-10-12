@@ -14,6 +14,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.EntityHitResult;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.yigitguven.petting.entity.PetRidingHandler;
 import net.yigitguven.petting.network.OpenPetInventoryPayload;
 import net.yigitguven.petting.util.PetHelper;
 
@@ -87,6 +88,9 @@ public class PettingClientEvents {
         while (PettingClient.RIDE_PET.consumeClick()) {
             if (mc.player != null && mc.level != null && mc.gui.screen() == null) {
                 if (mc.player.getVehicle() instanceof Mob mob && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
+                    PetRidingHandler.allowForcedDismount(mc.player);
+                    mc.player.stopRiding();
+                    mc.player.setPose(net.minecraft.world.entity.Pose.STANDING);
                     ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.MountPetPayload(mob.getId()));
                     continue;
                 }
