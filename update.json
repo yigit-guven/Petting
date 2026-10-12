@@ -1,0 +1,52 @@
+{
+  "homepage": "https://github.com/yigit-guven/Petting",
+  "promos": {
+    "26.3-latest": "5.0.0",
+    "26.3-recommended": "5.0.0",
+    "1.21.1-latest": "4.2.3-beta.2",
+    "1.21.1-recommended": "4.2.2",
+    "1.20.1-latest": "4.2.3-beta.4-forge-1.20.1",
+    "1.20.1-recommended": "4.2.2"
+  },
+  "26.3": {
+    "5.0.0": "Major update: NeoForge 26.3 support, overhauled architecture and updated mechanics."
+  },
+  "1.21.1": {
+    "4.2.3-beta.2": "Multiplayer fixes: fixed owner scoping for Pet Settings UI and spectator desyncs.",
+    "4.2.3-beta1": "Complete Pet Settings and Key Mapping UI system, RUN_COMMAND support, and cross-dimension bed binding.",
+    "4.2.2": "Critical crash fix in creative tab and improved registry initialization.",
+    "4.2.1": "Added Pet Bed Block with death respawn system, friendly fire toggle, and 3D swimming movement.",
+    "4.2.1-beta4": "Fixed Creative Tab crash, PoseStack rendering, and improved tamed boss bar hiding.",
+    "4.2.1-beta3": "Fixed mod loading crash from config pop() call.",
+    "4.2.1-beta2": "Configurable pet base armor/toughness and forced equipment slots.",
+    "4.2.1-beta": "Added Free Roam (Wandering) mode, global entity blacklist, and configurable tool IDs.",
+    "4.2.0": "Special attacks while riding (Dragon fireballs), inventory overhaul.",
+    "4.2.0-beta": "Smarter empty-hand interaction, Command Stick controller.",
+    "4.1.8": "Fixed entity conversion data transfer for Piglins and Hoglins.",
+    "4.1.7": "Refined Wither pet projectile handling.",
+    "4.1.6": "Fixed server-side GUI crash during loading and 1.21.1 recipe loading.",
+    "4.1.5": "Fixed Warden and Brain-based mob AI handling.",
+    "4.1.4": "Fixed server crash, added Teleport Orb and Follow Whistle items, item protection.",
+    "4.1.3": "Added crafting recipe for Pet Tether.",
+    "4.1.2": "Release pet with shears (crouch) and item consumption protection.",
+    "4.1.1": "Per-pet item interactions (stick, sword, shield, cookie, lead, orb, clock) and pet categories.",
+    "4.1.0": "Migrated from MCreator to standard MDK, configuration GUI, universal pacifism, and environmental immunities."
+  },
+  "1.20.1": {
+    "4.2.3-beta.4-forge-1.20.1": "Interaction fix: Fixed empty-hand interaction with tamed mobs, tick optimizations, and temptation memory leak fix.",
+    "4.2.3-beta.3": "Crash fix: Resolved ObfuscationReflectionHelper mapping mismatch in production.",
+    "4.2.3-beta.2": "Backport of latest features from NeoForge 1.21.1 to Forge 1.20.1.",
+    "4.2.2": "Critical crash fix in creative tab and improved registry initialization.",
+    "4.2.1": "Pet Bed Block, respawn system, sit healing, and config options.",
+    "4.2.0": "Mounted special attacks, inventory system.",
+    "4.1.3": "Pet Tether crafting recipe.",
+    "4.1.2": "Pet releasing with shears, item protection.",
+    "4.1.1": "Per-pet item interactions and pet categories.",
+    "4.1.0": "Migrated from MCreator to standard MDK, configuration system.",
+    "4.0.04": "Pre-release 4.0.0-pre4.",
+    "4.0.03": "Pre-release 4.0.0-pre3.",
+    "4.0.02": "Pre-release 4.0.0-pre2.",
+    "4.0.01": "Pre-release 4.0.0-pre1.",
+    "3.0.1": "Tamed Mob Behavior & Persistence System."
+  }
+}
