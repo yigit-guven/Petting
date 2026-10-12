@@ -33,6 +33,10 @@ All notable changes to this project will be documented in this file.
     - `swimmingPetsStayStillWhenSitting`: Configures whether aquatic pets remain stationary in water (default: `true`).
     - `hideTamedBossBars`: Configures whether boss health bars for tamed pets (e.g. Wither, Ender Dragon, or modded boss pets) are hidden from players' screens (default: `true`).
     - `tamedMonstersPreventSleep`: Configures whether tamed monster pets (such as Zombies, Skeletons, Withers, etc.) nearby prevent players from sleeping like vanilla monsters do (default: `false` / players can sleep).
+- Enhanced universal entity safety, summoned minion affiliation, and impact protections:
+  - **Universal Minion & Summon Affiliation**: Summoned minions and entities created by tamed pets (such as Vexes summoned by an Evoker pet, or minions spawned by modded summoners/necromancers) now automatically trace root ownership back to the owner and become recognized allies. Minions will never target or damage their owner or fellow pets.
+  - **Ender Dragon Impact & Knockback Immunity**: Fixed Ender Dragon wing collision (`entity.push`) violently launching its owner into the air, and eliminated head/neck contact damage against owners and fellow pets. Dragon AI phases properly respect the owner as an ally.
+  - **Universal Ally & Collision Damage Filtering**: Deep integration into `Entity.considersEntityAsAlly`, `Entity.doTeamsAllowDamage`, and `LivingEntity.canAttack` ensures all vanilla and modded contact damage, spells, and traps (such as Evoker Fangs, Slime/Magma Cube contact, and Pufferfish poison) treat owners and allied pets as allies.
 - Added pet inventory side navigation tabs:
   - Added tab strip positioned seamlessly along the left container edge following vanilla recipe book tab conventions.
   - **Pet Inventory (Home)** tab: Displays pet equipment, entity model, and player inventory slots.
