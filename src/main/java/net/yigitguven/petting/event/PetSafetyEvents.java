@@ -53,49 +53,71 @@ public class PetSafetyEvents {
     }
 
     @SubscribeEvent
+    public static void onEntityJoinLevel(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
+        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Mob mob)) {
+            return;
+        }
+        if (!PetHelper.isTamed(mob)) {
+            LivingEntity rootOwner = PetHelper.getRootOwner(mob);
+            if (rootOwner instanceof Player ownerPlayer) {
+                PetHelper.setTamed(mob, ownerPlayer);
+                mob.setTarget(null);
+                if (mob instanceof NeutralMob neutralMob) {
+                    neutralMob.stopBeingAngry();
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
     public static void onIncomingDamage(LivingIncomingDamageEvent event) {
         LivingEntity victim = event.getEntity();
         Entity attacker = event.getSource().getEntity();
+        Entity direct = event.getSource().getDirectEntity();
 
-        if (attacker == null) {
-            return;
-        }
-
-        // Always: pets can never attack their owner
-        if (victim instanceof Player player && attacker instanceof LivingEntity petMob && PetHelper.isOwner(petMob, player)) {
-            event.setCanceled(true);
-            return;
-        }
-
-        // Configurable: owner attacking their own pets
-        if (!PettingServerConfig.canOwnerAttackPets() && attacker instanceof Player player && PetHelper.isOwner(victim, player)) {
-            event.setCanceled(true);
-            return;
-        }
-
-        // Configurable: friendly fire between pets of the same owner
-        if (!PettingServerConfig.canPetsAttackPets() && attacker instanceof LivingEntity attackerPet) {
-            Optional<UUID> owner1 = PetHelper.getOwnerUUID(attackerPet);
-            if (owner1.isPresent() && owner1.equals(PetHelper.getOwnerUUID(victim))) {
+        // 1. Owner protection: pets, minions, projectiles, and spells can never damage their owner
+        if (victim instanceof Player player) {
+            if ((attacker != null && PetHelper.isRootOwner(attacker, player))
+                    || (direct != null && PetHelper.isRootOwner(direct, player))) {
                 event.setCanceled(true);
+                return;
             }
+        }
+
+        // 2. Configurable: owner attacking their own pets/minions
+        if (!PettingServerConfig.canOwnerAttackPets() && attacker instanceof Player player) {
+            if (PetHelper.isRootOwner(victim, player)) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+
+        // 3. Configurable: friendly fire between pets/minions of the same owner
+        if (!PettingServerConfig.canPetsAttackPets()) {
+            if ((attacker != null && PetHelper.areEntitiesAllied(victim, attacker))
+                    || (direct != null && PetHelper.areEntitiesAllied(victim, direct))) {
+                event.setCanceled(true);
+                return;
+            }
+        }
+
+        // 4. Passenger / vehicle relationship: prevent inadvertent collision/team damage
+        if ((attacker != null && (victim.isPassengerOfSameVehicle(attacker) || victim.hasPassenger(attacker) || attacker.hasPassenger(victim)))
+                || (direct != null && (victim.isPassengerOfSameVehicle(direct) || victim.hasPassenger(direct) || direct.hasPassenger(victim)))) {
+            event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public static void onChangeTarget(LivingChangeTargetEvent event) {
         LivingEntity pet = event.getEntity();
-        if (!PetHelper.isTamed(pet)) {
-            return;
-        }
-
         LivingEntity newTarget = event.getNewAboutToBeSetTarget();
         if (newTarget == null) {
             return;
         }
 
-        // Always: pets can never target their owner
-        if (newTarget instanceof Player player && PetHelper.isOwner(pet, player)) {
+        // Always: pets and minions can never target their owner or allied pets
+        if (PetHelper.areEntitiesAllied(pet, newTarget)) {
             event.setCanceled(true);
             event.setNewAboutToBeSetTarget(null);
             if (pet instanceof NeutralMob neutralMob) {
@@ -104,7 +126,24 @@ public class PetSafetyEvents {
             return;
         }
 
-        // Prevent built-in hostile behaviors: pets only attack like tamed vanilla wolves
+        if (!PetHelper.isTamed(pet)) {
+            LivingEntity rootOwner = PetHelper.getRootOwner(pet);
+            if (rootOwner instanceof Player player) {
+                if (newTarget == player || PetHelper.areEntitiesAllied(pet, newTarget)) {
+                    event.setCanceled(true);
+                    event.setNewAboutToBeSetTarget(null);
+                    if (pet instanceof NeutralMob neutralMob) {
+                        neutralMob.stopBeingAngry();
+                    }
+                    if (pet instanceof Mob mob) {
+                        PetHelper.setTamed(mob, player);
+                    }
+                }
+            }
+            return;
+        }
+
+        // Prevent built-in hostile behaviors: pets only attack valid targets
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
             if (!PetHelper.isValidPetTarget(pet, newTarget)) {
                 event.setCanceled(true);
@@ -118,8 +157,7 @@ public class PetSafetyEvents {
 
         // Configurable: pets targeting other pets of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
-            Optional<UUID> petOwner = PetHelper.getOwnerUUID(pet);
-            if (petOwner.isPresent() && petOwner.equals(PetHelper.getOwnerUUID(newTarget))) {
+            if (PetHelper.areEntitiesAllied(pet, newTarget)) {
                 event.setCanceled(true);
                 event.setNewAboutToBeSetTarget(null);
                 if (pet instanceof NeutralMob neutralMob) {
@@ -131,11 +169,20 @@ public class PetSafetyEvents {
 
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Pre event) {
-        if (!(event.getEntity() instanceof Mob mob) || !PetHelper.isTamed(mob)) {
+        if (!(event.getEntity() instanceof Mob mob)) {
             return;
         }
 
         if (mob.level().isClientSide()) {
+            return;
+        }
+
+        if (!PetHelper.isTamed(mob)) {
+            LivingEntity target = mob.getTarget();
+            if (target instanceof Player player && PetHelper.isRootOwner(mob, player)) {
+                mob.setTarget(null);
+                PetHelper.setTamed(mob, player);
+            }
             return;
         }
 

@@ -64,6 +64,147 @@ public class PetHelper {
         return isVanillaTamed(entity);
     }
 
+    private static final String[] MODDED_OWNER_METHOD_NAMES = new String[]{
+        "getOwner", "getSummoner", "getCaster", "getMaster", "getLeader", "getOwnerEntity", "getCreator"
+    };
+
+    private static @Nullable net.minecraft.world.entity.Entity findModdedOwner(net.minecraft.world.entity.Entity entity) {
+        if (entity == null) {
+            return null;
+        }
+        Class<?> clazz = entity.getClass();
+        for (String methodName : MODDED_OWNER_METHOD_NAMES) {
+            try {
+                Method method = clazz.getMethod(methodName);
+                if (net.minecraft.world.entity.Entity.class.isAssignableFrom(method.getReturnType()) && method.getParameterCount() == 0) {
+                    Object result = method.invoke(entity);
+                    if (result instanceof net.minecraft.world.entity.Entity owner && owner != entity) {
+                        return owner;
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return null;
+    }
+
+    public static @Nullable LivingEntity getRootOwner(@Nullable net.minecraft.world.entity.Entity entity) {
+        if (entity == null) {
+            return null;
+        }
+        if (entity instanceof Player player) {
+            return player;
+        }
+
+        java.util.Set<net.minecraft.world.entity.Entity> visited = new java.util.HashSet<>();
+        net.minecraft.world.entity.Entity current = entity;
+
+        while (current != null && visited.add(current)) {
+            if (current instanceof Player player) {
+                return player;
+            }
+
+            // 1. Direct Petting Data Attachment
+            if (current instanceof LivingEntity living && living.hasData(PettingModAttachments.PET_DATA)) {
+                PetData data = living.getData(PettingModAttachments.PET_DATA);
+                if (data.isTamed() && data.getOwnerUUID() != null) {
+                    Player player = current.level().getPlayerByUUID(data.getOwnerUUID());
+                    if (player != null) {
+                        return player;
+                    }
+                }
+            }
+
+            // 2. OwnableEntity (Vanilla tamables, Vex, EvokerFangs, Modded ownables)
+            if (current instanceof OwnableEntity ownable) {
+                net.minecraft.world.entity.Entity owner = ownable.getOwner();
+                if (owner != null && owner != current) {
+                    current = owner;
+                    continue;
+                }
+                if (ownable.getOwnerReference() != null && ownable.getOwnerReference().getUUID() != null) {
+                    UUID ownerUuid = ownable.getOwnerReference().getUUID();
+                    Player player = current.level().getPlayerByUUID(ownerUuid);
+                    if (player != null) {
+                        return player;
+                    }
+                }
+            }
+
+            // 3. TraceableEntity (Projectiles, AreaEffectCloud, PrimedTnt, Vex, Fangs)
+            if (current instanceof net.minecraft.world.entity.TraceableEntity traceable) {
+                net.minecraft.world.entity.Entity owner = traceable.getOwner();
+                if (owner != null && owner != current) {
+                    current = owner;
+                    continue;
+                }
+            }
+
+            // 4. Common modded summon/minion getter methods via reflection
+            net.minecraft.world.entity.Entity moddedOwner = findModdedOwner(current);
+            if (moddedOwner != null && moddedOwner != current) {
+                current = moddedOwner;
+                continue;
+            }
+
+            break;
+        }
+
+        return null;
+    }
+
+    public static Optional<UUID> getRootOwnerUUID(@Nullable net.minecraft.world.entity.Entity entity) {
+        if (entity == null) {
+            return Optional.empty();
+        }
+        LivingEntity root = getRootOwner(entity);
+        if (root instanceof Player player) {
+            return Optional.of(player.getUUID());
+        }
+        if (entity instanceof LivingEntity living) {
+            return getOwnerUUID(living);
+        }
+        return Optional.empty();
+    }
+
+    public static boolean isRootOwner(@Nullable net.minecraft.world.entity.Entity entity, @Nullable Player player) {
+        if (entity == null || player == null) {
+            return false;
+        }
+        LivingEntity root = getRootOwner(entity);
+        if (root == player) {
+            return true;
+        }
+        return getRootOwnerUUID(entity).map(uuid -> uuid.equals(player.getUUID())).orElse(false);
+    }
+
+    public static boolean areEntitiesAllied(@Nullable net.minecraft.world.entity.Entity a, @Nullable net.minecraft.world.entity.Entity b) {
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a == b) {
+            return true;
+        }
+        // Vehicle / passenger relationship
+        if (a.isPassengerOfSameVehicle(b) || a.hasPassenger(b) || b.hasPassenger(a)) {
+            return true;
+        }
+        // One is the root owner of the other
+        if (a instanceof Player playerA && isRootOwner(b, playerA)) {
+            return true;
+        }
+        if (b instanceof Player playerB && isRootOwner(a, playerB)) {
+            return true;
+        }
+        // Both share the same root owner player
+        Optional<UUID> ownerA = getRootOwnerUUID(a);
+        Optional<UUID> ownerB = getRootOwnerUUID(b);
+        if (ownerA.isPresent() && ownerB.isPresent() && ownerA.get().equals(ownerB.get())) {
+            return true;
+        }
+        return false;
+    }
+
     public static Optional<UUID> getOwnerUUID(LivingEntity entity) {
         if (entity.hasData(PettingModAttachments.PET_DATA)) {
             PetData data = entity.getData(PettingModAttachments.PET_DATA);
@@ -76,6 +217,14 @@ public class PetHelper {
                 return Optional.of(ownable.getOwnerReference().getUUID());
             }
             if (ownable.getOwner() != null) {
+                if (ownable.getOwner() instanceof Player) {
+                    return Optional.of(ownable.getOwner().getUUID());
+                }
+                // If owned by another entity, resolve root owner
+                LivingEntity root = getRootOwner(entity);
+                if (root instanceof Player) {
+                    return Optional.of(root.getUUID());
+                }
                 return Optional.of(ownable.getOwner().getUUID());
             }
         }
@@ -84,6 +233,10 @@ public class PetHelper {
 
     @Nullable
     public static Player getOwner(LivingEntity entity) {
+        LivingEntity root = getRootOwner(entity);
+        if (root instanceof Player player) {
+            return player;
+        }
         Optional<UUID> uuidOpt = getOwnerUUID(entity);
         if (uuidOpt.isEmpty()) {
             return null;
@@ -91,9 +244,12 @@ public class PetHelper {
         return entity.level().getPlayerByUUID(uuidOpt.get());
     }
 
+    public static boolean isOwner(net.minecraft.world.entity.Entity entity, Player player) {
+        return isRootOwner(entity, player);
+    }
+
     public static boolean isOwner(LivingEntity entity, Player player) {
-        Optional<UUID> uuidOpt = getOwnerUUID(entity);
-        return uuidOpt.isPresent() && uuidOpt.get().equals(player.getUUID());
+        return isRootOwner(entity, player);
     }
 
     public static PetOrder getOrder(LivingEntity entity) {
