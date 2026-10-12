@@ -91,6 +91,7 @@ These settings control server-wide mechanics, taming thresholds, and success rat
 | `flyingPetsHoverWhenSitting` | Boolean | `true` | When `true`, flying pets commanded to sit will hover stationary in mid-air instead of falling to the ground. |
 | `swimmingPetsStayStillWhenSitting` | Boolean | `true` | When `true`, aquatic pets commanded to sit will remain stationary in water without floating up, sinking, or drifting. |
 | `hideTamedBossBars` | Boolean | `true` | When `true`, boss health bars for tamed pets (such as Wither, Ender Dragon, and other boss pets) are hidden from the screen. |
+| `tamedMonstersPreventSleep` | Boolean | `false` | When `true`, tamed monster pets (such as Zombies, Skeletons, Withers, etc.) nearby will prevent players from sleeping like vanilla monsters do. When `false` (default), players can sleep peacefully near their friendly tamed pets. |
 
 #### Setting Details:
 
@@ -128,6 +129,11 @@ These settings control server-wide mechanics, taming thresholds, and success rat
   Controls the display of boss health bars for tamed pets on players' screens.
   - `true` (*Default*): Boss health bars for tamed pets (e.g. Wither, Ender Dragon, or other boss pets) are hidden from the screen, preventing HUD clutter.
   - `false`: Boss health bars are displayed normally for all boss entities even when tamed.
+
+- **`tamedMonstersPreventSleep`**:
+  Controls whether tamed monster pets (such as Zombies, Skeletons, Withers, etc.) nearby prevent players from sleeping with the vanilla "monsters nearby" error.
+  - `false` (*Default*): Tamed monsters do not prevent players from sleeping, allowing players to rest peacefully near their pets.
+  - `true`: Tamed monsters prevent players from resting just like wild monsters in vanilla Minecraft.
 
 ### Section: `[riding]`
 
