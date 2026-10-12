@@ -1,0 +1,193 @@
+name: Sync Documentation & Metadata
+
+on:
+  push:
+    paths:
+      - 'update.json'
+      - 'CHANGELOG.md'
+      - 'README.md'
+      - 'SECURITY.md'
+      - 'LICENSE'
+      - 'CONTRIBUTING.md'
+      - 'docs/**'
+      - '.github/workflows/sync-documentation.yml'
+      - '.github/workflows/wiki-sync.yml'
+      - '.github/ISSUE_TEMPLATE/**'
+  workflow_dispatch:
+    inputs:
+      source_branch:
+        description: 'Branch to sync documentation and metadata from (defaults to the branch triggered on)'
+        required: false
+        default: ''
+
+concurrency:
+  group: sync-documentation
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync to All Branches
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync documentation across branches
+        run: |
+          set -e
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          SOURCE_BRANCH="${{ inputs.source_branch }}"
+          if [ -z "$SOURCE_BRANCH" ]; then
+            SOURCE_BRANCH="${GITHUB_REF_NAME}"
+          fi
+          echo "==> Source branch: $SOURCE_BRANCH"
+
+          # Fetch all remote branches and prune deleted ones
+          git fetch --all --prune
+
+          git checkout "$SOURCE_BRANCH"
+
+          TEMP_DIR="$(mktemp -d)"
+          echo "==> Staging sync files to: $TEMP_DIR"
+
+          FILES_TO_SYNC=(
+            "update.json"
+            "CHANGELOG.md"
+            "README.md"
+            "SECURITY.md"
+            "LICENSE"
+            "CONTRIBUTING.md"
+            ".github/workflows/sync-documentation.yml"
+            ".github/workflows/wiki-sync.yml"
+          )
+
+          for file in "${FILES_TO_SYNC[@]}"; do
+            if [ -f "$file" ]; then
+              mkdir -p "$TEMP_DIR/$(dirname "$file")"
+              cp -p "$file" "$TEMP_DIR/$file"
+              echo "Staged file: $file"
+            else
+              echo "File not present in source branch: $file"
+            fi
+          done
+
+          if [ -d "docs" ]; then
+            mkdir -p "$TEMP_DIR/docs"
+            rsync -av --delete docs/ "$TEMP_DIR/docs/"
+            echo "Staged directory: docs/"
+          fi
+
+          if [ -d ".github/ISSUE_TEMPLATE" ]; then
+            mkdir -p "$TEMP_DIR/.github/ISSUE_TEMPLATE"
+            rsync -av --delete .github/ISSUE_TEMPLATE/ "$TEMP_DIR/.github/ISSUE_TEMPLATE/"
+            echo "Staged directory: .github/ISSUE_TEMPLATE/"
+          fi
+
+          TARGET_BRANCHES=()
+          while IFS= read -r branch; do
+            if [ -n "$branch" ] && [ "$branch" != "HEAD" ] && [ "$branch" != "$SOURCE_BRANCH" ]; then
+              TARGET_BRANCHES+=("$branch")
+            fi
+          done < <(git for-each-ref --format='%(refname:strip=3)' refs/remotes/origin/)
+
+          echo "==> Found ${#TARGET_BRANCHES[@]} target branches to evaluate:"
+          for b in "${TARGET_BRANCHES[@]}"; do
+            echo "  - $b"
+          done
+
+          SYNCED_COUNT=0
+          SKIPPED_COUNT=0
+          FAILED_COUNT=0
+
+          for target in "${TARGET_BRANCHES[@]}"; do
+            echo ""
+            echo "=================================================="
+            echo "Evaluating branch: $target"
+            echo "=================================================="
+
+            git reset --hard
+            git clean -fd
+
+            if ! git checkout -B "$target" "origin/$target"; then
+              echo "ERROR: Could not checkout origin/$target"
+              FAILED_COUNT=$((FAILED_COUNT + 1))
+              continue
+            fi
+
+            # Clean up potential legacy lowercase file name collisions
+            for legacy in "changelog.md" "readme.md" "license.txt" "security.md" "contributing.md"; do
+              if [ -f "$legacy" ]; then
+                git rm -f --ignore-unmatch "$legacy" 2>/dev/null || rm -f "$legacy"
+              fi
+            done
+
+            for file in "${FILES_TO_SYNC[@]}"; do
+              if [ -f "$TEMP_DIR/$file" ]; then
+                mkdir -p "$(dirname "$file")"
+                cp -p "$TEMP_DIR/$file" "$file"
+                git add "$file"
+              fi
+            done
+
+            if [ -d "$TEMP_DIR/docs" ]; then
+              mkdir -p docs
+              rsync -av --delete "$TEMP_DIR/docs/" docs/
+              git add -A docs
+            fi
+
+            if [ -d "$TEMP_DIR/.github/ISSUE_TEMPLATE" ]; then
+              mkdir -p .github/ISSUE_TEMPLATE
+              rsync -av --delete "$TEMP_DIR/.github/ISSUE_TEMPLATE/" .github/ISSUE_TEMPLATE/
+              git add -A .github/ISSUE_TEMPLATE
+            fi
+
+            if git diff --staged --quiet; then
+              echo "Branch $target is already up-to-date. Skipped."
+              SKIPPED_COUNT=$((SKIPPED_COUNT + 1))
+            else
+              echo "Changes detected on $target! Committing and pushing..."
+              git commit -m "Sync documentation and metadata from $SOURCE_BRANCH [skip ci]"
+              if git push origin "$target"; then
+                echo "Successfully pushed to origin/$target"
+                SYNCED_COUNT=$((SYNCED_COUNT + 1))
+              else
+                echo "Push failed, trying pull --rebase..."
+                if git pull --rebase origin "$target" && git push origin "$target"; then
+                  echo "Successfully pushed to origin/$target after rebase"
+                  SYNCED_COUNT=$((SYNCED_COUNT + 1))
+                else
+                  echo "ERROR: Failed to push to origin/$target"
+                  FAILED_COUNT=$((FAILED_COUNT + 1))
+                fi
+              fi
+            fi
+          done
+
+          echo ""
+          echo "=================================================="
+          echo "Sync Summary:"
+          echo "  Synced:  $SYNCED_COUNT"
+          echo "  Skipped: $SKIPPED_COUNT"
+          echo "  Failed:  $FAILED_COUNT"
+          echo "=================================================="
+
+          git reset --hard
+          git clean -fd
+          git checkout "$SOURCE_BRANCH"
+          rm -rf "$TEMP_DIR"
+
+          if [ $FAILED_COUNT -gt 0 ]; then
+            echo "Sync completed with $FAILED_COUNT error(s)."
+            exit 1
+          fi
+
+          echo "Documentation and metadata successfully synchronized!"

@@ -1,212 +1,410 @@
 <div align="center">
-  <h1><img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/logo.png" width="32" height="32" alt="Petting Logo" style="vertical-align: middle;"> Petting</h1>
-  <p><i>Turn any mob into your loyal, protective companion!</i></p>
 
-  [![CurseForge Downloads](https://img.shields.io/curseforge/dt/1083170?style=flat-square\&logo=curseforge\&label=CurseForge\&color=orange\&link=https%3A%2F%2Fwww.curseforge.com%2Fminecraft%2Fmc-mods%2Fpetting)](https://www.curseforge.com/minecraft/mc-mods/petting) [![Modrinth Downloads](https://img.shields.io/modrinth/dt/petting?style=flat-square\&logo=modrinth\&label=Modrinth\&link=https%3A%2F%2Fmodrinth.com%2Fmod%2Fpetting)](https://modrinth.com/mod/petting) [![Discord](https://img.shields.io/discord/1440563800930652235?style=flat-square\&logo=discord\&label=Discord)](https://discord.gg/aPk7Qs5d4H)
+  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/logo.png" width="96" height="96" alt="Petting Logo">
 
-  <p>
-    <a href="https://github.com/yigit-guven/Petting"><b>GitHub</b></a> •
-    <a href="https://github.com/yigit-guven/Petting/wiki"><b>Wiki</b></a> •
-    <a href="https://github.com/yigit-guven/Petting/issues"><b>Issues</b></a> •
-    <a href="https://discord.gg/aPk7Qs5d4H"><b>Discord</b></a>
-  </p>
+  # Petting
+
+  **Turn any mob into your loyal, protective companion.**
+
+  [![CurseForge](https://img.shields.io/curseforge/dt/1083170?style=for-the-badge&logo=curseforge&label=CurseForge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/petting)
+  [![Modrinth](https://img.shields.io/modrinth/dt/petting?style=for-the-badge&logo=modrinth&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/petting)
+  [![Discord](https://img.shields.io/discord/1440563800930652235?style=for-the-badge&logo=discord&label=Discord&color=5865F2)](https://discord.gg/aPk7Qs5d4H)
+  [![License](https://img.shields.io/badge/License-LGPL%20v3-blue?style=for-the-badge)](LICENSE)
+
+  [**GitHub**](https://github.com/yigit-guven/Petting) · [**Wiki**](https://github.com/yigit-guven/Petting/wiki) · [**Bug Reports**](https://github.com/yigit-guven/Petting/issues) · [**Discord**](https://discord.gg/aPk7Qs5d4H)
+
 </div>
 
 ---
 
-**Petting** is a comprehensive Minecraft mod that reimagines your interaction with the world. Instead of simply fighting monsters, you can now **tame** them! By giving a mob a little love (and the right item), you can transform previously hostile entities like Zombies, Creepers, or even the devastating Wither Boss into fiercely loyal companions that follow you, obey commands, and protect you against all threats.
-
-Designed with extreme configurability and vast quality-of-life improvements, Petting completely unifies with vanilla mechanics, ensuring that your custom monster pets and your vanilla wolves can fight side-by-side without ever turning on you.
+**Petting** is a Minecraft mod that lets you tame virtually any mob in the game — hostile or passive, ordinary or boss. Tamed pets follow your commands, defend you in combat, carry your items, ride alongside you, and respawn at a dedicated bed when they die. Every behavior is deeply configurable, making the mod suitable for survival, adventure maps, and modpacks alike.
 
 ---
 
-## 📖 Table of Contents
-1. [Core Mechanics: Taming](#core-mechanics-taming)
-2. [Pet Behaviors & Commands](#pet-behaviors--commands)
-3. [The Pet Tether (Binding Pets)](#the-pet-tether-binding-pets)
-4. [Quality of Life & Pet Safety](#quality-of-life--pet-safety)
-5. [Vanilla Taming Integration (Hybrid Pets)](#vanilla-taming-integration-hybrid-pets)
-6. [Boss Pet Features (The Wither)](#boss-pet-features-the-wither)
-7. [Advanced Configuration (The Config File)](#advanced-configuration-the-config-file)
+## Features at a Glance
+
+- Tame almost any mob, including Withers, Ender Dragons, and Wardens
+- Full riding support for land, flying, and swimming mobs
+- Per-pet inventory with armor slots, hand slots, and 14 item storage slots
+- Four AI modes: Following, Sitting, Waiting, Wandering
+- Combat modes: Aggressive, Defensive, Guard
+- Pet Bed block for infinite respawning — pets teleport to their bed on death, even across dimensions
+- Per-pet control mapping system with custom actions and conditions
+- Passive immunities: no fall damage, fire, or lava damage for tamed pets
+- Global whistle via Goat Horn to instantly recall all pets
+- Category system for grouping pets and enforcing per-group limits
+- Full server and modpack configuration via `petting-common.toml`
 
 ---
 
-Taming a mob is simple, but deeply customizable. By default, any player can crouch (Shift) and Right-Click a mob using **Golden Wheat** to attempt to tame it.
+## Getting Started
 
-### 🌾 Golden Wheat Attraction
-Golden Wheat isn't just for taming! If you hold it in either hand, nearby animals will be **attracted** to you, looking your way and following you (speed 1.25) as long as you keep the wheat out. This makes it much easier to lead mobs into positions for taming!
+### Installation
 
-#### 🛠️ Crafting Recipe
-Golden Wheat can be crafted using **8 Gold Blocks** and **1 Wheat**:
-* **G** = Gold Block, **W** = Wheat
-```
-  [G] [G] [G]
-  [G] [W] [G]
-  [G] [G] [G]
-```
-
-### Taming Factors
-* **RNG Chance:** Taming is not guaranteed! By default, there is a `33%` chance of success (configurable to match vanilla wolves). If you fail, the item is consumed and smoke particles appear.
-* **Health Scaling (Optional):** You can enable `healthScalesTamingChance` in the config. If enabled, weakening a mob physically increases your chance of taming it. A mob with 1 HP remaining is far easier to tame than a fully-healed brute!
-* **Health Thresholds:** The mod allows server owners to set a `tameHealthThreshold`. If set, a mob **must** be damaged below a certain percentage of its maximum health before taming will even be attempted.
-* **Kill Requirements:** If `requireKillToTame` is enabled, a player must have killed at least one entity of that type (recorded in Vanilla player statistics) before they are allowed to tame one.
-* **Custom Taming Items:** Servers can map specific items to specific mobs. Want Skeletons to require Bones instead of Golden Wheat? Easily configure it using the `customTamingItems` map!
+1. Download the latest release from [CurseForge](https://www.curseforge.com/minecraft/mc-mods/petting) or [Modrinth](https://modrinth.com/mod/petting).
+2. Place the `.jar` file in your `mods/` folder.
+3. Launch the game. A default config file will be generated at `config/petting-common.toml`.
 
 ---
 
-## 🦮 Pet Behaviors & Commands
+## Taming
 
-Once tamed, the mob is yours to command. You can give your pet specific orders by interacting with them empty-handed. Every time you change their state, you receive visual feedback (configurable as Action Bar text, Chat messages, or completely silent).
+Taming is how you acquire a pet. By default, **right-click** a mob while holding **Golden Wheat** (`petting:golden_wheat`) to attempt taming it. The item is consumed on every attempt. Heart particles appear on success; smoke particles appear on failure. The taming item is fully configurable via `tamingItem`.
 
-### The Three States:
-1. **Wandering (Default):** Your pet will flexibly follow your trail and defend you if you are attacked, warping to catch up if they fall too far behind.
-2. **Sitting (Relaxing):** Your pet will halt all movement and peacefully sit. While sitting, pets will **slowly regenerate health over time**! They will not engage in combat.
-3. **Waiting (Guard Mode):** Your pet will stand still, but remain highly alert. They will track nearby entities with their head but refuse to walk away from their post.
+When tamed, all three combat modes — Aggressive, Guard, and Defensive — are **enabled by default**. The pet is also automatically named `"[YourName]'s [mob type]"` with the name tag hidden above their head.
 
-### Control Schemes
-Players can choose how they interact with their pets via the `controlScheme` config:
-* **Classic (Default):** `Right-Click` toggles Sitting. `Shift + Right-Click` toggles Waiting.
-* **Right-Click Cycle:** Simply `Right-Click` to cycle smoothly through Wandering -> Sitting -> Waiting.
-* **Shift-Right-Click Cycle:** Simply `Shift + Right-Click` to cycle smoothly through Wandering -> Sitting -> Waiting.
+Holding Golden Wheat in either hand (main or offhand) causes nearby untamed **animals** within 12 blocks to follow you.
 
----
+### Success Factors
 
-## ⚓ The Pet Tether & Pet Beds
-
-Provide your pets with a permanent home and specialized guarding zones.
-
-### The Pet Tether (Binding Locations)
-Tired of your pets following you to their doom or cluttering up your base? Use a **Pet Tether**!
-*   **How to Bind:** Right-Click your tamed pet with a **Pet Tether** (found in the Petting creative tab) to bind them to their current coordinates.
-#### 🛠️ Crafting Recipe
-The Pet Tether can be crafted using **1 Lead** and **4 Iron Nuggets**:
-* **L** = Lead, **#** = Iron Nugget
-```
-  [ ] [#] [ ]
-  [#] [L] [#]
-  [ ] [#] [ ]
-```
-
-*   **Free Roaming:** Once bound, the pet will freely roam within a configurable radius (default: `10.0` blocks) of their anchor point. They will **not** follow you.
-*   **Pathing Back:** If a tethered pet is pushed or wanders outside its roaming radius, it will actively path find back to its anchor point. If it gets significantly separated, it will safely teleport back to its bound spot.
-*   **Unbinding:** Simply Right-Click them with the tether again to release them.
-
-### 🛏️ Pet Beds (Death Protection & Respawning)
-You can bind your pet to a **Pet Bed** (or any block with "pet_bed" in its registry name) to give them a respawn point.
-1. **Active Binding Mode:** Right-click a Pet Bed block with an empty hand. You will see a message: *"[Petting] Binding Mode Active!"*
-2. **Bind the Pet:** Right-click your tamed pet while Binding Mode is active.
-3. **Immortality (Saved by Bed):** If a pet bound to a bed "dies," the **death is canceled**. The pet is instantly healed to full, cleared of all status effects, and **teleported back to its bed** where it will sit and wait for you.
-4. **Safety Check:** The mod automatically searches for a safe spot near the bed to respawn the pet, ensuring they don't get stuck in walls!
-
----
-
-## 🛠️ Per-Pet Customization (Item Interactions)
-While global configurations set the defaults, you can customize every pet individually by **Right-Clicking** them with specific items:
-
-| Item | Action | Description |
+| Factor | Config Key | Description |
 | :--- | :--- | :--- |
-| **Stick** | **Status Report** | Displays all current settings for this pet in your chat. |
-| **Any Sword**| **Aggressive Mode** | Toggles whether the pet attacks mobs that you attack. |
-| **Shield** | **Defend Self** | Toggles whether the pet retaliates when it takes damage. |
-| **Cookie** | **Guard Owner** | Toggles whether the pet protects you when you are attacked. |
-| **Lead** | **Follow Dist** | Cycles between **5, 10, 20, and 50** blocks. |
-| **Ender Pearl**| **Teleport Dist** | Cycles between **10, 20, 50, and 100** blocks. |
-| **Clock** | **Whistle Mode** | Toggles whether the pet responds to **Goat Horn whistles**. |
-| **Pet Tether** | **Bound Move** | Toggles "Anchor Mode" (Stay in a 10-block radius of current spot). |
-| **Shears** | **Release Pet** | **(Crouch Required)** Reverts the pet to a wild mob. |
+| Base chance | `tameChance` | Default 33% per attempt |
+| Weakness scaling | `healthScalesTamingChance` | Lower HP increases success chance |
+| Health threshold | `tameHealthThreshold` | Mob must be missing a certain % of HP to be tameable |
+| Kill requirement | `requireKillToTame` | Must have killed at least one of that mob type first |
+| Custom items | `customTamingItems` | Assign specific taming items per mob (format: `entity_id\|item_id`) |
+| Whitelist | `whitelistOnly`, `tamingWhitelist` | Only listed mobs can be tamed |
+| Blacklist | `blacklistEnabled`, `tamingBlacklist` | Listed mobs cannot be tamed (supports `modid:*` wildcards) |
+| Cooldown | `interactionCooldown` | Ticks between allowed taming attempts on the same mob (default: 20) |
 
 ---
 
+## Controls & Pet Management
 
-## 🛡️ Quality of Life & Pet Safety
+### Empty Hand (Default Mappings)
 
-Having a pet shouldn't be stressful! Petting introduces major passive upgrades to ensure your companions don't die to silly mistakes.
+By default, the control system uses per-pet mappings. Fresh pets have these defaults:
 
-### Pet Infallibility
-All tamed pets are natively **immune to Fall Damage, Fire Damage, and Lava Damage**. They can follow you off a cliff or through the Nether without instantly perishing!
+| Input | Default Action |
+| :--- | :--- |
+| Right-Click | Toggle **Sit** on/off |
+| Shift + Right-Click | Cycle follow/teleport distance presets (5/10 → 10/20 → 20/50 blocks) |
 
-### The Pet Whistle 🐐
-Lost your pets in a cave? Left them sitting 10,000 blocks away? 
-Equip a **Goat Horn**, hold `Shift`, and use the item (Blow the horn). Doing so acts as a universal Pet Whistle, instantly teleporting **all** of your owned custom pets directly back to your side, resetting their state to Wandering!
+> These are fully remappable per-pet or globally via the **Pet Settings Screen** (press **P** while looking at a pet, or bind `controls.petting.open_settings` in Controls).
 
-> [!NOTE]
-> By default, tethered (bound) pets will **ignore** the whistle to prevent accidentally pulling them away from their guarded posts. This can be enabled in the config via `whistleTeleportsTethered`.
+### Pet Settings Screen (P Key)
 
+Press **P** while targeting your pet to open the settings GUI. From here you can:
+- Toggle AI modes: Sitting, Waiting, Aggressive, Guard, Self-Defense, Ignore Whistle
+- Set exact follow and teleport distances
+- Open the **Control Mappings** sub-screen to customize right-click and shift+right-click actions
 
-### NBT/Armor Preservation
-When you tame a Zombie wearing Diamond Armor, you want it to keep that armor! Taming organically modifies the existing mob rather than replacing it, completely preserving custom names, NBT tags, naturally spawning weapons, and potion effects.
+### Control Mapping System
 
-### Limiters
-Server owners can enforce a `maxPetsPerPlayer` soft-cap. This is implemented via a **Player Attribute** (`petting:max_pets`), meaning modpacks can dynamically increase or decrease a player's pet limit based on their class, items, or level!
+Each pet (and player default) supports a chain of ordered rules for right-click and shift+right-click. Rules follow the format `ACTION|CONDITION` and are evaluated top-to-bottom; the first matching rule is executed.
 
-#### Pet Categories (Advanced Limits)
-You can now group specific mobs into **Categories** (e.g., Undead, Animal, Special) via the config. 
-- Each category uses one of **20 dedicated attribute slots** (`max_pets_category_1` through `20`).
-- This allows modpacks to create complex progression systems where players can only tame certain types of mobs once they've unlocked a specific "skill" or level (by increasing the corresponding attribute value).
-- If a player reaches a category limit, they will be notified: *"You have reached your [Category] pet limit!"*
+**Available Actions**
 
-If a player reaches a limit, they will be given an error message in chat and prevented from taming any further until they reduce their ranks.
+| Action | Description |
+| :--- | :--- |
+| `SIT` | Toggle Sitting on/off |
+| `TOGGLE_WAIT` | Toggle Waiting on/off |
+| `RIDE` | Mount the pet |
+| `OPEN_INV` | Open the pet inventory |
+| `CYCLE` | Cycle through distance presets (5/10 → 10/20 → 20/50) |
+| `TOGGLE_FOLLOW_TELEPORT` | Swap the follow and teleport distance values |
+| `OPEN_SETTINGS` | Open the Pet Settings screen |
+| `RUN_COMMAND` | Run a server command (requires the owner to have permission for it) |
+| `NONE` | Do nothing |
+
+**Available Conditions**
+
+| Condition | When it passes |
+| :--- | :--- |
+| `NONE` | Always |
+| `SADDLE` | Pet has a saddle equipped |
+| `SNEAK` | Owner is crouching |
+| `HEALTH_LT_50` | Pet is below 50% HP |
+| `HOLD_ITEM` | Owner is holding any item |
+
+Multiple rules can be chained with `;`, e.g. `RIDE\|SADDLE;SIT\|NONE` (mount if saddled, otherwise toggle sit).
+
+### Interaction Tools
+
+All tool item IDs are configurable in the `[Tool Settings]` section of `petting-common.toml`.
+
+| Tool | Default Item | Function |
+| :--- | :--- | :--- |
+| **Status Stick** | `minecraft:stick` | Right-Click: cycle AI mode (Following → Sitting → Waiting → Wandering). Shift+Right-Click: detailed status report in chat |
+| **Whistle** | `petting:follow_whistle` | Cycle follow distance through presets: 5 → 10 → 20 → 50 blocks |
+| **Orb** | `petting:teleport_orb` | Cycle teleport trigger distance through presets: 10 → 20 → 50 → 100 blocks |
+| **Clock** | `minecraft:clock` | Toggle whether this pet responds to the global Goat Horn whistle |
+| **Sword** | any sword | Toggle **Aggressive Mode** — attacks what the owner attacks |
+| **Shield** | `minecraft:shield` | Toggle **Defensive Mode** — retaliates when attacked |
+| **Cookie** | `minecraft:cookie` | Toggle **Guard Mode** — attacks anything that hits the owner |
+| **Tether** | `petting:pet_tether` | Bind the pet to a configurable roam radius around its current position |
+| **Shears** | `minecraft:shears` | Crouch + Right-Click to release the pet back to the wild |
+| **Goat Horn** | `minecraft:goat_horn` | Right-click to teleport all owned pets to your location instantly |
+
+### Riding
+
+Riding works across all movement types — land, flying, and swimming.
+
+| Input | Action |
+| :--- | :--- |
+| Space | Jump (on land) / fly upward / swim upward |
+| S | Move backward / fly downward / swim downward |
+| Sprint (Ctrl) | 1.3x speed boost |
+
+Flying and swimming mobs maintain their current altitude or depth when you stop moving. The pet's rotation is always synced with your view. Use the `RIDE\|SADDLE` control mapping to require a saddle before mounting.
 
 ---
 
-## 🐺 Vanilla Taming Integration (Hybrid Pets)
+## AI Modes
 
-What happens to your Vanilla Minecraft tamed Wolves and Cats? Under Petting, they become **Hybrid Pets**!
+Pets have four movement states:
 
-When you employ the standard Vanilla taming method (giving a Wolf a Bone), Petting actively intercepts the logic. The animal becomes a standard Vanilla pet (gaining a collar, classic sitting mechanics, and breeding), but it **ALSO** fundamentally receives all Petting mod tags. This means your Vanilla wolves natively gain:
-* Immunity to Fall, Fire, and Lava damage!
-* Full teleportation support via the Goat Horn Whistle!
-* Direct inclusion in your maximum pet cap!
+| State | Behavior |
+| :--- | :--- |
+| **Following** | Walks toward the owner and teleports if too far away |
+| **Sitting** | Stays in place; heals over time if `sitHealEnabled` is on |
+| **Waiting** | Stays in place without healing regeneration |
+| **Wandering** | Roams freely in the area |
 
-### Universal Mutual Pacifism
-Previously, native Minecraft code caused Wolves or `Doggy Talents Next` dogs to furiously growl at, and inevitably murder, your tamed Skeleton or Creeper pets.
+Combat modes are independent of movement state:
 
-Not anymore. **All Friendly Fire is strictly disabled.** The targeting AI aggressively forces **Native Vanilla Pacifism**. If a Wolf and a Creeper are owned by the exact same player, the mod unconditionally terminates any hostile AI paths between them every single tick, rendering them perfectly peaceful to one another.
-
----
-
-## 💀 Boss Pet Features (The Wither)
-
-Taming a Wither Boss is the ultimate flex, but their destructive nature can be annoying. We've polished them into perfect bodyguards!
-
-* **True Pacifism:** By default, Withers erratically fire exploding side-heads at any living creature, destroying your base. Tamed Withers have this completely neutralized. Unless you explicitly command them by engaging in combat, stray exploding Wither Skulls are **unconditionally deleted** from reality the millisecond they spawn. Your Wither is completely grief-proof while idle!
-* **Boss Bar Hiding:** Taming a Wither normally plasters an obnoxious Boss Health bar at the top of the screeen for the entire server. If `hideTamedBossBars` is enabled, the mod uses advanced reflections to silently wipe the Boss Bar interface across the server for any tamed boss!
+| Mode | Toggle Tool | Behavior |
+| :--- | :--- | :--- |
+| **Aggressive** | any sword | Attacks whatever the owner attacks |
+| **Defensive** | shield | Retaliates when the pet itself is attacked |
+| **Guard** | cookie | Attacks anything that hits the owner |
 
 ---
 
-## 💻 Developer & Admin Tools
+## Pet Inventory & Equipment
+
+Open the pet inventory via the `OPEN_INV` control mapping action, or through the Pet Settings screen.
+
+- **Armor slots** — equip helmets, chestplates, leggings, and boots
+- **Hand slots** — equip swords or shields; pets physically hold and use them
+- **Storage** — 14 item slots for carrying loot
+- Equipment slots are auto-detected per mob type; extras can be forced via `extraEquippableMobs`
+- Global stat bonuses are applied to all pets via `petBaseArmor` and `petBaseArmorToughness`
+
+---
+
+## Pet Safety
+
+### Passive Immunities
+
+All tamed pets are permanently immune to:
+- Fall damage
+- Fire and lava damage
+
+### Mutual Pacifism
+
+Pets never attack other tamed pets, even from splash projectiles.
+
+### Sitting Regeneration
+
+Pets regenerate health while in the **Sitting** state. Configurable via `sitHealAmount` and `sitHealInterval`.
+
+---
+
+## Pet Beds
+
+The **Pet Bed** block allows a pet to respawn indefinitely at a fixed location.
+
+1. Right-click a placed Pet Bed to enter **Binding Mode**.
+2. Right-click your pet to link it to the bed.
+3. If the pet dies, the death is cancelled — the pet teleports to its bed, fully healed, and sits.
+
+Beds work across dimensions. The dimension is stored at binding time so pets can respawn even if they die in the Nether or End. Right-click the air while in Binding Mode to cancel.
+
+---
+
+## Boss Pets
+
+| Boss | Special Behavior |
+| :--- | :--- |
+| **Wither** | Side heads permanently suppressed; center head skull attacks cancelled when idle (no target) |
+| **Ender Dragon** | Supports mounted combat; health bar hidden after taming |
+| **Warden** | Anger levels towards owner and other pets are continuously cleared |
+
+The `hideTamedBossBars` config option can hide boss health bars for any tamed boss.
+
+---
+
+## Entity Conversion
+
+When a tamed mob converts to a new entity type (e.g. Zombie to Drowned), all pet data carries over automatically:
+
+- Owner UUID
+- Custom name
+- AI modes and follow / teleport distances
+- Saddle and equipped items
+- Pet Bed binding (including the stored dimension)
+
+---
+
+## Advanced Systems
+
+### Pet Categories
+
+Group mobs into named categories with shared per-player limits. Useful for modpacks and servers.
+
+**Format:** `SlotID|DisplayName|MobList|DefaultLimit`
+
+**Example:** `1|Undead|minecraft:zombie,minecraft:skeleton|5`
+
+Slot IDs 1–20 correspond to the `petting:max_pets_category_X` player attributes.
+
+### Custom Attributes
+
+Gear and perk mods can grant players additional pet capacity using these player attributes:
+
+- `petting:max_pets` — increases the global pet limit
+- `petting:max_pets_category_1` through `petting:max_pets_category_20` — increases limits per category
+
+---
+
+## Admin & Map-Maker Tools
 
 ### Commands
-*   `/pet <mob_entity> <player>`: Instantly tames the targeted mob and assigns it to the specified player. (Requires Level 4 Permissions).
 
-### NBT Summoning Tags
-For map makers and modpack developers, you can summon mobs that are **automatically tamed** upon spawning by using custom tags:
-*   Add the tag `petowner:UUID` (e.g., `petowner:796c428d-1234...`) to a mob to assign it to that UUID.
-*   Use `petowner:self` or `petowner:me` to automatically assign the mob to the nearest player within 10 blocks when it spawns.
+```
+/pet <target_mob> <target_player>
+```
+
+Instantly tames a mob and assigns it to a player. Requires operator permissions.
+
+### Pre-Tamed Mobs via NBT
+
+Spawn a mob that is already tamed using a `/summon` command:
+
+```
+/summon minecraft:zombie ~ ~ ~ {ForgeData: {pettingtamed: 1b, ownerUUID: "YOUR-UUID-HERE"}}
+```
+
+Mobs spawned this way will have their hostile AI disabled and be bound to the specified owner. The `RUN_COMMAND` mapping action also allows owner-gated command execution from pet interactions.
+
+---
+
+## Configuration Reference
+
+All settings are in `config/petting-common.toml`.
+
+### General
+
+| Key | Default | Description |
+| :--- | :--- | :--- |
+| `disableRespawnOnTame` | `true` | Preserve original mob gear and NBT on tame instead of respawning |
+| `interactionCooldown` | `20` | Ticks before the same mob can be taming-interacted with again |
+| `enableParticles` | `true` | Show heart particles on successful taming |
+| `maxPetsPerPlayer` | `-1` | Base pet limit per player (-1 = unlimited; also a player attribute) |
+| `enableGoatHornWhistle` | `true` | Allow Goat Horn right-click to recall all pets |
+| `whistleTeleportsTethered` | `false` | Include tethered pets in the Goat Horn recall |
+| `hideTamedBossBars` | `true` | Hide health bars for tamed bosses |
+| `commandFeedbackStyle` | `ACTION_BAR` | How state changes are shown: `ACTION_BAR`, `CHAT`, or `NONE` |
+
+### Taming
+
+| Key | Default | Description |
+| :--- | :--- | :--- |
+| `tameChance` | `0.33` | Base success rate per taming attempt |
+| `healthScalesTamingChance` | `false` | Lower mob HP increases success chance |
+| `tameHealthThreshold` | `0.0` | Required missing health % before taming is allowed (0.0–1.0) |
+| `requireKillToTame` | `false` | Must have killed one of this mob type first |
+| `allowGoldenWheat` | `true` | Enable the universal Golden Wheat taming item |
+| `whitelistOnly` | `false` | Only mobs in `tamingWhitelist` can be tamed |
+| `tamingWhitelist` | `[]` | Allowed mob IDs |
+| `blacklistEnabled` | `true` | Enable the taming blacklist (default list is empty) |
+| `tamingBlacklist` | `[]` | Mob IDs to block (supports `modid`, `modid:*`, `modid:prefix*`) |
+| `customTamingItems` | `[]` | Custom taming items per mob (`entity_id\|item_id` format) |
+
+### AI & Survival
+
+| Key | Default | Description |
+| :--- | :--- | :--- |
+| `followDistance` | `10.0` | Distance (1–100) at which following behavior starts |
+| `teleportDistance` | `20.0` | Distance (5–200) at which pet teleports to owner |
+| `boundRoamRadius` | `10.0` | Roam radius (1–100 blocks) for tethered pets |
+| `allowOwnerToHurtPets` | `false` | Allow friendly fire |
+| `preventPetToOwnerDamage` | `true` | Prevent pets from damaging their owner |
+| `sitHealEnabled` | `true` | Regenerate health while sitting |
+| `sitHealAmount` | `1.0` | Health per interval (in half-hearts) |
+| `sitHealInterval` | `40` | Ticks between heals (20 = 1 second) |
+
+### Riding & Movement
+
+| Key | Default | Description |
+| :--- | :--- | :--- |
+| `allowPetRiding` | `true` | Master toggle for all riding |
+| `mountRequireSaddle` | `false` | Require a saddle to mount |
+| `landRidingSpeedMultiplier` | `1.0` | Speed multiplier on land |
+| `flyingRidingSpeedMultiplier` | `1.0` | Speed multiplier while flying |
+| `swimmingRidingSpeedMultiplier` | `1.0` | Speed multiplier while swimming |
+| `ridingWhitelistOnly` | `false` | Only whitelisted mobs can be ridden |
+| `ridingWhitelist` | `[]` | Mob IDs allowed to be ridden |
+| `ridingBlacklistEnabled` | `false` | Enable riding blacklist |
+| `ridingBlacklist` | `[]` | Mob IDs that cannot be ridden |
+| `manualFlyingMobs` | `[]` | Force 3D flight for specific mob IDs |
+| `manualSwimmingMobs` | `[]` | Force 3D swimming for specific mob IDs |
+| `allowPetAttackWhileRiding` | `true` | Allow projectile attacks while riding Wither / Dragon |
+
+### Inventory & Stats
+
+| Key | Default | Description |
+| :--- | :--- | :--- |
+| `petBaseArmor` | `0.0` | Global armor bonus for all tamed pets |
+| `petBaseArmorToughness` | `0.0` | Global armor toughness bonus |
+| `extraEquippableMobs` | `[]` | Force equipment slots on specific mob IDs |
+| `alwaysShowEquipmentSlots` | `false` | Force armor and hand slots on all mobs |
+| `inventoryWhitelistOnly` | `false` | Only whitelisted mobs receive an inventory |
+| `inventoryWhitelist` | `[]` | Mob IDs allowed to have inventories |
+| `inventoryBlacklistEnabled` | `false` | Disable inventory for blacklisted IDs |
+| `inventoryBlacklist` | `[]` | Mob IDs blocked from having a pet inventory |
+| `petPortraitRenderScale` | `45.0` | Portrait scale in the pet inventory screen |
+
+### Tool & Item Settings
+
+All tool items are configurable. The config key maps to a registry ID (`namespace:item_name`).
+
+| Key | Default | Controls |
+| :--- | :--- | :--- |
+| `tamingItem` | `petting:golden_wheat` | Primary taming item |
+| `statusTool` | `minecraft:stick` | Status cycling and report |
+| `aggressionTool` | `minecraft:iron_sword` | Aggressive mode toggle (any sword works by default) |
+| `defenseTool` | `minecraft:shield` | Defensive mode toggle (any shield works by default) |
+| `guardTool` | `minecraft:cookie` | Guard mode toggle |
+| `followDistTool` | `petting:follow_whistle` | Follow distance cycling |
+| `teleportDistTool` | `petting:teleport_orb` | Teleport distance cycling |
+| `whistleTool` | `minecraft:clock` | Whistle response toggle |
+| `tetherTool` | `petting:pet_tether` | Area tethering |
+| `releaseTool` | `minecraft:shears` | Release to wild |
+| `globalWhistleTool` | `minecraft:goat_horn` | Global pet recall |
+
+### Interaction Toggles
+
+| Key | Default | Description |
+| :--- | :--- | :--- |
+| `allowPerPetStatus` | `true` | Enable Stick (status cycling) |
+| `allowPerPetAggression` | `true` | Enable Sword (aggressive mode) |
+| `allowPerPetSelfDefense` | `true` | Enable Shield (defensive mode) |
+| `allowPerPetGuard` | `true` | Enable Cookie (guard mode) |
+| `allowPerPetFollowDist` | `true` | Enable Whistle (follow distance) |
+| `allowPerPetTeleportDist` | `true` | Enable Orb (teleport distance) |
+| `allowPerPetWhistleToggle` | `true` | Enable Clock (whistle response toggle) |
+| `allowPetTethering` | `true` | Enable Tether (area bind) |
+| `allowPetReleasing` | `true` | Enable Shears (release to wild) |
 
 ---
 
-## ⚙️ Advanced Configuration (The Config File)
+## License
 
-Every mechanic described above can be tweaked, disabled, or amplified via the mod's configuration file: `config/petting-common.toml`. 
-*You can quickly open your config folder by clicking the "Config" button in the Mod Menu!*
-
-### Config Summary
-* **Lists:** Define `tamingWhitelist` and `tamingBlacklist` to strictly control exactly which Entity Registry IDs can and cannot be tamed.
-* **Numbers:** Tune the `sitHealAmount`, `sitHealInterval`, `followDistance`, `teleportDistance`, `boundRoamRadius`, `maxPetsPerPlayer`, `interactionCooldown`, `tameChance`, and `tameHealthThreshold`.
-* **Booleans:** Toggle `disableRespawnOnTame`, `enableParticles`, `whitelistOnly`, `blacklistEnabled`, `allowGoldenWheat`, `enableGoatHornWhistle`, `whistleTeleportsTethered`, `requireKillToTame`, `hideTamedBossBars`, and `healthScalesTamingChance`.
-* **Enums:** Configure the `controlScheme` and `commandFeedbackStyle` (ACTION_BAR, CHAT, or NONE).
-* **Mappings:** Define `customTamingItems` (e.g., `["minecraft:zombie|minecraft:bone", "minecraft:spider|minecraft:spider_eye"]`) and `petCategories` for grouping mob limits.
-* **Item Toggles:** Individually enable/disable item interactions via `allowPerPetStatus`, `allowPerPetAggression`, `allowPerPetSelfDefense`, `allowPerPetGuard`, `allowPerPetFollowDist`, `allowPerPetTeleportDist`, `allowPerPetWhistleToggle`, and `allowPetTethering`.
+Petting is licensed under the **GNU Lesser General Public License v3.0**. See [LICENSE](LICENSE) for details.
 
 ---
+
 <div align="center">
   <p>🚀 <b>Project Links:</b> 
     <a href="https://modrinth.com/mod/petting">Modrinth</a> | 
     <a href="https://www.curseforge.com/minecraft/mc-mods/petting">CurseForge</a> | 
     <a href="https://github.com/yigit-guven/Petting">Source Code</a> | 
     <a href="https://github.com/yigit-guven/Petting/wiki">Documentation (Wiki)</a> | 
-    <a href="https://github.com/yigit-guven/Petting/issues">Bug Reports</a>
+    <a href="https://github.com/yigit-guven/Petting/issues">Bug Reports</a> |
+    <a href="https://discord.gg/aPk7Qs5d4H">Discord</a>
   </p>
-  <i>Go out and build your ultimate monster army! Made with ❤️ by <a href="https://github.com/yigit-guven">Yigit Guven</a></i>
+  <i>Made with ❤️ by <a href="https://github.com/yigit-guven"><b>Yigit Guven</b></a></i>
 </div>
