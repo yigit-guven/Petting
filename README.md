@@ -296,6 +296,7 @@ All settings are in `config/petting-common.toml`.
 | `enableGoatHornWhistle` | `true` | Allow Goat Horn right-click to recall all pets |
 | `whistleTeleportsTethered` | `false` | Include tethered pets in the Goat Horn recall |
 | `hideTamedBossBars` | `true` | Hide health bars for tamed bosses |
+| `tamedMonstersPreventSleep` | `false` | Whether tamed monster pets prevent nearby players from sleeping |
 | `commandFeedbackStyle` | `ACTION_BAR` | How state changes are shown: `ACTION_BAR`, `CHAT`, or `NONE` |
 
 ### Taming

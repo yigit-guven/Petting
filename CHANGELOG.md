@@ -32,6 +32,7 @@ All notable changes to this project will be documented in this file.
     - `flyingPetsHoverWhenSitting`: Configures whether flying pets hover stationary in mid-air (default: `true`).
     - `swimmingPetsStayStillWhenSitting`: Configures whether aquatic pets remain stationary in water (default: `true`).
     - `hideTamedBossBars`: Configures whether boss health bars for tamed pets (e.g. Wither, Ender Dragon, or modded boss pets) are hidden from players' screens (default: `true`).
+    - `tamedMonstersPreventSleep`: Configures whether tamed monster pets (such as Zombies, Skeletons, Withers, etc.) nearby prevent players from sleeping like vanilla monsters do (default: `false` / players can sleep).
 - Added pet inventory side navigation tabs:
   - Added tab strip positioned seamlessly along the left container edge following vanilla recipe book tab conventions.
   - **Pet Inventory (Home)** tab: Displays pet equipment, entity model, and player inventory slots.
@@ -138,6 +139,10 @@ All notable changes to this project will be documented in this file.
   - Separated hurt timestamps in `PetDefendOwnerTargetGoal` to eliminate timestamp collisions between owner-defense and self-defense.
   - Synced target assignments to Brain memory for brain-driven mobs like Wardens so their attack routines execute properly.
   - Handled ranged mobs (e.g. skeletons holding bows) in `PetMeleeAttackGoal` so they can freely shoot with their bow rather than charging in for melee punches.
+- **Tamed Monster Pets Sleep Interference**:
+  - Fixed an issue where tamed monster pets (such as Zombies, Skeletons, Withers, etc.) sitting or standing nearby prevented players from sleeping with the vanilla "You may not rest now, there are monsters nearby" warning.
+  - Implemented `MonsterMixin` to override `isPreventingPlayerRest` for tamed friendly monster pets while strictly preserving vanilla sleep denial if an untamed hostile monster is nearby or if a pet is actively attacking the player.
+  - Added configurable toggle (`tamedMonstersPreventSleep` in server config `[behavior]`, default: `false`) so servers can choose whether tamed monster pets prevent sleep or allow players to sleep peacefully nearby.
 
 ## [4.2.3-beta.4-forge-1.20.1] - 2026-06-25
 
