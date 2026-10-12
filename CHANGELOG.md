@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
   - **Combat forgiveness on sit**: Ordering a pet to sit immediately clears attack targets, erases anger, halts attack goals, and suspends following and teleporting.
   - Fully configurable in server configuration (`[behavior]`):
     - `enablePetSitting`: Enable or disable the pet sitting mechanic globally (default: `true`).
+    - `enablePetInventory`: Configures whether the entire pet inventory, equipment, and riding system is enabled (default: `true`). When set to `false`, pets operate purely on default configuration settings without collar/equipment support or riding.
     - `forgiveAttacksOnSit`: Configures whether sitting immediately clears hostilities and stops combat (default: `true`).
     - `flyingPetsHoverWhenSitting`: Configures whether flying pets hover stationary in mid-air (default: `true`).
     - `swimmingPetsStayStillWhenSitting`: Configures whether aquatic pets remain stationary in water (default: `true`).
