@@ -28,7 +28,9 @@ public class PettingClientEvents {
             "petting.action.tamed_success",
             "petting.action.pet_healed",
             "petting.action.pet_sitting",
-            "petting.action.pet_standing"
+            "petting.action.pet_standing",
+            "petting.action.collar_bound",
+            "petting.action.mount_controlled"
     );
 
     private static final Set<String> NEGATIVE_KEYS = Set.of(
@@ -37,7 +39,15 @@ public class PettingClientEvents {
             "petting.action.already_vanilla_tamed",
             "petting.action.already_tamed_other",
             "petting.action.pet_full_health",
-            "petting.action.pet_limit_reached"
+            "petting.action.pet_limit_reached",
+            "petting.action.saddle_required",
+            "petting.action.mount_uncontrolled"
+    );
+
+    private static final Set<String> DEATH_KEYS = Set.of(
+            "petting.action.pet_respawned",
+            "petting.action.pet_respawn_failed",
+            "petting.action.pet_died"
     );
 
     @SubscribeEvent
@@ -129,14 +139,24 @@ public class PettingClientEvents {
 
     @SubscribeEvent
     public static void onClientChatReceived(ClientChatReceivedEvent.System event) {
-        if (event.getMessage().getContents() instanceof TranslatableContents translatable) {
-            String key = translatable.getKey();
-            if (POSITIVE_KEYS.contains(key) && !PettingClientConfig.isPositiveFeedbackEnabled()) {
-                event.setCanceled(true);
-            } else if (NEGATIVE_KEYS.contains(key) && !PettingClientConfig.isNegativeFeedbackEnabled()) {
+        String key = getTranslatableKey(event.getMessage());
+        if (key != null && (POSITIVE_KEYS.contains(key) || NEGATIVE_KEYS.contains(key) || DEATH_KEYS.contains(key))) {
+            if (!PettingClientConfig.isFeedbackMessageEnabled(key)) {
                 event.setCanceled(true);
             }
         }
+    }
+
+    private static String getTranslatableKey(net.minecraft.network.chat.Component component) {
+        if (component.getContents() instanceof TranslatableContents translatable) {
+            return translatable.getKey();
+        }
+        for (net.minecraft.network.chat.Component sibling : component.getSiblings()) {
+            if (sibling.getContents() instanceof TranslatableContents translatable) {
+                return translatable.getKey();
+            }
+        }
+        return null;
     }
 
     @SubscribeEvent

@@ -114,6 +114,16 @@ All notable changes to this project will be documented in this file.
     - When a tamed pet wearing a bound collar dies, death is canceled and the pet instantly respawns safely seated on its bound bed or cushion with full health, negative status effects and fire cleared, accompanied by Totem of Undying visual particles and sound effects.
     - If the bound bed or cushion is destroyed or broken, the pet will not respawn and will experience normal death (dropping its collar/saddle and notifying the owner).
     - Fully configurable via `enableCollarRespawn` under `[collar]` in server config (default: `true`).
+- **Configurable Pet Death Messages & Granular Feedback System**:
+  - Added `enablePetDeathMessages` in server configuration (`[behavior]`) to control whether the server notifies pet owners when pets die or respawn (default: `true`).
+  - Extended client configuration (`[feedback]`) with granular controls for all feedback messages:
+    - **Default Disabled Feedback**: All client-side feedback messages are now disabled (`false`) by default to keep chat clean.
+    - **Replaced Blanket Toggles**: Removed blanket `enablePositiveFeedback` and `enableNegativeFeedback` toggles in favor of precise, individual message toggles.
+    - **Granular Positive Toggles**: Added individual options for `enableTamedSuccessFeedback`, `enablePetHealedFeedback`, `enablePetSittingFeedback`, `enablePetStandingFeedback`, `enableCollarBoundFeedback`, and `enableMountControlledFeedback`.
+    - **Granular Negative Toggles**: Added individual options for `enableTamingFailedFeedback`, `enableTooHealthyFeedback`, `enableAlreadyVanillaTamedFeedback`, `enableAlreadyTamedOtherFeedback`, `enablePetFullHealthFeedback`, `enablePetLimitReachedFeedback`, `enableSaddleRequiredFeedback`, and `enableMountUncontrolledFeedback`.
+    - **Granular Death & Respawn Toggles**: `enablePetDeathMessages` (general death toggle) along with granular options for `enablePetDiedFeedback`, `enablePetRespawnedFeedback`, and `enablePetRespawnFailedFeedback`.
+
+
 
 ### Fixed
 - **Inverted Left / Right Riding Controls**:

@@ -92,6 +92,7 @@ public class PetGoalEvents {
     public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             if (mob.level() instanceof ServerLevel serverLevel) {
+                boolean respawnFailedNotified = false;
                 if (PettingServerConfig.isPetInventoryEnabled() && PettingServerConfig.isCollarRespawnEnabled()) {
                     net.minecraft.world.item.ItemStack collar = PetHelper.getCollar(mob);
                     if (!collar.isEmpty() && collar.has(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT)) {
@@ -104,13 +105,23 @@ public class PetGoalEvents {
                                     return;
                                 }
                             } else {
-                                net.minecraft.world.entity.player.Player owner = PetHelper.getOwner(mob);
-                                if (owner != null) {
-                                    net.minecraft.network.chat.Component targetType = net.minecraft.network.chat.Component.translatable(respawnPoint.isCushion() ? "petting.term.cushion" : "petting.term.bed");
-                                    owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_respawn_failed", mob.getName(), targetType));
+                                if (PettingServerConfig.isPetDeathMessagesEnabled()) {
+                                    net.minecraft.world.entity.player.Player owner = PetHelper.getOwner(mob);
+                                    if (owner != null) {
+                                        net.minecraft.network.chat.Component targetType = net.minecraft.network.chat.Component.translatable(respawnPoint.isCushion() ? "petting.term.cushion" : "petting.term.bed");
+                                        owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_respawn_failed", mob.getName(), targetType));
+                                        respawnFailedNotified = true;
+                                    }
                                 }
                             }
                         }
+                    }
+                }
+
+                if (!respawnFailedNotified && PettingServerConfig.isPetDeathMessagesEnabled()) {
+                    net.minecraft.world.entity.player.Player owner = PetHelper.getOwner(mob);
+                    if (owner != null) {
+                        owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_died", mob.getName()));
                     }
                 }
 

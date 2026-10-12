@@ -253,6 +253,9 @@ public class PetHelper {
         if (uuidOpt.isEmpty()) {
             return null;
         }
+        if (entity.level() instanceof net.minecraft.server.level.ServerLevel sLevel) {
+            return sLevel.getServer().getPlayerList().getPlayer(uuidOpt.get());
+        }
         return entity.level().getPlayerByUUID(uuidOpt.get());
     }
 
@@ -1067,10 +1070,12 @@ public class PetHelper {
         targetLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.HEART, respawnPos.x, respawnPos.y + 0.8, respawnPos.z, 8, 0.3, 0.3, 0.3, 0.0);
         targetLevel.playSound(null, respawnPos.x, respawnPos.y, respawnPos.z, net.minecraft.sounds.SoundEvents.TOTEM_USE, net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
 
-        Player owner = getOwner(mob);
-        if (owner != null) {
-            net.minecraft.network.chat.Component targetType = net.minecraft.network.chat.Component.translatable(respawnPoint.isCushion() ? "petting.term.cushion" : "petting.term.bed");
-            owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_respawned", mob.getName(), targetType));
+        if (PettingServerConfig.isPetDeathMessagesEnabled()) {
+            Player owner = getOwner(mob);
+            if (owner != null) {
+                net.minecraft.network.chat.Component targetType = net.minecraft.network.chat.Component.translatable(respawnPoint.isCushion() ? "petting.term.cushion" : "petting.term.bed");
+                owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_respawned", mob.getName(), targetType));
+            }
         }
 
         final net.minecraft.world.entity.Entity finalEntity = respawnedEntity;

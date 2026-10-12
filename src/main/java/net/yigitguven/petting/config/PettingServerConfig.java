@@ -20,6 +20,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue SWIMMING_PETS_STAY_STILL_WHEN_SITTING;
     public static final ModConfigSpec.BooleanValue HIDE_TAMED_BOSS_BARS;
     public static final ModConfigSpec.BooleanValue TAMED_MONSTERS_PREVENT_SLEEP;
+    public static final ModConfigSpec.BooleanValue ENABLE_PET_DEATH_MESSAGES;
     public static final ModConfigSpec.EnumValue<net.yigitguven.petting.data.CombatMode> DEFAULT_COMBAT_MODE;
     public static final ModConfigSpec.BooleanValue ENABLE_PET_RIDING;
     public static final ModConfigSpec.BooleanValue RIDING_USE_WHITELIST;
@@ -120,6 +121,10 @@ public class PettingServerConfig {
         TAMED_MONSTERS_PREVENT_SLEEP = builder
                 .translation("petting.configuration.behavior.tamedMonstersPreventSleep")
                 .define("tamedMonstersPreventSleep", false);
+
+        ENABLE_PET_DEATH_MESSAGES = builder
+                .translation("petting.configuration.behavior.enablePetDeathMessages")
+                .define("enablePetDeathMessages", true);
 
         builder.pop();
 
@@ -300,6 +305,10 @@ public class PettingServerConfig {
 
     public static boolean shouldTamedMonstersPreventSleep() {
         return SPEC.isLoaded() ? TAMED_MONSTERS_PREVENT_SLEEP.get() : false;
+    }
+
+    public static boolean isPetDeathMessagesEnabled() {
+        return SPEC.isLoaded() ? ENABLE_PET_DEATH_MESSAGES.get() : true;
     }
 
     public static boolean isUntameable(net.minecraft.world.entity.EntityType<?> entityType) {
