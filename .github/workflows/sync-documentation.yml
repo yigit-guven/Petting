@@ -9,6 +9,7 @@ on:
       - 'SECURITY.md'
       - 'LICENSE'
       - 'CONTRIBUTING.md'
+      - 'banner.png'
       - 'docs/**'
       - '.github/workflows/sync-documentation.yml'
       - '.github/workflows/wiki-sync.yml'
@@ -66,6 +67,7 @@ jobs:
             "SECURITY.md"
             "LICENSE"
             "CONTRIBUTING.md"
+            "banner.png"
             ".github/workflows/sync-documentation.yml"
             ".github/workflows/wiki-sync.yml"
           )
