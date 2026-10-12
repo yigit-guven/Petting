@@ -15,7 +15,33 @@ public abstract class EntityMixin {
     @Inject(method = "considersEntityAsAlly", at = @At("HEAD"), cancellable = true)
     private void petting$considersEntityAsAlly(Entity other, CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
-        if (PetHelper.areEntitiesAllied(self, other)) {
+
+        // If self is owner and other is pet:
+        if (self instanceof Player player && PetHelper.isRootOwner(other, player)) {
+            if (!PettingServerConfig.canOwnerAttackPets()) {
+                cir.setReturnValue(true);
+            }
+            return;
+        }
+
+        // If other is owner and self is pet:
+        if (other instanceof Player player && PetHelper.isRootOwner(self, player)) {
+            if (!PettingServerConfig.canOwnerAttackPets()) {
+                cir.setReturnValue(true);
+            }
+            return;
+        }
+
+        // Fellow pets/minions of the same owner
+        if (PetHelper.arePetsOfSameOwner(self, other)) {
+            if (!PettingServerConfig.canPetsAttackPets()) {
+                cir.setReturnValue(true);
+            }
+            return;
+        }
+
+        // Vehicle / passenger relationship
+        if (self.isPassengerOfSameVehicle(other) || self.hasPassenger(other) || other.hasPassenger(self)) {
             cir.setReturnValue(true);
         }
     }
@@ -24,23 +50,21 @@ public abstract class EntityMixin {
     private void petting$doTeamsAllowDamage(Entity other, CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
 
-        // If self is pet/minion and other is owner: NEVER allow damage to owner
+        // If other is owner and self is pet: NEVER allow pet to damage owner
         if (other instanceof Player player && PetHelper.isRootOwner(self, player)) {
             cir.setReturnValue(false);
             return;
         }
 
-        // If self is owner and other is pet/minion: check canOwnerAttackPets
+        // If self is owner and other is pet: respect canOwnerAttackPets
         if (self instanceof Player player && PetHelper.isRootOwner(other, player)) {
-            if (!PettingServerConfig.canOwnerAttackPets()) {
-                cir.setReturnValue(false);
-                return;
-            }
+            cir.setReturnValue(PettingServerConfig.canOwnerAttackPets());
+            return;
         }
 
         // If both are pets/minions of the same owner: check canPetsAttackPets
-        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.areEntitiesAllied(self, other)) {
-            cir.setReturnValue(false);
+        if (PetHelper.arePetsOfSameOwner(self, other)) {
+            cir.setReturnValue(PettingServerConfig.canPetsAttackPets());
             return;
         }
 

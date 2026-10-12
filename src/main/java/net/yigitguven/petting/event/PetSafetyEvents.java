@@ -84,18 +84,22 @@ public class PetSafetyEvents {
             }
         }
 
-        // 2. Configurable: owner attacking their own pets/minions
-        if (!PettingServerConfig.canOwnerAttackPets() && attacker instanceof Player player) {
-            if (PetHelper.isRootOwner(victim, player)) {
+        // 2. Configurable: owner attacking their own pets/minions (melee, projectile, or spell)
+        LivingEntity rootAttacker = attacker instanceof LivingEntity livingAttacker ? PetHelper.getRootOwner(livingAttacker) : null;
+        if (rootAttacker == null && direct instanceof LivingEntity livingDirect) {
+            rootAttacker = PetHelper.getRootOwner(livingDirect);
+        }
+        if (rootAttacker instanceof Player ownerPlayer && PetHelper.isRootOwner(victim, ownerPlayer)) {
+            if (!PettingServerConfig.canOwnerAttackPets()) {
                 event.setCanceled(true);
-                return;
             }
+            return;
         }
 
         // 3. Configurable: friendly fire between pets/minions of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
-            if ((attacker != null && PetHelper.areEntitiesAllied(victim, attacker))
-                    || (direct != null && PetHelper.areEntitiesAllied(victim, direct))) {
+            if ((attacker != null && PetHelper.arePetsOfSameOwner(victim, attacker))
+                    || (direct != null && PetHelper.arePetsOfSameOwner(victim, direct))) {
                 event.setCanceled(true);
                 return;
             }
@@ -116,8 +120,8 @@ public class PetSafetyEvents {
             return;
         }
 
-        // Always: pets and minions can never target their owner or allied pets
-        if (PetHelper.areEntitiesAllied(pet, newTarget)) {
+        // 1. Always: pets and minions can never target their owner
+        if (newTarget instanceof Player player && PetHelper.isRootOwner(pet, player)) {
             event.setCanceled(true);
             event.setNewAboutToBeSetTarget(null);
             if (pet instanceof NeutralMob neutralMob) {
@@ -126,10 +130,11 @@ public class PetSafetyEvents {
             return;
         }
 
+        // 2. Untamed entity with root owner targeting owner or fellow pet
         if (!PetHelper.isTamed(pet)) {
             LivingEntity rootOwner = PetHelper.getRootOwner(pet);
             if (rootOwner instanceof Player player) {
-                if (newTarget == player || PetHelper.areEntitiesAllied(pet, newTarget)) {
+                if (newTarget == player || (!PettingServerConfig.canPetsAttackPets() && PetHelper.arePetsOfSameOwner(pet, newTarget))) {
                     event.setCanceled(true);
                     event.setNewAboutToBeSetTarget(null);
                     if (pet instanceof NeutralMob neutralMob) {
@@ -143,7 +148,7 @@ public class PetSafetyEvents {
             return;
         }
 
-        // Prevent built-in hostile behaviors: pets only attack valid targets
+        // 3. Prevent built-in hostile behaviors: pets only attack valid targets
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
             if (!PetHelper.isValidPetTarget(pet, newTarget)) {
                 event.setCanceled(true);
@@ -155,9 +160,9 @@ public class PetSafetyEvents {
             }
         }
 
-        // Configurable: pets targeting other pets of the same owner
+        // 4. Configurable: pets targeting fellow pets of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
-            if (PetHelper.areEntitiesAllied(pet, newTarget)) {
+            if (PetHelper.arePetsOfSameOwner(pet, newTarget)) {
                 event.setCanceled(true);
                 event.setNewAboutToBeSetTarget(null);
                 if (pet instanceof NeutralMob neutralMob) {

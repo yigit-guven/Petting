@@ -42,6 +42,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue DEFAULT_PREFER_RANGED_ATTACK;
     public static final ModConfigSpec.BooleanValue DEFAULT_DEFEND_OTHER_PETS;
     public static final ModConfigSpec.BooleanValue DEFAULT_RETALIATE_WHEN_HURT;
+    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_RESPAWN;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -215,6 +216,10 @@ public class PettingServerConfig {
         DEFAULT_RETALIATE_WHEN_HURT = builder
                 .translation("petting.configuration.collar.defaultRetaliateWhenHurt")
                 .define("defaultRetaliateWhenHurt", true);
+
+        ENABLE_COLLAR_RESPAWN = builder
+                .translation("petting.configuration.collar.enableCollarRespawn")
+                .define("enableCollarRespawn", true);
 
         builder.pop();
 
@@ -425,5 +430,9 @@ public class PettingServerConfig {
 
     public static int getRiddenAttackCooldownTicks() {
         return SPEC.isLoaded() ? RIDDEN_ATTACK_COOLDOWN_TICKS.get() : 10;
+    }
+
+    public static boolean isCollarRespawnEnabled() {
+        return SPEC.isLoaded() ? ENABLE_COLLAR_RESPAWN.get() : true;
     }
 }

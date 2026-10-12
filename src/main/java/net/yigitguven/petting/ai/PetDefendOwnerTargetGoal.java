@@ -29,7 +29,7 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
         if (attacker == null || !attacker.isAlive() || attacker == owner) {
             return false;
         }
-        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isOwner(attacker, owner)) {
+        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isRootOwner(attacker, owner)) {
             return false;
         }
         return this.canAttack(attacker, TargetingConditions.forCombat().ignoreLineOfSight());

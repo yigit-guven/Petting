@@ -85,5 +85,21 @@ public class CollarItem extends Item {
                 }
             }
         }
+
+        if (stack.has(PettingDataComponents.COLLAR_RESPAWN_POINT)) {
+            net.yigitguven.petting.data.CollarRespawnPoint respawn = stack.get(PettingDataComponents.COLLAR_RESPAWN_POINT);
+            if (respawn != null) {
+                Component targetType = Component.translatable(respawn.isCushion() ? "petting.term.cushion" : "petting.term.bed");
+                net.minecraft.core.BlockPos pos = respawn.pos().pos();
+                tooltipAdder.accept(Component.literal(" • ").withStyle(ChatFormatting.DARK_GRAY)
+                        .append(Component.translatable("petting.collar.tooltip.respawn_bound", targetType).withStyle(ChatFormatting.LIGHT_PURPLE))
+                        .append(Component.literal(" [" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + "]").withStyle(ChatFormatting.GRAY)));
+            }
+        }
+    }
+
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return stack.has(PettingDataComponents.COLLAR_RESPAWN_POINT) || super.isFoil(stack);
     }
 }

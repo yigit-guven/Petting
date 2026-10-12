@@ -27,6 +27,9 @@ public class PettingClientRender {
     public static final ContextKey<DyeColor> COLLAR_COLOR_KEY =
             new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "collar_color"));
 
+    public static final ContextKey<Boolean> COLLAR_ENCHANTED_KEY =
+            new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "collar_enchanted"));
+
     public static final ContextKey<Float> PET_SIT_GROUND_OFFSET_KEY =
             new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "pet_sit_ground_offset"));
 
@@ -60,6 +63,9 @@ public class PettingClientRender {
                         ItemStack collar = PetHelper.getCollar(entity);
                         if (!collar.isEmpty() && collar.getItem() instanceof CollarItem collarItem) {
                             renderState.setRenderData(COLLAR_COLOR_KEY, collarItem.getColor());
+                            boolean isEnchanted = collar.has(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT)
+                                    || collar.has(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
+                            renderState.setRenderData(COLLAR_ENCHANTED_KEY, isEnchanted);
                         }
 
                         // Strict rotation lock when ridden with saddle

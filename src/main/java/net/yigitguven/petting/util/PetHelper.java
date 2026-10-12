@@ -205,6 +205,18 @@ public class PetHelper {
         return false;
     }
 
+    public static boolean arePetsOfSameOwner(@Nullable net.minecraft.world.entity.Entity a, @Nullable net.minecraft.world.entity.Entity b) {
+        if (a == null || b == null || a == b) {
+            return false;
+        }
+        if (a instanceof Player || b instanceof Player) {
+            return false;
+        }
+        Optional<UUID> ownerA = getRootOwnerUUID(a);
+        Optional<UUID> ownerB = getRootOwnerUUID(b);
+        return ownerA.isPresent() && ownerB.isPresent() && ownerA.get().equals(ownerB.get());
+    }
+
     public static Optional<UUID> getOwnerUUID(LivingEntity entity) {
         if (entity.hasData(PettingModAttachments.PET_DATA)) {
             PetData data = entity.getData(PettingModAttachments.PET_DATA);
@@ -661,7 +673,7 @@ public class PetHelper {
         }
 
         // Rule: Pets cannot target fellow pets of the same owner unless friendly fire is enabled
-        if (!PettingServerConfig.canPetsAttackPets() && isOwner(target, owner)) {
+        if (!PettingServerConfig.canPetsAttackPets() && isRootOwner(target, owner)) {
             return false;
         }
 
@@ -934,5 +946,144 @@ public class PetHelper {
         } catch (Exception e) {
             endDragonFightFieldFailed = true;
         }
+    }
+
+    public static boolean isBedBlock(net.minecraft.world.level.block.state.BlockState state) {
+        if (state == null) {
+            return false;
+        }
+        return state.is(net.minecraft.tags.BlockTags.BEDS)
+                || state.getBlock() instanceof net.minecraft.world.level.block.BedBlock
+                || state.getBlock().getDescriptionId().contains("bed");
+    }
+
+    public static boolean isCushionBlock(net.minecraft.world.level.block.state.BlockState state) {
+        if (state == null) {
+            return false;
+        }
+        return state.getBlock().getDescriptionId().contains("cushion")
+                || state.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath("c", "cushions")));
+    }
+
+    public static boolean isCushionEntity(@Nullable net.minecraft.world.entity.Entity entity) {
+        if (entity == null) {
+            return false;
+        }
+        return entity instanceof net.minecraft.world.entity.decoration.Cushion
+                || entity.getType().getDescriptionId().contains("cushion")
+                || entity.getClass().getSimpleName().toLowerCase().contains("cushion");
+    }
+
+    public static boolean isRespawnPointValid(@Nullable ServerLevel level, @Nullable net.yigitguven.petting.data.CollarRespawnPoint respawnPoint) {
+        if (level == null || respawnPoint == null) {
+            return false;
+        }
+        net.minecraft.core.BlockPos pos = respawnPoint.pos().pos();
+        if (!level.hasChunkAt(pos)) {
+            level.getChunk(pos);
+        }
+
+        if (respawnPoint.isCushion()) {
+            net.minecraft.world.phys.AABB searchBox = new net.minecraft.world.phys.AABB(pos).inflate(1.5);
+            boolean hasCushionEntity = !level.getEntitiesOfClass(net.minecraft.world.entity.decoration.Cushion.class, searchBox, c -> !c.isRemoved() && c.isAlive()).isEmpty();
+            if (hasCushionEntity) {
+                return true;
+            }
+            boolean hasModdedCushion = !level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, searchBox,
+                    e -> !e.isRemoved() && e.isAlive() && isCushionEntity(e)).isEmpty();
+            if (hasModdedCushion) {
+                return true;
+            }
+            return isCushionBlock(level.getBlockState(pos));
+        } else {
+            return isBedBlock(level.getBlockState(pos));
+        }
+    }
+
+    public static boolean respawnPetAtBoundPoint(Mob mob, ServerLevel currentLevel, ServerLevel targetLevel, net.yigitguven.petting.data.CollarRespawnPoint respawnPoint) {
+        net.minecraft.core.BlockPos pos = respawnPoint.pos().pos();
+        Vec3 respawnPos = new Vec3(pos.getX() + 0.5, pos.getY() + (respawnPoint.isCushion() ? 0.25 : 0.6), pos.getZ() + 0.5);
+
+        if (mob.isVehicle()) {
+            mob.ejectPassengers();
+        }
+        if (mob.isPassenger()) {
+            mob.stopRiding();
+        }
+
+        mob.setHealth(mob.getMaxHealth());
+        mob.removeAllEffects();
+        mob.clearFire();
+        mob.fallDistance = 0.0F;
+        mob.deathTime = 0;
+        mob.hurtTime = 0;
+        mob.setDeltaMovement(Vec3.ZERO);
+        mob.setTarget(null);
+        mob.setLastHurtByMob(null);
+        mob.setInvulnerableTime(60);
+        mob.getNavigation().stop();
+        mob.syncVelocity = false;
+
+        net.minecraft.world.entity.Entity respawnedEntity;
+        if (targetLevel != currentLevel) {
+            respawnedEntity = mob.teleport(new net.minecraft.world.level.portal.TeleportTransition(
+                    targetLevel, respawnPos, Vec3.ZERO, mob.getYRot(), 0.0F,
+                    net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING
+            ));
+        } else {
+            currentLevel.getChunkSource().removeEntity(mob);
+            respawnedEntity = mob.teleport(new net.minecraft.world.level.portal.TeleportTransition(
+                    targetLevel, respawnPos, Vec3.ZERO, mob.getYRot(), 0.0F,
+                    net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING
+            ));
+            currentLevel.getChunkSource().addEntity(respawnedEntity != null ? respawnedEntity : mob);
+        }
+
+        if (respawnedEntity == null) {
+            return false;
+        }
+
+        if (respawnedEntity instanceof Mob respawnedMob) {
+            respawnedMob.getNavigation().stop();
+            respawnedMob.setDeltaMovement(Vec3.ZERO);
+            respawnedMob.syncVelocity = false;
+            setOrder(respawnedMob, PetOrder.SIT);
+            if (respawnedMob instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
+                wither.setAlternativeTarget(0, 0);
+                wither.setAlternativeTarget(1, 0);
+                wither.setAlternativeTarget(2, 0);
+            }
+        }
+
+        final java.util.UUID newUuid = respawnedEntity.getUUID();
+        if (!newUuid.equals(mob.getUUID())) {
+            getOwnerUUID(mob).ifPresent(ownerUuid -> {
+                PetSavedData.get(currentLevel).removePet(mob.getUUID());
+                PetSavedData.get(currentLevel).addPet(ownerUuid, newUuid);
+            });
+        }
+
+        targetLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.TOTEM_OF_UNDYING, respawnPos.x, respawnPos.y + 0.5, respawnPos.z, 25, 0.4, 0.4, 0.4, 0.1);
+        targetLevel.sendParticles(net.minecraft.core.particles.ParticleTypes.HEART, respawnPos.x, respawnPos.y + 0.8, respawnPos.z, 8, 0.3, 0.3, 0.3, 0.0);
+        targetLevel.playSound(null, respawnPos.x, respawnPos.y, respawnPos.z, net.minecraft.sounds.SoundEvents.TOTEM_USE, net.minecraft.sounds.SoundSource.NEUTRAL, 1.0F, 1.0F);
+
+        Player owner = getOwner(mob);
+        if (owner != null) {
+            net.minecraft.network.chat.Component targetType = net.minecraft.network.chat.Component.translatable(respawnPoint.isCushion() ? "petting.term.cushion" : "petting.term.bed");
+            owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_respawned", mob.getName(), targetType));
+        }
+
+        final net.minecraft.world.entity.Entity finalEntity = respawnedEntity;
+        targetLevel.getServer().schedule(new net.minecraft.server.TickTask(targetLevel.getServer().getTickCount(), () -> {
+            if (finalEntity.isAlive()) {
+                finalEntity.setDeltaMovement(Vec3.ZERO);
+                finalEntity.syncVelocity = false;
+                if (finalEntity instanceof Mob m) {
+                    m.getNavigation().stop();
+                }
+            }
+        }));
+
+        return true;
     }
 }

@@ -42,7 +42,7 @@ public abstract class EnderDragonMixin {
                 cir.setReturnValue(false);
                 return;
             }
-            if (!PettingServerConfig.canPetsAttackPets() && PetHelper.areEntitiesAllied(dragon, target)) {
+            if (!PettingServerConfig.canPetsAttackPets() && PetHelper.arePetsOfSameOwner(dragon, target)) {
                 cir.setReturnValue(false);
             }
         }

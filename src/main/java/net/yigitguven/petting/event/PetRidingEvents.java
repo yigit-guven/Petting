@@ -73,9 +73,14 @@ public class PetRidingEvents {
                     // Normal dismount reached ground / completed
                     PetRidingHandler.onDismount(mob);
                 } else if (event.isMounting()) {
-                    if (!(mob instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) && !PettingServerConfig.isPetInventoryEnabled()) {
-                        event.setCanceled(true);
-                        return;
+                    if (!(mob instanceof net.minecraft.world.entity.animal.equine.AbstractHorse)) {
+                        if (!PettingServerConfig.isPetInventoryEnabled()
+                                || !PettingServerConfig.isPetRidingEnabled()
+                                || !PetHelper.isPetRidingEnabledFor(mob)
+                                || (!PetHelper.hasSaddle(mob) && !PettingServerConfig.isAllowRidingWithoutSaddle())) {
+                            event.setCanceled(true);
+                            return;
+                        }
                     }
                     PetRidingHandler.onMount(mob, player);
                 }

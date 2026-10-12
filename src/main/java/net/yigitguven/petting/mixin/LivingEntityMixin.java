@@ -24,15 +24,14 @@ public abstract class LivingEntityMixin {
 
         // Owner attacking their pet: check config
         if (self instanceof Player player && PetHelper.isRootOwner(target, player)) {
-            if (!PettingServerConfig.canOwnerAttackPets()) {
-                cir.setReturnValue(false);
-                return;
-            }
+            cir.setReturnValue(PettingServerConfig.canOwnerAttackPets());
+            return;
         }
 
         // Pets attacking fellow pets: check config
-        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.areEntitiesAllied(self, target)) {
-            cir.setReturnValue(false);
+        if (PetHelper.arePetsOfSameOwner(self, target)) {
+            cir.setReturnValue(PettingServerConfig.canPetsAttackPets());
+            return;
         }
     }
 }

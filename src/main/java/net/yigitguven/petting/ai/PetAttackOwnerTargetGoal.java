@@ -47,7 +47,7 @@ public class PetAttackOwnerTargetGoal extends TargetGoal {
         if (this.target == owner) {
             return false;
         }
-        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isOwner(this.target, owner)) {
+        if (!PettingServerConfig.canPetsAttackPets() && PetHelper.isRootOwner(this.target, owner)) {
             return false;
         }
 

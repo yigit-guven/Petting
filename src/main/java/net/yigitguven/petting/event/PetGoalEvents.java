@@ -92,6 +92,28 @@ public class PetGoalEvents {
     public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             if (mob.level() instanceof ServerLevel serverLevel) {
+                if (PettingServerConfig.isPetInventoryEnabled() && PettingServerConfig.isCollarRespawnEnabled()) {
+                    net.minecraft.world.item.ItemStack collar = PetHelper.getCollar(mob);
+                    if (!collar.isEmpty() && collar.has(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT)) {
+                        net.yigitguven.petting.data.CollarRespawnPoint respawnPoint = collar.get(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT);
+                        if (respawnPoint != null) {
+                            ServerLevel targetLevel = serverLevel.getServer().getLevel(respawnPoint.pos().dimension());
+                            if (targetLevel != null && PetHelper.isRespawnPointValid(targetLevel, respawnPoint)) {
+                                if (PetHelper.respawnPetAtBoundPoint(mob, serverLevel, targetLevel, respawnPoint)) {
+                                    event.setCanceled(true);
+                                    return;
+                                }
+                            } else {
+                                net.minecraft.world.entity.player.Player owner = PetHelper.getOwner(mob);
+                                if (owner != null) {
+                                    net.minecraft.network.chat.Component targetType = net.minecraft.network.chat.Component.translatable(respawnPoint.isCushion() ? "petting.term.cushion" : "petting.term.bed");
+                                    owner.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_respawn_failed", mob.getName(), targetType));
+                                }
+                            }
+                        }
+                    }
+                }
+
                 net.minecraft.world.item.ItemStack collar = PetHelper.getCollar(mob);
                 if (!collar.isEmpty()) {
                     mob.spawnAtLocation(serverLevel, collar);

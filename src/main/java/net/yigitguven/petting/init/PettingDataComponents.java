@@ -14,4 +14,8 @@ public class PettingDataComponents {
     public static final DeferredHolder<DataComponentType<?>, DataComponentType<CollarSettings>> COLLAR_SETTINGS =
             DATA_COMPONENTS.registerComponentType("collar_settings",
                     builder -> builder.persistent(CollarSettings.CODEC).networkSynchronized(CollarSettings.STREAM_CODEC));
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.yigitguven.petting.data.CollarRespawnPoint>> COLLAR_RESPAWN_POINT =
+            DATA_COMPONENTS.registerComponentType("collar_respawn_point",
+                    builder -> builder.persistent(net.yigitguven.petting.data.CollarRespawnPoint.CODEC).networkSynchronized(net.yigitguven.petting.data.CollarRespawnPoint.STREAM_CODEC));
 }

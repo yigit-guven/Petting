@@ -137,9 +137,14 @@ public class PetCollarLayer<S extends LivingEntityRenderState, M extends EntityM
 
         PoseStack.Pose capturedPose = candidate.pose;
 
+        boolean isEnchanted = Boolean.TRUE.equals(state.getRenderData(PettingClientRender.COLLAR_ENCHANTED_KEY));
+        net.minecraft.client.renderer.rendertype.RenderType renderType = isEnchanted
+                ? RenderTypes.armorCutoutNoCullGlint(COLLAR_TEXTURE)
+                : RenderTypes.armorCutoutNoCull(COLLAR_TEXTURE);
+
         submitNodeCollector.order(1).submitCustomGeometry(
                 poseStack,
-                RenderTypes.armorCutoutNoCull(COLLAR_TEXTURE),
+                renderType,
                 (ignoredPose, consumer) -> {
                     renderCollar(capturedPose, consumer, bx0, by0, bz0, bx1, by1, bz1, centerX, centerZ, strapThick, collarHeight, strapColor, packedLight, INV_SCALE);
                 }

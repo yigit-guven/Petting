@@ -31,7 +31,8 @@ public record RiddenPetAttackPayload(int entityId) implements CustomPacketPayloa
 
     public static void handle(RiddenPetAttackPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
-            if (!net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) {
+            if (!net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()
+                    || !net.yigitguven.petting.config.PettingServerConfig.isRiddenPetsAttackOnClick()) {
                 return;
             }
             if (context.player() instanceof ServerPlayer player) {

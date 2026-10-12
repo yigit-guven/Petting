@@ -30,24 +30,34 @@ public class PetTamingEvents {
         }
     }
 
+
     @SubscribeEvent
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+        Player player = event.getEntity();
+        ItemStack stack = event.getItemStack();
+
+        if (PetHelper.isCushionEntity(event.getTarget())) {
+            if (handleCushionBinding(player, event.getTarget(), stack, event.getLevel(), event.getHand())) {
+                event.setCancellationResult(InteractionResult.SUCCESS);
+                event.setCanceled(true);
+                return;
+            }
+        }
+
         if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) {
             return;
         }
+
+        boolean isClient = event.getLevel().isClientSide();
 
         if (!(event.getTarget() instanceof Mob mob)) {
             return;
         }
 
-        Player player = event.getEntity();
-        ItemStack stack = event.getItemStack();
-        boolean isClient = event.getLevel().isClientSide();
-
         if (PetHelper.isTamed(mob)) {
             if (PetHelper.isOwner(mob, player)) {
                 if (PettingServerConfig.isPetInventoryEnabled()) {
-                    if (stack.getItem() instanceof net.yigitguven.petting.item.CollarItem) {
+                    if (PettingServerConfig.isCollarSlotEnabled() && stack.getItem() instanceof net.yigitguven.petting.item.CollarItem) {
                         if (PetHelper.getCollar(mob).isEmpty()) {
                             if (!isClient) {
                                 PetHelper.setCollar(mob, stack.copyWithCount(1));
@@ -69,7 +79,9 @@ public class PetTamingEvents {
                             if (currentItem.getColor() != dyeColor) {
                                 if (!isClient) {
                                     net.minecraft.world.item.Item newCollarItem = net.yigitguven.petting.init.PettingModItems.getCollar(dyeColor).get();
-                                    PetHelper.setCollar(mob, new ItemStack(newCollarItem));
+                                    ItemStack newCollar = new ItemStack(newCollarItem);
+                                    newCollar.applyComponents(currentCollar.getComponents());
+                                    PetHelper.setCollar(mob, newCollar);
                                     if (!player.getAbilities().instabuild) {
                                         stack.shrink(1);
                                     }
@@ -191,5 +203,76 @@ public class PetTamingEvents {
 
         event.setCancellationResult(InteractionResult.SUCCESS);
         event.setCanceled(true);
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!PettingServerConfig.isCollarRespawnEnabled() || !PettingServerConfig.isPetInventoryEnabled()) {
+            return;
+        }
+
+        ItemStack stack = event.getItemStack();
+        if (!(stack.getItem() instanceof net.yigitguven.petting.item.CollarItem)) {
+            return;
+        }
+
+        net.minecraft.core.BlockPos pos = event.getPos();
+        net.minecraft.world.level.Level level = event.getLevel();
+        net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+
+        boolean isBed = PetHelper.isBedBlock(state);
+        boolean isCushion = PetHelper.isCushionBlock(state);
+
+        if (!isBed && !isCushion) {
+            return;
+        }
+
+        Player player = event.getEntity();
+        if (!level.isClientSide()) {
+            net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(level.dimension(), pos);
+            net.yigitguven.petting.data.CollarRespawnPoint point = new net.yigitguven.petting.data.CollarRespawnPoint(globalPos, isCushion);
+            stack.set(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT, point);
+            stack.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+            ServerLevel serverLevel = (ServerLevel) level;
+            serverLevel.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 16, 0.4, 0.4, 0.4, 0.2);
+            serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 6, 0.3, 0.3, 0.3, 0.0);
+            level.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.2F);
+
+            Component targetType = Component.translatable(isCushion ? "petting.term.cushion" : "petting.term.bed");
+            player.sendSystemMessage(Component.translatable("petting.action.collar_bound", targetType, pos.getX(), pos.getY(), pos.getZ()));
+        }
+
+        player.swing(event.getHand(), net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
+        event.setCancellationResult(InteractionResult.SUCCESS);
+        event.setCanceled(true);
+    }
+
+    private static boolean handleCushionBinding(Player player, net.minecraft.world.entity.Entity target, ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.world.InteractionHand hand) {
+        if (!PettingServerConfig.isCollarRespawnEnabled() || !PettingServerConfig.isPetInventoryEnabled()) {
+            return false;
+        }
+        if (!(stack.getItem() instanceof net.yigitguven.petting.item.CollarItem)) {
+            return false;
+        }
+
+        net.minecraft.core.BlockPos pos = target.blockPosition();
+        if (!level.isClientSide()) {
+            net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(level.dimension(), pos);
+            net.yigitguven.petting.data.CollarRespawnPoint point = new net.yigitguven.petting.data.CollarRespawnPoint(globalPos, true);
+            stack.set(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT, point);
+            stack.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+
+            ServerLevel serverLevel = (ServerLevel) level;
+            serverLevel.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 16, 0.4, 0.4, 0.4, 0.2);
+            serverLevel.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 0.3, pos.getZ() + 0.5, 6, 0.3, 0.3, 0.3, 0.0);
+            level.playSound(null, pos, SoundEvents.RESPAWN_ANCHOR_SET_SPAWN, SoundSource.BLOCKS, 1.0F, 1.2F);
+
+            Component targetType = Component.translatable("petting.term.cushion");
+            player.sendSystemMessage(Component.translatable("petting.action.collar_bound", targetType, pos.getX(), pos.getY(), pos.getZ()));
+        }
+
+        player.swing(hand, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
+        return true;
     }
 }
