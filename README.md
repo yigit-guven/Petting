@@ -1,15 +1,15 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/refs/heads/1.20.1-Forge/src/main/resources/logo.png" width="96" height="96" alt="Petting Logo">
+  <img src="docs/banner.png" alt="Petting Mod Banner" width="100%">
 
-  # Petting
-
-  **Turn any mob into your loyal, protective companion.**
+  <br><br>
 
   [![CurseForge](https://img.shields.io/curseforge/dt/1083170?style=for-the-badge&logo=curseforge&label=CurseForge&color=F16436)](https://www.curseforge.com/minecraft/mc-mods/petting)
   [![Modrinth](https://img.shields.io/modrinth/dt/petting?style=for-the-badge&logo=modrinth&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/petting)
   [![Discord](https://img.shields.io/discord/1440563800930652235?style=for-the-badge&logo=discord&label=Discord&color=5865F2)](https://discord.gg/aPk7Qs5d4H)
   [![License](https://img.shields.io/badge/License-LGPL%20v3-blue?style=for-the-badge)](LICENSE)
+
+  <br>
 
   [**GitHub**](https://github.com/yigit-guven/Petting) · [**Wiki**](https://github.com/yigit-guven/Petting/wiki) · [**Bug Reports**](https://github.com/yigit-guven/Petting/issues) · [**Discord**](https://discord.gg/aPk7Qs5d4H)
 
