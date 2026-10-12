@@ -167,6 +167,14 @@ This section manages server-wide defaults and slider limit bounds for collar set
 | `defaultPreferRangedAttack` | Boolean | `true` | `true` / `false` | Whether pets equipped with a collar prefer ranged attacks first when holding a bow or crossbow. |
 | `defaultDefendOtherPets` | Boolean | `true` | `true` / `false` | Whether pets defend other pets of the same owner when attacked. |
 | `defaultRetaliateWhenHurt` | Boolean | `true` | `true` / `false` | Whether pets retaliate against attackers who directly damage the pet. |
+| `enableCollarRespawn` | Boolean | `true` | `true` / `false` | When `true`, right-clicking any bed or cushion with a collar enchants and binds it. Pets wearing this collar will respawn on that bed or cushion upon dying, unless the bed or cushion is broken. |
+
+#### Setting Details:
+
+- **`enableCollarRespawn`**:
+  Controls whether the collar binding and respawn mechanics are enabled.
+  - `true` (*Default*): Players can right-click any bed or cushion with a collar to bind it (granting the visual enchantment glint). Pets wearing this bound collar will safely respawn at the bed or cushion on death, as long as the bed or cushion is intact. If the bed or cushion is broken, the pet dies normally.
+  - `false`: Completely disables collar binding and pet bed/cushion respawn.
 
 ---
 
