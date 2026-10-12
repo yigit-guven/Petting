@@ -103,6 +103,7 @@ public class PetGoalEvents {
                     PetHelper.setSaddle(mob, net.minecraft.world.item.ItemStack.EMPTY);
                 }
                 PetSavedData.get(serverLevel).removePet(mob.getUUID());
+                PetHelper.updatePetBossBarVisibility(mob, true);
             }
         }
     }

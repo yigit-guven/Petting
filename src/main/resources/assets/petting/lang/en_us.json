@@ -65,6 +65,8 @@
   "petting.configuration.behavior.flyingPetsHoverWhenSitting.tooltip": "When enabled, flying pets commanded to sit will hover stationary in mid-air instead of falling to the ground.",
   "petting.configuration.behavior.swimmingPetsStayStillWhenSitting": "Swimming Pets Stay Still When Sitting",
   "petting.configuration.behavior.swimmingPetsStayStillWhenSitting.tooltip": "When enabled, aquatic pets commanded to sit will remain stationary in water without floating up, sinking, or drifting.",
+  "petting.configuration.behavior.hideTamedBossBars": "Hide Tamed Boss Bars",
+  "petting.configuration.behavior.hideTamedBossBars.tooltip": "When enabled, boss health bars for tamed pets (such as Wither, Ender Dragon, and other boss pets) are hidden from the screen.",
   "petting.configuration.collar": "Collar Settings",
   "petting.configuration.section.collar": "Collar Settings",
   "petting.configuration.section.collar.title": "Collar Settings",

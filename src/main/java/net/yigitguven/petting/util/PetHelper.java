@@ -313,6 +313,7 @@ public class PetHelper {
 
         syncEntityTameStatus(mob);
         injectGoals(mob);
+        updatePetBossBarVisibility(mob, !PettingServerConfig.shouldHideTamedBossBars());
 
         if (mob.level() instanceof ServerLevel serverLevel) {
             PetSavedData.get(serverLevel).addPet(owner.getUUID(), mob.getUUID());
@@ -673,5 +674,79 @@ public class PetHelper {
             return true;
         }
         return false;
+    }
+
+    private static final java.util.Map<Class<?>, java.util.List<java.lang.reflect.Field>> BOSS_EVENT_FIELDS_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static java.lang.reflect.Field endDragonFightEventField = null;
+    private static boolean endDragonFightFieldFailed = false;
+
+    public static void updatePetBossBarVisibility(Mob mob, boolean visible) {
+        if (mob == null || mob.level().isClientSide()) {
+            return;
+        }
+
+        // 1. Check EnderDragon via EnderDragonFight
+        if (mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
+            net.minecraft.world.level.dimension.end.EnderDragonFight fight = dragon.getDragonFight();
+            if (fight != null) {
+                setFightBossEventVisible(fight, visible);
+            }
+        }
+
+        // 2. Generic field lookup for WitherBoss and any modded boss mob
+        java.util.List<java.lang.reflect.Field> fields = BOSS_EVENT_FIELDS_CACHE.computeIfAbsent(mob.getClass(), PetHelper::findBossEventFields);
+        for (java.lang.reflect.Field field : fields) {
+            try {
+                Object obj = field.get(mob);
+                if (obj instanceof net.minecraft.server.level.ServerBossEvent bossEvent) {
+                    if (bossEvent.isVisible() != visible) {
+                        bossEvent.setVisible(visible);
+                    }
+                }
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
+    private static java.util.List<java.lang.reflect.Field> findBossEventFields(Class<?> clazz) {
+        java.util.List<java.lang.reflect.Field> list = new java.util.ArrayList<>();
+        Class<?> current = clazz;
+        while (current != null && current != Mob.class && current != Object.class) {
+            for (java.lang.reflect.Field f : current.getDeclaredFields()) {
+                if (net.minecraft.server.level.ServerBossEvent.class.isAssignableFrom(f.getType())) {
+                    f.setAccessible(true);
+                    list.add(f);
+                }
+            }
+            current = current.getSuperclass();
+        }
+        return list;
+    }
+
+    private static void setFightBossEventVisible(net.minecraft.world.level.dimension.end.EnderDragonFight fight, boolean visible) {
+        if (endDragonFightFieldFailed) {
+            return;
+        }
+        try {
+            if (endDragonFightEventField == null) {
+                for (java.lang.reflect.Field f : net.minecraft.world.level.dimension.end.EnderDragonFight.class.getDeclaredFields()) {
+                    if (net.minecraft.server.level.ServerBossEvent.class.isAssignableFrom(f.getType())) {
+                        f.setAccessible(true);
+                        endDragonFightEventField = f;
+                        break;
+                    }
+                }
+            }
+            if (endDragonFightEventField != null) {
+                Object obj = endDragonFightEventField.get(fight);
+                if (obj instanceof net.minecraft.server.level.ServerBossEvent bossEvent) {
+                    if (bossEvent.isVisible() != visible) {
+                        bossEvent.setVisible(visible);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            endDragonFightFieldFailed = true;
+        }
     }
 }

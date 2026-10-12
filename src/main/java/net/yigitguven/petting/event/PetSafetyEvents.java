@@ -131,15 +131,18 @@ public class PetSafetyEvents {
 
     @SubscribeEvent
     public static void onEntityTick(EntityTickEvent.Pre event) {
-        if (!PettingServerConfig.shouldDisableBuiltInHostility()) {
-            return;
-        }
-
         if (!(event.getEntity() instanceof Mob mob) || !PetHelper.isTamed(mob)) {
             return;
         }
 
         if (mob.level().isClientSide()) {
+            return;
+        }
+
+        // Manage boss bar visibility for tamed pets
+        PetHelper.updatePetBossBarVisibility(mob, !PettingServerConfig.shouldHideTamedBossBars());
+
+        if (!PettingServerConfig.shouldDisableBuiltInHostility()) {
             return;
         }
 
