@@ -1,10 +1,9 @@
-### [Petting Wiki](Home)
+**[Home](Home)**
 
-**Start here**
-- [Getting Started](Getting-Started)
-- [FAQ](FAQ)
+---
 
 **Gameplay**
+- [Getting Started](Getting-Started)
 - [Taming](Taming)
 - [Items](Items)
 - [Golden Treats](Golden-Treats)
@@ -16,11 +15,13 @@
 - [Collar Respawn](Collar-Respawn)
 - [Golden Dragon Egg](Golden-Dragon-Egg)
 
-**Reference**
+---
+
+**Reference & Config**
 - [Controls](Controls)
 - [Commands](Commands)
 - [Configuration](Configuration)
 - [Custom Treat Tags](Custom-Treat-Tags)
 - [Chat Messages](Chat-Messages)
 - [Compatibility](Compatibility)
-- [Technical Reference](Technical-Reference)
+- [FAQ](FAQ)
