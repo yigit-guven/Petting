@@ -5,7 +5,7 @@
 By binding a [Collar](Collars) to a bed or cushion, any pet wearing that collar will instantly resurrect at that location upon death.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/collar(red).png" width="48" height="48" alt="Red Collar">
+  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/collar(red).png" width="48" height="48" alt="Red Collar">
 </p>
 
 ---
@@ -16,8 +16,8 @@ To set a pet's respawn anchor:
 
 1. Craft or obtain any collar.
 2. Hold the collar in your hand and **Right-Click** on any valid anchor:
-   - **Beds**: Any vanilla or modded bed block (`#minecraft:beds` tag or any block matching `BedBlock`).
-   - **Cushions**: Any cushion block or cushion entity (`#c:cushions` tag or ID containing `cushion`).
+   - **Beds**: Any vanilla or modded bed block (`#minecraft:beds` tag).
+   - **Cushions**: Any cushion block or cushion entity (`#c:cushions` tag).
 3. Confirmation:
    - Green enchant particles burst from the anchor.
    - An enchanting chime sound plays.
@@ -29,7 +29,7 @@ To set a pet's respawn anchor:
 
 ## The Respawn Sequence
 
-When an equipped pet takes fatal damage in the world, `PetSafetyEvents` intercepts the death event:
+When an equipped pet takes fatal damage in the world, the game intercepts the death event:
 
 ```text
 [Pet takes lethal damage]
@@ -54,7 +54,7 @@ When an equipped pet takes fatal damage in the world, `PetSafetyEvents` intercep
 
 ---
 
-## Technical Details
+## Gameplay Notes
 
 - **Cross-Dimension Support**: If you bind a collar in the Overworld and your pet dies in the Nether or the End, it will safely resurrect back at your Overworld bed.
 - **Spawn Offsets**:

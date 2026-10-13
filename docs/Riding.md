@@ -6,7 +6,7 @@
 
 ## Mounting & Dismounting
 
-- **Mount Key**: Look at your owned pet and press **`R`** (default `key.petting.ride_pet`).
+- **Mount Key**: Look at your owned pet and press **`R`** (default keybind).
 - **Mount Range**: Within 3 blocks (or up to 6 blocks; up to 18 blocks for an Ender Dragon).
 - **Dismount**:
   - Press **`R`** at any time.
@@ -39,7 +39,7 @@ Petting dynamically assigns movement physics based on the mob's species and anat
 - **Sprint**: Double-tap `W` or press `Sprint` for a `1.35x` movement speed boost.
 
 ### 2. Aerial Flight
-Automatically detected for flying mobs (Blazes, Ghasts, Withers, Phantoms, Vexes, Bats, Allays, Bees, Parrots, the Golden Ender Dragon, or mobs with flying AI controllers):
+Automatically detected for flying mobs (Blazes, Ghasts, Withers, Phantoms, Vexes, Bats, Allays, Bees, Parrots, the Golden Ender Dragon, or mobs with flying abilities):
 - **Steer**: `WASD` (horizontal speed based on mob speed $\times$ `flyingPetSpeedMultiplier`).
 - **Ascend**: Hold **`Jump` (Space)** (vertical speed controlled by `flyingPetAscentSpeed`, default `0.35`).
 - **Descend / Land**: Hold **`Sneak` (Shift)** (vertical speed controlled by `flyingPetDescentSpeed`, default `0.35`).
@@ -48,10 +48,10 @@ Automatically detected for flying mobs (Blazes, Ghasts, Withers, Phantoms, Vexes
 ### 3. Aquatic Swimming
 Automatically detected for water creatures (Dolphins, Guardians, Squids, Turtles, Axolotls, Fish, etc.) or any pet submerged in water:
 - **Steer**: `WASD` (speed controlled by `swimmingPetSpeedMultiplier`, default `1.0`).
-- **Ascend**: Hold **`Jump` (Space)** to rise (+0.30).
-- **Dive**: Hold **`Sneak` (Shift)** to submerge (-0.30).
+- **Ascend**: Hold **`Jump` (Space)** to rise.
+- **Dive**: Hold **`Sneak` (Shift)** to submerge.
 - **Water Breathing**: As long as you are mounted on an aquatic pet underwater, the rider is granted continuous **Water Breathing**!
-- **On Land**: Aquatic creatures crawl slowly on dry land (`max(0.12, speed * 0.6)`).
+- **On Land**: Aquatic creatures crawl slowly on dry land.
 
 ---
 
@@ -60,7 +60,7 @@ Automatically detected for water creatures (Dolphins, Guardians, Squids, Turtles
 While mounted on a saddled pet, you can engage enemies directly from the saddle:
 
 ### 1. Attack on Click (Left Click)
-Pressing your normal **Attack** key (Left Click) while riding commands your mount to execute a signature attack in your crosshair direction. Attacks have a cooldown of `riddenAttackCooldownTicks` (default 10 ticks = 0.5s):
+Pressing your normal **Attack** key (Left Click) while riding commands your mount to execute a signature attack in your crosshair direction. Attacks have a short cooldown (`riddenAttackCooldownTicks`, default 10 ticks = 0.5s):
 
 | Pet Type | Signature Ridden Attack |
 |---|---|
