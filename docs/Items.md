@@ -1,73 +1,69 @@
 # Items and Blocks
 
-Everything the mod registers in the item and block registries. All registry ids use the `petting` namespace. The textures shown are the files from `assets/petting/textures` in the repository.
+This page catalogs every item, block, and cosmetic asset registered by **Petting** in the `petting` namespace.
+
+---
 
 ## Overview
 
-| Texture | Name | Registry id | Rarity | Enchantment glint | In creative tab |
-|---|---|---|---|---|---|
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_paw.png" width="32" alt="Golden Paw"> | [Golden Paw](#golden-paw) | `petting:golden_paw` | default | yes | no |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="32" alt="Golden Wheat"> | [Golden Wheat](Golden-Treats#golden-wheat) | `petting:golden_wheat` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_star.png" width="32" alt="Golden Star"> | [Golden Star](Golden-Treats#golden-star) | `petting:golden_star` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_flesh.png" width="32" alt="Golden Flesh"> | [Golden Flesh](Golden-Treats#golden-flesh) | `petting:golden_flesh` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_bone.png" width="32" alt="Golden Bone"> | [Golden Bone](Golden-Treats#golden-bone) | `petting:golden_bone` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_fish.png" width="32" alt="Golden Fish"> | [Golden Fish](Golden-Treats#golden-fish) | `petting:golden_fish` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_kelp.png" width="32" alt="Golden Kelp"> | [Golden Kelp](Golden-Treats#golden-kelp) | `petting:golden_kelp` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_fungus.png" width="32" alt="Golden Fungus"> | [Golden Fungus](Golden-Treats#golden-fungus) | `petting:golden_fungus` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_eye.png" width="32" alt="Golden Eye"> | [Golden Eye](Golden-Treats#golden-eye) | `petting:golden_eye` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_slime.png" width="32" alt="Golden Slime"> | [Golden Slime](Golden-Treats#golden-slime) | `petting:golden_slime` | Rare | yes | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/collar.png" width="32" alt="Red Collar"> | [Collars (16 colors)](Collars) | `petting:collar` (red) and `petting:<color>_collar` | default | only while bound to a respawn point | yes |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/block/golden_dragon_egg.png" width="32" alt="Golden Dragon Egg"> | [Golden Dragon Egg](Golden-Dragon-Egg) | `petting:golden_dragon_egg` (block and item) | Epic | no | no |
+| Texture | Name | Registry ID | Rarity | Visual Glint | In Creative Tab |
+|:---:|---|---|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_paw.png" width="32" alt="Golden Paw"> | [Golden Paw](#golden-paw) | `petting:golden_paw` | Common | Yes | Tab Icon Only |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="32" alt="Golden Wheat"> | [Golden Wheat](Golden-Treats#golden-wheat) | `petting:golden_wheat` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_star.png" width="32" alt="Golden Star"> | [Golden Star](Golden-Treats#golden-star) | `petting:golden_star` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_flesh.png" width="32" alt="Golden Flesh"> | [Golden Flesh](Golden-Treats#golden-flesh) | `petting:golden_flesh` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_bone.png" width="32" alt="Golden Bone"> | [Golden Bone](Golden-Treats#golden-bone) | `petting:golden_bone` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_fish.png" width="32" alt="Golden Fish"> | [Golden Fish](Golden-Treats#golden-fish) | `petting:golden_fish` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_kelp.png" width="32" alt="Golden Kelp"> | [Golden Kelp](Golden-Treats#golden-kelp) | `petting:golden_kelp` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_fungus.png" width="32" alt="Golden Fungus"> | [Golden Fungus](Golden-Treats#golden-fungus) | `petting:golden_fungus` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_eye.png" width="32" alt="Golden Eye"> | [Golden Eye](Golden-Treats#golden-eye) | `petting:golden_eye` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_slime.png" width="32" alt="Golden Slime"> | [Golden Slime](Golden-Treats#golden-slime) | `petting:golden_slime` | Rare | Yes | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/collar.png" width="32" alt="Red Collar"> | [Collars (16 colors)](Collars) | `petting:collar` (red) and `petting:<color>_collar` | Common | When bound to respawn | Yes |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/block/golden_dragon_egg.png" width="32" alt="Golden Dragon Egg"> | [Golden Dragon Egg](Golden-Dragon-Egg) | `petting:golden_dragon_egg` (block & item) | Epic | No | Ritual Only |
 
-The creative tab **Petting** (`petting:petting`) contains the nine golden treats and the sixteen collars, in that order. Its icon is the Golden Paw.
+---
+
+## Creative Mode Tab
+
+The dedicated **Petting** creative tab (`petting:petting`) contains all nine golden treats followed by all sixteen dyed collars. Its tab icon is the **Golden Paw**.
+
+---
 
 ## Golden Paw
 
-<img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_paw.png" width="96" alt="Golden Paw texture">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_paw.png" width="96" alt="Golden Paw">
+</p>
 
-| Property | Value | Source |
-|---|---|---|
-| Registry id | `petting:golden_paw` | `PettingModItems.java` |
-| Class | `GoldenPawItem` | `GoldenPawItem.java` |
-| Enchantment glint | Always | `GoldenPawItem.isFoil` |
-| Enabled | `isEnabled(...)` always returns `false` | `GoldenPawItem.isEnabled` |
-| Recipe | None | `data/petting/recipe` |
-| Creative tab entry | No, it is only the tab icon | `PettingModTabs.java` |
-| Recipe viewers | Hidden through the item tag `c:hidden_from_recipe_viewers` | `data/c/tags/item` |
+- **Item ID**: `petting:golden_paw`
+- **Enchantment Glint**: Permanent
+- **Function**: Serves exclusively as the mascot and creative tab icon for the mod. It has no crafting recipe and cannot be used in gameplay.
 
-The Golden Paw has no gameplay function in the code. It exists as the creative tab icon.
+---
 
-## Golden treats
+## Golden Treats
 
-Nine items that all use the `GoldenTreatItem` class: rarity **Rare**, permanent enchantment glint. Each one is linked to an entity-type tag. See [Golden Treats](Golden-Treats) for recipes and tameable mobs.
+Nine specialized treats of **Rare** quality with permanent enchantment glint. Each treat targets a specific category of mobs through data-driven tags, and can also be fed to injured pets to restore 50% health.  
+Full recipes and mob lists: [Golden Treats](Golden-Treats).
+
+---
 
 ## Collars
 
-Sixteen items using the `CollarItem` class. Maximum stack size is **1**. Red is the base item `petting:collar`; the other fifteen are `petting:<dye color>_collar`. See [Collars](Collars).
+Sixteen wearable collar variants (stack size 1) matching the 16 Minecraft dyes. Red is registered as `petting:collar`, while other colors use `petting:<color>_collar`. Collars store individualized AI tactics and optional respawn bindings.  
+Full details: [Collars](Collars).
 
-All collars belong to the item tag `petting:collars`, which the dyeing recipes use as an ingredient.
+---
 
 ## Golden Dragon Egg
 
-A `BlockItem` for the `petting:golden_dragon_egg` block (rarity Epic). It has no crafting recipe and is not in the creative tab. It is created by right-clicking a vanilla Dragon Egg with a Golden Star. See [Golden Dragon Egg](Golden-Dragon-Egg).
+- **Registry ID**: `petting:golden_dragon_egg` (both block and item form)
+- **Rarity**: **Epic**
+- **Light Level**: Emits light level 6.
+- **Obtaining**: Created by right-clicking a placed Dragon Egg with a Golden Star.
+- **Behavior**: Falls like sand/dragon eggs, teleports when struck while preserving its owner data, and can be hatched via the End Exit Portal ritual.  
+Full details: [Golden Dragon Egg](Golden-Dragon-Egg).
 
-| Block property | Value | Source |
-|---|---|---|
-| Base properties | Full copy of the vanilla Dragon Egg block properties | `PettingModBlocks.java` |
-| Light level | 6 | `PettingModBlocks.java` |
-| Collision / outline shape | Column, 14 wide, from y=0 to y=16 | `GoldenDragonEggBlock.SHAPE` |
-| Behavior | Falling block that teleports when clicked or attacked | `GoldenDragonEggBlock.java` |
-| Block entity | `petting:golden_dragon_egg` (stores owner UUID and name) | `GoldenDragonEggBlockEntity.java` |
-| Drop | The Golden Dragon Egg item, with owner data copied from the block entity | `loot_table/blocks/golden_dragon_egg.json` |
+---
 
-## Other registered content
-
-| Type | Id | Notes |
-|---|---|---|
-| Menu | `petting:pet_inventory` | The [Pet Inventory](Pet-Inventory) screen |
-| Creative tab | `petting:petting` | Title "Petting" |
-| Data components | `petting:collar_settings`, `petting:collar_respawn_point`, `petting:dragon_egg_owner`, `petting:dragon_egg_owner_name` | See [Technical Reference](Technical-Reference) |
-| Attachment | `petting:pet_data` | Per-entity pet state |
-| Item tag | `petting:collars` | All 16 collars |
-| Item tag | `c:hidden_from_recipe_viewers` | Golden Paw and Golden Dragon Egg |
-| Entity-type tags | `petting:tames_with/<treat>` (9) | See [Custom Treat Tags](Custom-Treat-Tags) |
+*Related Pages*: [Golden Treats](Golden-Treats) · [Collars](Collars) · [Golden Dragon Egg](Golden-Dragon-Egg)

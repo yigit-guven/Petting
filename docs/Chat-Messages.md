@@ -1,6 +1,6 @@
 # Chat Messages
 
-**Petting** features a granular client-side feedback filtering system in `PettingClientEvents`. Players can independently toggle individual chat notifications on or off in `petting-client.toml` to suit their gameplay style without polluting chat logs.
+**Petting** features a granular client-side feedback filtering system. Players can independently toggle individual chat notifications on or off in `petting-client.toml` to suit their preferences without cluttering chat logs.
 
 ---
 
@@ -33,7 +33,7 @@ Below is the complete reference of every chat message produced by the mod, its E
 
 ## Unfiltered System Messages
 
-The following critical gameplay messages are **always displayed** to ensure players receive vital ritual instructions and announcements:
+The following gameplay messages are **always displayed** to ensure players receive vital ritual instructions and announcements:
 
 | Translation Key | English Text | Trigger Scenario |
 |---|---|---|
@@ -49,7 +49,7 @@ The following critical gameplay messages are **always displayed** to ensure play
 
 ## Server vs. Client Authority
 
-1. **Server Authority**: The server configurations `enablePetDeathMessages` and `enableEggConvertedFeedback` determine whether the server sends the packet to the player. If the server disables them, no message is transmitted.
+1. **Server Authority**: The server configurations `enablePetDeathMessages` and `enableEggConvertedFeedback` determine whether the server dispatches the notification to the player. If the server disables them, no message is transmitted.
 2. **Client Authority**: If the server sends the message, the player's client checks `petting-client.toml`. If the toggle for that specific key is `false`, the client suppresses it locally from the chat window.
 
 ---

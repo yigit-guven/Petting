@@ -1,13 +1,13 @@
 # Frequently Asked Questions (FAQ)
 
-Here are direct answers to common questions about **Petting**, derived directly from the mod's source code and configuration defaults.
+Here are direct answers to common questions about **Petting**, derived directly from the mod's gameplay mechanics and configuration defaults.
 
 ---
 
 ### Why won't a mob tame when I right-click it?
 Verify the following checks:
 1. **Wrong Treat**: Make sure you are using the correct treat for that mob species. Check [Golden Treats](Golden-Treats) or look up the mob in JEI's "Pet Taming" tab.
-2. **Mob is Too Healthy**: By default, hostile mobs (`Enemy`) must be weakened below **30% of their maximum health** before they can be tamed. Weaken the mob first.
+2. **Mob is Too Healthy**: By default, hostile mobs must be weakened below **30% of their maximum health** before they can be tamed. Weaken the mob first.
 3. **Taming Failed Roll**: By default, there is a **33.3% chance** that any taming attempt fails and consumes the treat. If hearts do not appear, try feeding it another treat.
 4. **Pet Limit Reached**: If the server has configured `maxPetCount`, you cannot tame additional pets once your cap is reached.
 5. **Untameable Entity**: The mob may be listed in the server's `untameableEntities` configuration.
@@ -18,12 +18,12 @@ Verify the following checks:
 ### How do I heal my pet?
 Right-click your owned pet while holding a valid [Golden Treat](Golden-Treats) in your main hand:
 - Restores **50% of the pet's maximum health** per treat.
-- For a **Golden Ender Dragon**, right-click it with a <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_star.png" width="16" height="16" alt="Golden Star"> **Golden Star** to restore **25% of its maximum health** (50 HP).
+- For a **Golden Ender Dragon**, right-click it with a <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_star.png" width="16" height="16" alt="Golden Star"> **Golden Star** to restore **25% of its maximum health** (50 HP).
 
 ---
 
 ### How do I open the pet's inventory?
-Look at your owned pet and press **`Shift + Right-Click`** (or the custom key bound to `key.petting.open_pet_inventory`). You can also open the inventory while riding the pet.
+Look at your owned pet and press **`Shift + Right-Click`** (or the custom key bound to *Open Pet Inventory*). You can also open the inventory while riding the pet.
 
 ---
 
@@ -68,7 +68,7 @@ Yes! You have two ways:
 ### Where are the configuration files?
 - **Server Settings** (`petting-server.toml`): Saved inside your world folder at `.minecraft/saves/<WorldName>/serverconfig/petting-server.toml`.
 - **Client Settings** (`petting-client.toml`): Saved globally for your client at `.minecraft/config/petting-client.toml`.
-- You can also edit both through the in-game **Mods** menu in NeoForge.
+- You can also edit both through the in-game **Mods** configuration menu.
 
 ---
 

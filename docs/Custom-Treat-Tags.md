@@ -1,6 +1,6 @@
 # Custom Treat Tags
 
-**Petting** is fully data-driven. Which entities can be tamed by which [Golden Treat](Golden-Treats) is determined by Minecraft **entity type tags** (`Registries.ENTITY_TYPE`).
+**Petting** is fully data-driven. Which entities can be tamed by which [Golden Treat](Golden-Treats) is determined by Minecraft **entity type tags**.
 
 You can customize, add modded mobs, or reassign vanilla mobs to any treat using a simple datapack.
 
@@ -69,7 +69,7 @@ If you want **Golden Flesh** to *only* tame Phantoms and nothing else, set `"rep
 ```
 
 ### Example 3: Referencing Other Tags
-You can include entire tags inside your treat definition. Use `"required": false` so your datapack does not crash if another mod is not installed:
+You can include entire tags inside your treat definition. Use `"required": false` so your datapack does not encounter errors if another mod is absent:
 
 ```json
 {
@@ -85,13 +85,13 @@ You can include entire tags inside your treat definition. Use `"required": false
 
 ## Tag Matching Rules & Priority
 
-When a player interacts with a mob using a treat, `PetEggHelper.canTame` processes tags in the following order:
+When interacting with a mob using a treat:
 
 1. **Explicit Tag Match**: If the entity type is included in `petting:tames_with/<treat>`, the treat is accepted.
 2. **Exclusion Check**: If the entity type is present in *another* treat's `tames_with` tag, it will **reject** all other treats.
 3. **Fallback Matching** (only active for mobs belonging to **none** of the nine treat tags):
    - Max health $> 300.0 \rightarrow$ Requires **Golden Star**.
-   - Hostile mob (`Enemy`) $\rightarrow$ Requires **Golden Bone**.
+   - Hostile mob $\rightarrow$ Requires **Golden Bone**.
    - Any other mob $\rightarrow$ Requires **Golden Wheat**.
 4. **Server Configuration Overrides**:
    - If an entity ID is listed in `untameableEntities` (`petting-server.toml`), it can never be tamed, regardless of tags.
@@ -99,9 +99,9 @@ When a player interacts with a mob using a treat, `PetEggHelper.canTame` process
 
 ---
 
-## JEI Live Synchronization
+## Recipe Viewer Live Synchronization
 
-Because Petting's Just Enough Items (JEI) integration dynamically inspects the entity type tags at runtime (`PetEggHelper.getRepresentativeItemsForTreat`), any mobs added or modified via datapacks will **automatically appear in JEI's "Pet Taming" recipe view**!
+Because Petting dynamically reads the entity tags at runtime, any mobs added or modified via datapacks will **automatically update in JEI's "Pet Taming" recipe view**!
 
 ---
 
