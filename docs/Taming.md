@@ -1,101 +1,118 @@
 # Taming
 
-This page describes every rule that applies when you try to tame a mob. All behavior comes from `PetTamingEvents.java`, `PetEggHelper.java`, `PetHelper.java` and `PettingServerConfig.java`.
+This page describes the mechanics and rules governing mob taming in **Petting**.
 
-## Requirements at a glance
+---
 
-1. You right-click a **mob** with a **golden treat** in your **main hand**.
-2. The treat must be valid for that mob ([which treat for which mob](#which-treat-tames-which-mob)).
-3. The mob must not be listed in the `untameableEntities` config option.
-4. You must be below your pet limit (unlimited by default).
-5. If the mob requires weakening, its health must be at or below the configured percentage (30 % by default).
-6. The attempt must not fail the random roll (33.3 % failure chance by default).
+## Requirements at a Glance
 
-## Step-by-step flow
+1. Hold the matching **golden treat** in your **main hand** and right-click the mob.
+2. The treat must match that mob species (see [which treat for which mob](#which-treat-tames-which-mob)).
+3. The mob must not be listed in the `untameableEntities` server configuration.
+4. You must be under your maximum pet limit (`maxPetCount`, unlimited by default).
+5. If the mob is hostile, its health must be weakened to or below the configured threshold (30% by default).
+6. The taming attempt must succeed the random roll (33.3% default failure rate).
 
-The checks run in this order for an **untamed** mob:
+---
 
-| # | Check | Outcome when the check blocks taming |
+## Step-by-Step Flow
+
+When interacting with an untamed mob:
+
+| Step | Check | Outcome when blocked |
 |---|---|---|
-| 1 | Is the held item a treat valid for this mob? | Nothing happens; normal interaction continues. |
-| 2 | Is the mob already bonded to someone by vanilla taming? | See the note below the table. |
-| 3 | Has the player reached the pet limit? | Angry-villager particles, "no" sound, pet-limit message. Treat is **not** consumed. |
-| 4 | Does the mob need weakening and is it above the health threshold? | Smoke particles, "no" sound, "too healthy" message. Treat is **not** consumed. |
-| 5 | Consume one treat (unless Creative), then roll for failure. | Failed roll: smoke particles, eating sound, failure message. Treat **is** consumed. |
-| 6 | Success | Heart particles, level-up sound, mob becomes your pet. |
+| **1** | Is the held item a valid treat for this mob? | Normal item interaction continues. |
+| **2** | Is the mob already bonded to another player? | Chat warning is shown; taming blocked. |
+| **3** | Has the player reached their pet limit? | Angry villager particles play, "no" sound; treat is **not** consumed. |
+| **4** | Does the mob need weakening and is it above the health threshold? | Smoke particles, "no" sound, "too healthy" warning; treat is **not** consumed. |
+| **5** | Consume one treat (unless in Creative), then roll chance. | If failed: smoke particles, eating sound, failure warning; treat **is** consumed. |
+| **6** | Success! | Heart particles burst, level-up chime plays, and the mob bonds to you as a pet. |
 
 > [!NOTE]
-> Petting's own tamed check (`PetHelper.isTamed`) treats vanilla-tamed mobs as tamed too. A vanilla-tamed mob owned by you is handled as one of your pets (inventory, collar, sit toggle); one owned by another player answers with the "already belongs to someone else" message.
+> Vanilla-tamed pets (like cats, wolves, or horses) owned by you are recognized as your pets, allowing you to access their pet inventory, collar tactics, and sit toggles. Mobs belonging to other players cannot be tamed.
 
-### Weakening rule
+---
 
-A mob needs weakening when **either** is true:
+## Weakening Hostile Mobs
 
-- the config option `hostileMobsOnly` is `false`, or
-- the mob implements Minecraft's `Enemy` interface (hostile).
+By default, hostile mobs must be weakened before they will accept a treat:
+- **Condition**: Controlled by `hostileMobsOnly` (default `true`). When set to `false`, even passive animals must be weakened.
+- **Threshold**: Controlled by `maxHealthPercentage` (default `30.0%`).
+- **Formula**: `Current Health <= Max Health * (maxHealthPercentage / 100.0)`.
 
-Weakening means `current health <= max health x maxHealthPercentage / 100`. Defaults: `hostileMobsOnly = true`, `maxHealthPercentage = 30.0`.
+---
 
-### Failure chance
+## Taming Failure Chance
 
-`unsuccessfulTamingChance` (default `33.3`, range 0 to 100) is the percent chance that a taming attempt fails. A random number in `[0, 1)` is compared with `chance / 100`; below it means failure.
+Taming is not always instantaneous:
+- Controlled by `unsuccessfulTamingChance` (default `33.3%`).
+- When a roll fails, 1 treat is consumed and smoke particles appear. Simply feed the mob another treat until hearts appear!
 
-### What a successful taming does
+---
 
-`PetHelper.setTamed` performs these actions:
+## What Happens Upon Successful Taming
 
-- Stores the owner UUID, marks the mob tamed, sets its order to *Follow* and its combat mode to the configured default (`AGGRESSIVE` by default).
-- Marks the mob as persistent (it no longer despawns).
-- Clears its current attack target and anger, and stops running target goals.
-- Synchronizes vanilla tamed state when applicable (horses, `TamableAnimal`) and calls common modded setter methods through reflection.
-- Injects Petting's AI goals ([Pet Behavior](Pet-Behavior#injected-ai-goals)).
-- Hides the boss bar for tamed boss mobs when `hideTamedBossBars` is on.
-- Records the pet in the owner's pet list (used for the pet limit).
+When a mob becomes your pet:
+- It is bonded to your player UUID, set to the **Follow** order, and assigned your default combat mode (**Aggressive** by default).
+- It is marked as persistent (it will never naturally despawn).
+- Any existing attack targets and hostilities are cleared immediately.
+- The pet inventory system and tactical AI goals are initialized.
+- Boss health bars are hidden from the screen (if `hideTamedBossBars` is enabled).
+- The pet is registered toward your active pet count limit.
 
-## Which treat tames which mob?
+---
 
-`PetEggHelper.canTame` decides this:
+## Which Treat Tames Which Mob?
 
-1. An **untamed Ender Dragon can never be tamed** with a treat. See [Golden Dragon Egg](Golden-Dragon-Egg).
-2. A mob in the `untameableEntities` config list can never be tamed.
-3. If the mob's entity type is in the entity-type tag of the held treat (`petting:tames_with/<treat>`), taming is allowed.
-4. If the mob's type is in the tag of **any other** treat, the held treat is rejected. The mob is bound to its tagged treats only.
-5. Otherwise (the mob is in no treat tag), the **fallback** applies:
+1. **Ender Dragon**: An untamed wild Ender Dragon can **never** be tamed directly with a treat. See [Golden Dragon Egg](Golden-Dragon-Egg) for the summoning ritual.
+2. **Untameable Entities**: Mobs listed in `untameableEntities` cannot be tamed.
+3. **Tag Matching**: If a mob is listed in the treat's entity type tag (`petting:tames_with/<treat>`), that treat is valid.
+4. **Exclusion Check**: If a mob is assigned to a specific treat tag, it will not accept any other treat.
+5. **Universal Fallback** (for untagged or modded mobs):
 
-| Condition (checked in this order) | Required treat |
+| Condition | Required Treat |
 |---|---|
-| Max health is greater than 300 | Golden Star |
-| Mob implements `Enemy` (hostile) | Golden Bone |
-| Anything else | Golden Wheat |
+| Maximum health is greater than 300 HP | **Golden Star** |
+| Hostile mob | **Golden Bone** |
+| All other mobs | **Golden Wheat** |
 
-The complete tag contents are on [Golden Treats](Golden-Treats). Datapacks can change them: [Custom Treat Tags](Custom-Treat-Tags).
+See [Golden Treats](Golden-Treats) for the full treat catalog, or [Custom Treat Tags](Custom-Treat-Tags) to customize them via datapacks.
 
-## Healing a pet
+---
 
-Right-clicking your own pet with a treat that is valid for it:
+## Healing Pets
 
-| Pet health | Result |
+Right-clicking your own injured pet with a matching treat restores its health:
+
+| Pet State | Result |
 |---|---|
-| Below maximum | Treat consumed (unless Creative), pet heals **50 % of its max health**, heart particles, eating sound. |
-| At maximum | Nothing consumed; "already at full health" message. |
+| **Injured** | Consumes 1 treat, restores **50% of maximum health**, plays eating sound and heart particles. |
+| **Full Health** | Treat is not consumed; shows message that pet is already healthy. |
 
-A tamed Ender Dragon heals **25 % of its max health** per Golden Star. The Ender Dragon is only listed in the Golden Star tag, so other treats do not apply to it.
+For a **Golden Ender Dragon**, feeding it a **Golden Star** restores **25% of maximum health** (50 HP).
 
-## Pet limit
+---
 
-`maxPetCount` is the maximum number of pets one player may own. `-1` (default) means unlimited. Ownership is tracked in a per-world saved data entry (`petting:pets`) keyed by player UUID. The `/summon pet` command does **not** check this limit ([Commands](Commands)).
+## Pet Limits
 
-## Entities that become pets automatically
+- Configured via `maxPetCount` in server settings (`-1` by default for unlimited).
+- Tracks all active pets per player across the world.
+- The administrative `/summon pet` command bypasses this limit.
 
-When any mob joins a level and is not yet tamed, Petting resolves its *root owner*. If that is a player, the mob is tamed to that player automatically. The root owner is resolved through:
+---
 
-1. Petting's own pet data,
-2. vanilla `OwnableEntity` owners,
-3. vanilla `TraceableEntity` owners (projectiles, area effect clouds, and so on),
-4. no-argument getter methods named `getOwner`, `getSummoner`, `getCaster`, `getMaster`, `getLeader`, `getOwnerEntity` or `getCreator` (found by reflection, for modded minions).
+## Automatic Recognition of Minions & Summons
 
-This is also what makes player-owned minions immune to friendly fire, see [Pet Behavior](Pet-Behavior#protection-and-friendly-fire).
+When player-owned summons, allied minions, or familiars from other mods spawn into the world, Petting automatically detects their owner and integrates them as friendly pets. This prevents accidental friendly fire and allows you to manage them using Petting's systems.
 
-## Releasing / losing a pet
+---
 
-`PetHelper.setUntamed` clears ownership, drops the equipped collar and saddle on the ground and removes the pet from the owner's list. When a tamed mob dies, its collar and saddle drop too, unless a [Collar Respawn](Collar-Respawn) revives it first.
+## Releasing or Losing a Pet
+
+When a pet is untamed or released:
+- Ownership data is cleared, and any equipped collar and saddle drop to the ground.
+- If a pet dies, its equipped items drop at the death site unless an active [Collar Respawn](Collar-Respawn) anchor brings it back to life.
+
+---
+
+*Related Pages*: [Golden Treats](Golden-Treats) · [Collars](Collars) · [Combat Modes](Combat-Modes) · [Configuration](Configuration)

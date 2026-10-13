@@ -1,8 +1,8 @@
 # Controls
 
-**Petting** registers custom key bindings under the **Petting** controls category (`key.category.petting.petting`), along with context-sensitive controls while riding pets.
+**Petting** registers custom key bindings under the **Petting** controls category, along with context-sensitive controls while riding pets.
 
-All keybindings can be customized in the vanilla Minecraft controls menu:  
+All keybindings can be customized in the Minecraft controls menu:  
 `Options...` ➔ `Controls...` ➔ `Key Binds` ➔ scroll down to **Petting**.
 
 ---

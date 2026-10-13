@@ -2,7 +2,7 @@
 
 **Petting** provides extensive configuration options split between **Server Configuration** (`petting-server.toml`, world-specific) and **Client Configuration** (`petting-client.toml`, player-specific).
 
-You can edit these files using a text editor or via the in-game NeoForge configuration screen accessible from the **Mods** list.
+You can edit these files using a text editor or via the in-game configuration screen accessible from the **Mods** menu.
 
 ---
 
@@ -16,7 +16,7 @@ Server settings govern gameplay rules, taming mechanics, combat AI, and physics 
 | Option | Type | Default | Range / Format | Description |
 |---|---|:---:|:---:|---|
 | `maxHealthPercentage` | double | `30.0` | `0.0` to `100.0` | The maximum health percentage a mob must be at or below to be tamed. Set to `100.0` to remove the weakening requirement entirely. |
-| `hostileMobsOnly` | boolean | `true` | `true` / `false` | When `true`, only hostile mobs (`Enemy`) must be weakened below `maxHealthPercentage`. Passive animals can be tamed at full health. When `false`, all mobs must be weakened. |
+| `hostileMobsOnly` | boolean | `true` | `true` / `false` | When `true`, only hostile mobs must be weakened below `maxHealthPercentage`. Passive animals can be tamed at full health. When `false`, all mobs must be weakened. |
 | `unsuccessfulTamingChance` | double | `33.3` | `0.0` to `100.0` | The percentage chance that a taming attempt fails and consumes the treat without taming the mob. Set to `0.0` for 100% taming success. |
 | `untameableEntities` | list of strings | `[]` | `["modid:entity", ...]` | Registry IDs of mobs that can never be tamed (e.g. `["minecraft:warden", "modid:special_boss"]`). |
 | `maxPetCount` | int | `-1` | `-1` to `2147483647` | The maximum number of pets a player can own at once. Set to `-1` for unlimited pets. |
@@ -37,7 +37,7 @@ Server settings govern gameplay rules, taming mechanics, combat AI, and physics 
 | `enableCollarSlot` | boolean | `true` | When `true`, the collar slot is available in all pet inventory GUIs. |
 | `enablePetSitting` | boolean | `true` | When `true`, players can command pets to sit or follow. |
 | `forgiveAttacksOnSit` | boolean | `true` | When `true`, commanding a pet to sit immediately clears its attack targets and calms active hostilities. |
-| `flyingPetsHoverWhenSitting` | boolean | `true` | When `true`, flying pets commanded to sit will hover stationary in mid-air (`NoGravity = true`) instead of falling. |
+| `flyingPetsHoverWhenSitting` | boolean | `true` | When `true`, flying pets commanded to sit will hover stationary in mid-air instead of falling. |
 | `swimmingPetsStayStillWhenSitting` | boolean | `true` | When `true`, aquatic pets commanded to sit will stay stationary in water without floating or sinking. |
 | `hideTamedBossBars` | boolean | `true` | When `true`, boss health bars for tamed pets (Wither, Ender Dragon, etc.) are hidden from the screen. |
 | `tamedMonstersPreventSleep` | boolean | `false` | When `false`, players can sleep peacefully near their friendly tamed monsters. When `true`, nearby monster pets prevent sleeping. |
