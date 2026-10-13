@@ -36,7 +36,7 @@ public record OpenPetInventoryPayload(int entityId) implements CustomPacketPaylo
             }
             if (context.player() instanceof ServerPlayer player) {
                 Entity entity = player.level().getEntity(payload.entityId());
-                if (entity instanceof Mob mob && mob.isAlive()) {
+                if (entity instanceof net.minecraft.world.entity.LivingEntity mob && mob.isAlive()) {
                     if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player) && (player.isWithinEntityInteractionRange(mob, 3.0D) || player.distanceTo(mob) <= 16.0D)) {
                         PetInventoryMenu.open(player, mob);
                     }

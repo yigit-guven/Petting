@@ -46,7 +46,7 @@ public class PetWanderGoal extends Goal {
         }
         if (this.wasVehicle) {
             this.wasVehicle = false;
-            int radius = PetHelper.getCollarSettings(this.mob).followDistance();
+            int radius = (int) PetHelper.getFollowDistance(this.mob);
             this.mob.setHomeTo(this.mob.blockPosition(), radius);
         }
 
@@ -61,12 +61,12 @@ public class PetWanderGoal extends Goal {
         }
         if (this.wasLeashed) {
             this.wasLeashed = false;
-            int radius = PetHelper.getCollarSettings(this.mob).followDistance();
+            int radius = (int) PetHelper.getFollowDistance(this.mob);
             this.mob.setHomeTo(this.mob.blockPosition(), radius);
         }
 
         if (!this.mob.hasHome()) {
-            int radius = PetHelper.getCollarSettings(this.mob).followDistance();
+            int radius = (int) PetHelper.getFollowDistance(this.mob);
             this.mob.setHomeTo(this.mob.blockPosition(), radius);
         }
 

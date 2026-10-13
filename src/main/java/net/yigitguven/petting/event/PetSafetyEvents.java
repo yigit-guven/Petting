@@ -75,6 +75,12 @@ public class PetSafetyEvents {
         Entity attacker = event.getSource().getEntity();
         Entity direct = event.getSource().getDirectEntity();
 
+        // 0. Peaceful ritual protection: prevent explosion/crystal damage during Golden Dragon summon ritual
+        if (event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && PetHelper.isGoldenDragonRitualActive(victim.level())) {
+            event.setCanceled(true);
+            return;
+        }
+
         // 1. Owner protection: pets, minions, projectiles, and spells can never damage their owner
         if (victim instanceof Player player) {
             if ((attacker != null && PetHelper.isRootOwner(attacker, player))
@@ -109,6 +115,17 @@ public class PetSafetyEvents {
         if ((attacker != null && (victim.isPassengerOfSameVehicle(attacker) || victim.hasPassenger(attacker) || attacker.hasPassenger(victim)))
                 || (direct != null && (victim.isPassengerOfSameVehicle(direct) || victim.hasPassenger(direct) || direct.hasPassenger(victim)))) {
             event.setCanceled(true);
+            return;
+        }
+
+        // 5. Notify tamed dragons of combat events immediately
+        if (!event.isCanceled()) {
+            if (victim instanceof Player player && attacker instanceof LivingEntity threat) {
+                PetHelper.alertTamedDragonsOfThreat(player, threat);
+            }
+            if (attacker instanceof Player ownerPlayer && victim != ownerPlayer) {
+                PetHelper.alertTamedDragonsOfTarget(ownerPlayer, victim);
+            }
         }
     }
 

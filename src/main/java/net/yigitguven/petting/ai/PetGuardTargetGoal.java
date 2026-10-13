@@ -60,7 +60,7 @@ public class PetGuardTargetGoal extends TargetGoal {
             return false;
         }
         if (!this.mob.hasHome()) {
-            this.mob.setHomeTo(this.mob.blockPosition(), settings.followDistance());
+            this.mob.setHomeTo(this.mob.blockPosition(), (int) PetHelper.getFollowDistance(this.mob));
         }
 
         BlockPos homePos = this.mob.getHomePosition();

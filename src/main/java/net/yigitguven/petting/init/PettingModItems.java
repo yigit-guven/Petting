@@ -44,6 +44,11 @@ public class PettingModItems {
     public static final DeferredItem<Item> GOLDEN_SLIME =
             ITEMS.registerItem("golden_slime", GoldenTreatItem::new);
 
+    public static final DeferredItem<net.yigitguven.petting.item.GoldenDragonEggItem> GOLDEN_DRAGON_EGG =
+            ITEMS.registerItem("golden_dragon_egg",
+                    props -> new net.yigitguven.petting.item.GoldenDragonEggItem(PettingModBlocks.GOLDEN_DRAGON_EGG.get(),
+                            props.rarity(net.minecraft.world.item.Rarity.EPIC)));
+
     // Default Collar (Red)
     public static final DeferredItem<CollarItem> COLLAR =
             ITEMS.registerItem("collar", CollarItem::new);

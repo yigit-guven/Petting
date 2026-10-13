@@ -457,10 +457,18 @@ public class PetHelper {
         syncHomeRestrictions(entity, settings);
     }
 
+    public static double getFollowDistance(LivingEntity entity) {
+        return getCollarSettings(entity).followDistance();
+    }
+
+    public static double getTeleportDistance(LivingEntity entity) {
+        return getCollarSettings(entity).teleportDistance();
+    }
+
     public static void syncHomeRestrictions(LivingEntity entity, CollarSettings settings) {
         if (entity instanceof Mob mob) {
             if (settings.combatMode() == CombatMode.WANDER || settings.combatMode() == CombatMode.GUARD) {
-                int radius = Math.max(2, settings.followDistance());
+                int radius = Math.max(2, (int) getFollowDistance(entity));
                 if (!mob.hasHome()) {
                     mob.setHomeTo(mob.blockPosition(), radius);
                 } else {
@@ -474,7 +482,7 @@ public class PetHelper {
         }
     }
 
-    public static boolean isPetRidingEnabledFor(@Nullable Mob pet) {
+    public static boolean isPetRidingEnabledFor(@Nullable LivingEntity pet) {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return false;
         }
@@ -484,38 +492,52 @@ public class PetHelper {
         if (pet instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) {
             return false;
         }
+        if (pet instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
+            return true;
+        }
         return PettingServerConfig.isPetRidingAllowed(pet.getType());
     }
 
-    public static void setTamed(Mob mob, Player owner) {
-        PetData data = mob.getData(PettingModAttachments.PET_DATA);
+    public static void setTamed(LivingEntity entity, Player owner) {
+        setTamed(entity, owner.getUUID(), owner);
+    }
+
+    public static void setTamed(LivingEntity entity, UUID ownerUUID, @Nullable Player owner) {
+        PetData data = entity.getData(PettingModAttachments.PET_DATA);
         data.setTamed(true);
-        data.setOwnerUUID(owner.getUUID());
+        data.setOwnerUUID(ownerUUID);
         data.setOrder(PetOrder.FOLLOW);
         data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             data.setCollar(ItemStack.EMPTY);
             data.setSaddle(ItemStack.EMPTY);
         }
-        mob.setData(PettingModAttachments.PET_DATA, data);
+        entity.setData(PettingModAttachments.PET_DATA, data);
 
-        mob.setPersistenceRequired();
-        mob.setTarget(null);
-        mob.setLastHurtByMob(null);
-        if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
-            mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+        if (entity instanceof Mob mob) {
+            mob.setPersistenceRequired();
+            mob.setTarget(null);
+            mob.setLastHurtByMob(null);
+            if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
+                mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+            }
+            if (mob instanceof NeutralMob neutralMob) {
+                neutralMob.stopBeingAngry();
+            }
+            mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
+
+            syncEntityTameStatus(mob);
+            injectGoals(mob);
+        } else if (entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
+            dragon.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
         }
-        if (mob instanceof NeutralMob neutralMob) {
-            neutralMob.stopBeingAngry();
+
+        if (entity instanceof Mob mob) {
+            updatePetBossBarVisibility(mob, !PettingServerConfig.shouldHideTamedBossBars());
         }
-        mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
 
-        syncEntityTameStatus(mob);
-        injectGoals(mob);
-        updatePetBossBarVisibility(mob, !PettingServerConfig.shouldHideTamedBossBars());
-
-        if (mob.level() instanceof ServerLevel serverLevel) {
-            PetSavedData.get(serverLevel).addPet(owner.getUUID(), mob.getUUID());
+        if (entity.level() instanceof ServerLevel serverLevel) {
+            PetSavedData.get(serverLevel).addPet(ownerUUID, entity.getUUID());
         }
     }
 
@@ -742,71 +764,82 @@ public class PetHelper {
             return true;
         }
 
+        // 6. Aggressive mode: untamed hostile monsters
+        if (settings.combatMode() == CombatMode.AGGRESSIVE && target instanceof net.minecraft.world.entity.monster.Enemy && !isTamed(target)) {
+            return true;
+        }
+
         return false;
     }
 
-    public static boolean isFlyingPet(Mob mob) {
-        if (mob.isNoGravity()) {
+    public static boolean isFlyingPet(LivingEntity entity) {
+        if (entity.isNoGravity()) {
             return true;
         }
-        if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.FlyingPathNavigation) {
+        if (entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
             return true;
         }
-        if (mob.getMoveControl() instanceof net.minecraft.world.entity.ai.control.FlyingMoveControl) {
+        if (entity instanceof Mob mob) {
+            if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.FlyingPathNavigation) {
+                return true;
+            }
+            if (mob.getMoveControl() instanceof net.minecraft.world.entity.ai.control.FlyingMoveControl) {
+                return true;
+            }
+        }
+        if (entity instanceof net.minecraft.world.entity.monster.Ghast
+                || entity instanceof net.minecraft.world.entity.monster.Phantom
+                || entity instanceof net.minecraft.world.entity.boss.wither.WitherBoss
+                || entity instanceof net.minecraft.world.entity.monster.Blaze
+                || entity instanceof net.minecraft.world.entity.monster.Vex
+                || entity instanceof net.minecraft.world.entity.ambient.Bat
+                || entity instanceof net.minecraft.world.entity.animal.allay.Allay
+                || entity instanceof net.minecraft.world.entity.animal.bee.Bee
+                || entity instanceof net.minecraft.world.entity.animal.parrot.Parrot) {
             return true;
         }
-        if (mob instanceof net.minecraft.world.entity.monster.Ghast
-                || mob instanceof net.minecraft.world.entity.monster.Phantom
-                || mob instanceof net.minecraft.world.entity.boss.wither.WitherBoss
-                || mob instanceof net.minecraft.world.entity.monster.Blaze
-                || mob instanceof net.minecraft.world.entity.monster.Vex
-                || mob instanceof net.minecraft.world.entity.ambient.Bat
-                || mob instanceof net.minecraft.world.entity.animal.allay.Allay
-                || mob instanceof net.minecraft.world.entity.animal.bee.Bee
-                || mob instanceof net.minecraft.world.entity.animal.parrot.Parrot
-                || mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
-            return true;
-        }
-        String name = mob.getClass().getSimpleName().toLowerCase();
+        String name = entity.getClass().getSimpleName().toLowerCase();
         return name.contains("fly") || name.contains("bird") || name.contains("dragon") || name.contains("drake");
     }
 
-    public static boolean isSwimmingPet(Mob mob) {
-        if (mob instanceof net.minecraft.world.entity.animal.fish.WaterAnimal) {
+    public static boolean isSwimmingPet(LivingEntity entity) {
+        if (entity instanceof net.minecraft.world.entity.animal.fish.WaterAnimal) {
             return true;
         }
-        if (mob instanceof net.minecraft.world.entity.monster.Guardian) {
+        if (entity instanceof net.minecraft.world.entity.monster.Guardian) {
             return true;
         }
-        if (mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation) {
+        if (entity instanceof Mob mob && mob.getNavigation() instanceof net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation) {
             return true;
         }
-        return mob.isInWater();
+        return entity.isInWater();
     }
 
-    public static void forgiveAttacksAndClearTarget(Mob mob) {
-        mob.setTarget(null);
-        mob.setLastHurtByMob(null);
-        mob.setLastHurtMob(null);
-        if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
-            mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+    public static void forgiveAttacksAndClearTarget(LivingEntity entity) {
+        if (entity instanceof Mob mob) {
+            mob.setTarget(null);
+            mob.setLastHurtByMob(null);
+            mob.setLastHurtMob(null);
+            if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
+                mob.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
+            }
+            if (mob.getBrain().hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)) {
+                mob.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+            }
+            if (mob instanceof NeutralMob neutralMob) {
+                neutralMob.stopBeingAngry();
+            }
+            if (mob instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
+                wither.setAlternativeTarget(0, 0);
+                wither.setAlternativeTarget(1, 0);
+                wither.setAlternativeTarget(2, 0);
+            }
+            mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
+            mob.goalSelector.getAvailableGoals().stream()
+                    .filter(w -> w.getGoal() instanceof PetMeleeAttackGoal || w.getGoal() instanceof PetRangedAttackGoal)
+                    .filter(WrappedGoal::isRunning)
+                    .forEach(WrappedGoal::stop);
         }
-        if (mob.getBrain().hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE)) {
-            mob.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
-        }
-        if (mob instanceof NeutralMob neutralMob) {
-            neutralMob.stopBeingAngry();
-        }
-        if (mob instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
-            wither.setAlternativeTarget(0, 0);
-            wither.setAlternativeTarget(1, 0);
-            wither.setAlternativeTarget(2, 0);
-        }
-        mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
-        mob.goalSelector.getAvailableGoals().stream()
-                .filter(w -> w.getGoal() instanceof PetMeleeAttackGoal || w.getGoal() instanceof PetRangedAttackGoal)
-                .filter(WrappedGoal::isRunning)
-                .forEach(WrappedGoal::stop);
     }
 
     public static void injectGoals(Mob mob) {
@@ -849,7 +882,7 @@ public class PetHelper {
         }
     }
 
-    public static boolean isInteractionItem(Mob mob, ItemStack stack) {
+    public static boolean isInteractionItem(LivingEntity mob, ItemStack stack) {
         if (stack.isEmpty()) {
             return false;
         }
@@ -867,6 +900,12 @@ public class PetHelper {
             }
         }
         if (PetEggHelper.canTame(mob, stack.getItem())) {
+            return true;
+        }
+        if (mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon && stack.is(net.yigitguven.petting.init.PettingModItems.GOLDEN_STAR.get())) {
+            return true;
+        }
+        if (PettingServerConfig.isPetRidingEnabled() && stack.is(net.minecraft.world.item.Items.SADDLE) && !hasSaddle(mob)) {
             return true;
         }
         if (stack.is(net.minecraft.world.item.Items.NAME_TAG)
@@ -1089,6 +1128,424 @@ public class PetHelper {
             }
         }));
 
+        return true;
+    }
+
+    private static volatile long lastGoldenDragonSummonTime = 0L;
+
+    public static void recordGoldenDragonSummon() {
+        lastGoldenDragonSummonTime = System.currentTimeMillis();
+    }
+
+    public static boolean isGoldenDragonRitualActive(net.minecraft.world.level.Level level) {
+        if (level.dimension() != net.minecraft.world.level.Level.END) {
+            return false;
+        }
+        if (System.currentTimeMillis() - lastGoldenDragonSummonTime < 25000L) {
+            return true;
+        }
+        net.minecraft.core.BlockPos.MutableBlockPos mpos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int y = 60; y <= 75; y++) {
+            for (int x = -6; x <= 6; x++) {
+                for (int z = -6; z <= 6; z++) {
+                    mpos.set(x, y, z);
+                    if (level.getBlockState(mpos).is(net.yigitguven.petting.init.PettingModBlocks.GOLDEN_DRAGON_EGG.get())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static @Nullable Vec3 getTamedDragonFlyTarget(net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
+        if (dragon.level().isClientSide()) {
+            return null;
+        }
+
+        // When ridden:
+        if (dragon.isVehicle()) {
+            if (hasSaddle(dragon)) {
+                // Saddled controlled flight: player steers via PetRidingHandler, AI waypoint is null
+                return null;
+            } else {
+                // Unsaddled uncontrolled flight: cruise smoothly forward in direction dragon's head is facing
+                Vec3 forward = Vec3.directionFromRotation(0.0F, dragon.getYRot() + 180.0F);
+                return dragon.position().add(forward.scale(24.0D)).add(0.0D, 0.5D, 0.0D);
+            }
+        }
+
+        PetOrder order = getOrder(dragon);
+        if (order == PetOrder.SIT) {
+            return null;
+        }
+
+        CollarSettings settings = getCollarSettings(dragon);
+        LivingEntity combatTarget = dragon.getTarget();
+
+        // Active combat target: fly towards or circle target
+        if (combatTarget != null && combatTarget.isAlive()) {
+            if (settings.preferRangedAttack()) {
+                double angle = dragon.tickCount * 0.05D;
+                return combatTarget.position().add(Math.cos(angle) * 14.0D, 7.0D, Math.sin(angle) * 14.0D);
+            } else {
+                return combatTarget.position().add(0.0D, 1.0D, 0.0D);
+            }
+        }
+
+        CombatMode mode = settings.combatMode();
+
+        // Guard mode: patrol orbit around home position
+        if (mode == CombatMode.GUARD) {
+            net.minecraft.core.BlockPos home = dragon.hasHome() ? dragon.getHomePosition() : dragon.blockPosition();
+            double radius = dragon.hasHome() ? Math.min(24.0D, Math.max(8.0D, dragon.getHomeRadius())) : 14.0D;
+            double angle = dragon.tickCount * 0.025D;
+            double gx = home.getX() + 0.5D + Math.cos(angle) * radius;
+            double gy = home.getY() + 7.0D + Math.sin(angle * 0.5D) * 2.0D;
+            double gz = home.getZ() + 0.5D + Math.sin(angle) * radius;
+            return new Vec3(gx, gy, gz);
+        }
+
+        // Wander mode: smooth wandering orbit around anchor point
+        if (mode == CombatMode.WANDER || order == PetOrder.WANDER) {
+            net.minecraft.core.BlockPos anchor = dragon.hasHome() ? dragon.getHomePosition() : dragon.blockPosition();
+            double time = dragon.tickCount * 0.015D;
+            double wanderRadius = 24.0D;
+            double wx = anchor.getX() + 0.5D + Math.sin(time) * wanderRadius + Math.cos(time * 0.5D) * 12.0D;
+            double wy = anchor.getY() + 8.0D + Math.sin(time * 0.7D) * 4.0D;
+            double wz = anchor.getZ() + 0.5D + Math.cos(time) * wanderRadius + Math.sin(time * 0.3D) * 12.0D;
+            return new Vec3(wx, wy, wz);
+        }
+
+        // Default follow owner mode
+        Player owner = getOwner(dragon);
+        if (owner == null || owner.isSpectator() || owner.level() != dragon.level()) {
+            return null;
+        }
+
+        double dist = dragon.distanceTo(owner);
+        double tpDist = getTeleportDistance(dragon);
+
+        if (settings.teleportEnabled() && dist >= tpDist) {
+            double tpX = owner.getX();
+            double tpY = owner.getY() + 3.0D;
+            double tpZ = owner.getZ();
+            dragon.teleportTo(tpX, tpY, tpZ);
+            dragon.setDeltaMovement(Vec3.ZERO);
+            dragon.level().playSound(null, tpX, tpY, tpZ, net.minecraft.sounds.SoundEvents.ENDERMAN_TELEPORT, net.minecraft.sounds.SoundSource.PLAYERS, 2.0F, 1.0F);
+            if (dragon.level() instanceof ServerLevel sl) {
+                sl.sendParticles(net.minecraft.core.particles.ParticleTypes.PORTAL, tpX, tpY, tpZ, 60, 2.0D, 2.0D, 2.0D, 0.2D);
+            }
+            return new Vec3(tpX, tpY, tpZ);
+        }
+
+        // Orbit gently around the owner at reachable height
+        double followRadius = getFollowDistance(dragon);
+        double time = dragon.tickCount * 0.035D;
+        double targetX = owner.getX() + Math.cos(time) * followRadius;
+        double targetY = owner.getY() + 3.0D + Math.sin(time * 0.5D) * 1.5D;
+        double targetZ = owner.getZ() + Math.sin(time) * followRadius;
+
+        return new Vec3(targetX, targetY, targetZ);
+    }
+
+    public static void tickTamedDragon(net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
+        if (dragon.level().isClientSide() || !(dragon.level() instanceof ServerLevel sl)) {
+            return;
+        }
+
+        // Sitting or ridden: clear combat target
+        if (dragon.isVehicle() || getOrder(dragon) == PetOrder.SIT) {
+            if (dragon.getTarget() != null) {
+                dragon.setTarget(null);
+            }
+            return;
+        }
+
+        CollarSettings settings = getCollarSettings(dragon);
+        CombatMode combatMode = settings.combatMode();
+        Player owner = getOwner(dragon);
+
+        // 1. Validate current target
+        LivingEntity target = dragon.getTarget();
+        if (target != null) {
+            if (!target.isAlive() || target.isRemoved() || !isValidPetTarget(dragon, target)) {
+                dragon.setTarget(null);
+                target = null;
+            } else if (dragon.distanceToSqr(target) > 64.0D * 64.0D) {
+                dragon.setTarget(null);
+                target = null;
+            } else if (combatMode == CombatMode.GUARD && dragon.hasHome()) {
+                double leash = dragon.getHomeRadius() + 16.0D;
+                if (target.distanceToSqr(Vec3.atBottomCenterOf(dragon.getHomePosition())) > leash * leash) {
+                    dragon.setTarget(null);
+                    target = null;
+                }
+            }
+        }
+
+        // 2. Select target if none exists and not passive
+        if (target == null && combatMode != CombatMode.PASSIVE) {
+            // Retaliate if dragon was hurt
+            if (settings.retaliateWhenHurt()) {
+                LivingEntity lastHurtBy = dragon.getLastHurtByMob();
+                if (lastHurtBy != null && lastHurtBy.isAlive() && isValidPetTarget(dragon, lastHurtBy)) {
+                    dragon.setTarget(lastHurtBy);
+                    target = lastHurtBy;
+                }
+            }
+
+            // Defend owner if owner was hurt
+            if (target == null && owner != null) {
+                LivingEntity ownerHurtBy = owner.getLastHurtByMob();
+                if (ownerHurtBy != null && ownerHurtBy.isAlive() && isValidPetTarget(dragon, ownerHurtBy)) {
+                    dragon.setTarget(ownerHurtBy);
+                    target = ownerHurtBy;
+                }
+            }
+
+            // Aggressive mode: target entity owner attacked
+            if (target == null && owner != null && combatMode == CombatMode.AGGRESSIVE) {
+                LivingEntity ownerTarget = owner.getLastHurtMob();
+                if (ownerTarget != null && ownerTarget.isAlive() && isValidPetTarget(dragon, ownerTarget)) {
+                    dragon.setTarget(ownerTarget);
+                    target = ownerTarget;
+                }
+            }
+
+            // Guard mode: untamed hostiles within guard radius
+            if (target == null && combatMode == CombatMode.GUARD) {
+                net.minecraft.core.BlockPos home = dragon.hasHome() ? dragon.getHomePosition() : dragon.blockPosition();
+                int radius = dragon.hasHome() ? dragon.getHomeRadius() : 16;
+                net.minecraft.world.phys.AABB guardArea = new net.minecraft.world.phys.AABB(home).inflate(radius);
+                java.util.List<LivingEntity> enemies = sl.getEntitiesOfClass(LivingEntity.class, guardArea,
+                        e -> e.isAlive() && e instanceof net.minecraft.world.entity.monster.Enemy && isValidPetTarget(dragon, e));
+                if (!enemies.isEmpty()) {
+                    enemies.sort(java.util.Comparator.comparingDouble(dragon::distanceToSqr));
+                    dragon.setTarget(enemies.get(0));
+                    target = enemies.get(0);
+                }
+            }
+
+            // Aggressive mode: untamed hostiles within 32 blocks
+            if (target == null && combatMode == CombatMode.AGGRESSIVE) {
+                net.minecraft.world.phys.AABB searchArea = dragon.getBoundingBox().inflate(32.0D);
+                java.util.List<LivingEntity> enemies = sl.getEntitiesOfClass(LivingEntity.class, searchArea,
+                        e -> e.isAlive() && e instanceof net.minecraft.world.entity.monster.Enemy && isValidPetTarget(dragon, e));
+                if (!enemies.isEmpty()) {
+                    enemies.sort(java.util.Comparator.comparingDouble(dragon::distanceToSqr));
+                    dragon.setTarget(enemies.get(0));
+                    target = enemies.get(0);
+                }
+            }
+        }
+
+        // 3. Combat actions when target is active
+        if (target != null) {
+            double dist = dragon.distanceTo(target);
+
+            // Ranged fireball attack: every 40 ticks when ranged preferred or dist > 8.0D
+            if ((settings.preferRangedAttack() || dist > 8.0D) && dist <= 48.0D) {
+                if (dragon.tickCount % 40 == 0) {
+                    Vec3 headPos = dragon.head.position();
+                    Vec3 aim = target.getEyePosition().subtract(headPos).normalize();
+                    net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball fireball =
+                            new net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball(sl, dragon, aim);
+                    fireball.setPos(headPos.x + aim.x * 2.5D, headPos.y + aim.y * 2.5D, headPos.z + aim.z * 2.5D);
+                    sl.addFreshEntity(fireball);
+                    sl.playSound(null, headPos.x, headPos.y, headPos.z, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_SHOOT, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
+                }
+            }
+
+            // Melee bite attack: every 20 ticks when in melee reach
+            if (dist <= 8.5D) {
+                if (dragon.tickCount % 20 == 0) {
+                    target.hurt(sl.damageSources().mobAttack(dragon), 14.0F);
+                    Vec3 knock = target.position().subtract(dragon.position()).normalize().scale(1.2D).add(0.0D, 0.35D, 0.0D);
+                    target.setDeltaMovement(target.getDeltaMovement().add(knock));
+                    sl.playSound(null, target.getX(), target.getY(), target.getZ(), net.minecraft.sounds.SoundEvents.ENDER_DRAGON_GROWL, net.minecraft.sounds.SoundSource.HOSTILE, 1.5F, 1.0F);
+                }
+            }
+        }
+    }
+
+    public static void alertTamedDragonsOfThreat(Player owner, LivingEntity threat) {
+        if (owner.level().isClientSide() || threat == null || !threat.isAlive()) return;
+        net.minecraft.world.phys.AABB box = owner.getBoundingBox().inflate(64.0D);
+        for (net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon : owner.level().getEntitiesOfClass(net.minecraft.world.entity.boss.enderdragon.EnderDragon.class, box)) {
+            if (isTamed(dragon) && isOwner(dragon, owner)) {
+                CollarSettings cs = getCollarSettings(dragon);
+                if (cs.combatMode() == CombatMode.DEFENSIVE || cs.combatMode() == CombatMode.AGGRESSIVE || cs.combatMode() == CombatMode.GUARD) {
+                    if (isValidPetTarget(dragon, threat)) {
+                        dragon.setTarget(threat);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void alertTamedDragonsOfTarget(Player owner, LivingEntity target) {
+        if (owner.level().isClientSide() || target == null || !target.isAlive()) return;
+        net.minecraft.world.phys.AABB box = owner.getBoundingBox().inflate(64.0D);
+        for (net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon : owner.level().getEntitiesOfClass(net.minecraft.world.entity.boss.enderdragon.EnderDragon.class, box)) {
+            if (isTamed(dragon) && isOwner(dragon, owner)) {
+                CollarSettings cs = getCollarSettings(dragon);
+                if (cs.combatMode() == CombatMode.AGGRESSIVE) {
+                    if (isValidPetTarget(dragon, target)) {
+                        dragon.setTarget(target);
+                    }
+                }
+            }
+        }
+    }
+
+    public static net.minecraft.world.InteractionResult handleTamedDragonInteract(
+            net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon,
+            Player player,
+            net.minecraft.world.InteractionHand hand
+    ) {
+        if (hand != net.minecraft.world.InteractionHand.MAIN_HAND) {
+            return net.minecraft.world.InteractionResult.PASS;
+        }
+
+        if (!isOwner(dragon, player)) {
+            if (!player.level().isClientSide()) {
+                player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.already_tamed_other"));
+            }
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+
+        ItemStack stack = player.getItemInHand(hand);
+
+        // Shift-Right Click: Open Pet Inventory
+        if (player.isShiftKeyDown()) {
+            if (!player.level().isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                net.yigitguven.petting.inventory.PetInventoryMenu.open(serverPlayer, dragon);
+            }
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+
+        // Equip Collar
+        if (PettingServerConfig.isPetInventoryEnabled() && PettingServerConfig.isCollarSlotEnabled() && stack.getItem() instanceof net.yigitguven.petting.item.CollarItem) {
+            if (getCollar(dragon).isEmpty()) {
+                if (!player.level().isClientSide()) {
+                    setCollar(dragon, stack.copyWithCount(1));
+                    if (!player.getAbilities().instabuild) {
+                        stack.shrink(1);
+                    }
+                    dragon.level().playSound(null, dragon.getX(), dragon.getY(), dragon.getZ(), net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_LEATHER, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+                }
+                return net.minecraft.world.InteractionResult.SUCCESS;
+            }
+        }
+
+        // Dye Collar
+        net.minecraft.world.item.DyeColor dyeColor = net.minecraft.world.item.DyeColor.getColor(stack);
+        if (dyeColor != null) {
+            ItemStack currentCollar = getCollar(dragon);
+            if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
+                if (currentItem.getColor() != dyeColor) {
+                    if (!player.level().isClientSide()) {
+                        net.minecraft.world.item.Item newCollarItem = net.yigitguven.petting.init.PettingModItems.getCollar(dyeColor).get();
+                        ItemStack newCollar = new ItemStack(newCollarItem);
+                        newCollar.applyComponents(currentCollar.getComponents());
+                        setCollar(dragon, newCollar);
+                        if (!player.getAbilities().instabuild) {
+                            stack.shrink(1);
+                        }
+                        dragon.level().playSound(null, dragon.getX(), dragon.getY(), dragon.getZ(), net.minecraft.sounds.SoundEvents.DYE_USE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+                    }
+                    return net.minecraft.world.InteractionResult.SUCCESS;
+                }
+            }
+        }
+
+        // Heal with Golden Star or Treats
+        if (PetEggHelper.canTame(dragon, stack.getItem()) || stack.is(net.yigitguven.petting.init.PettingModItems.GOLDEN_STAR.get())) {
+            if (dragon.getHealth() < dragon.getMaxHealth()) {
+                if (!player.level().isClientSide()) {
+                    if (!player.getAbilities().instabuild) {
+                        stack.shrink(1);
+                    }
+                    dragon.heal(dragon.getMaxHealth() * 0.25F);
+                    if (dragon.level() instanceof ServerLevel sl) {
+                        sl.sendParticles(net.minecraft.core.particles.ParticleTypes.HEART, dragon.getX(), dragon.getY() + 3.0D, dragon.getZ(), 15, 1.5D, 1.0D, 1.5D, 0.1D);
+                    }
+                    dragon.level().playSound(null, dragon.getX(), dragon.getY(), dragon.getZ(), net.minecraft.sounds.SoundEvents.GENERIC_EAT, net.minecraft.sounds.SoundSource.PLAYERS, 1.5F, 1.0F);
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_healed", dragon.getName()));
+                }
+                return net.minecraft.world.InteractionResult.SUCCESS;
+            } else {
+                if (!player.level().isClientSide()) {
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_full_health", dragon.getName()));
+                }
+                return net.minecraft.world.InteractionResult.SUCCESS;
+            }
+        }
+
+        // Equip Saddle
+        if (stack.is(net.minecraft.world.item.Items.SADDLE) && !hasSaddle(dragon)) {
+            if (!player.level().isClientSide()) {
+                setSaddle(dragon, stack.copyWithCount(1));
+                if (!player.getAbilities().instabuild) {
+                    stack.shrink(1);
+                }
+                dragon.level().playSound(null, dragon.getX(), dragon.getY(), dragon.getZ(), net.minecraft.sounds.SoundEvents.HORSE_SADDLE, net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.0F);
+            }
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+
+        // If player is actively riding this dragon, right-click must never toggle sit
+        if (dragon.hasPassenger(player) || player.getVehicle() == dragon) {
+            return net.minecraft.world.InteractionResult.PASS;
+        }
+
+        // Toggle Sit / Follow (Riding is strictly performed via Keybind R / MountPetPayload)
+        if (PettingServerConfig.isPetSittingEnabled()) {
+            if (!player.level().isClientSide()) {
+                toggleSit(dragon, player);
+            }
+            return net.minecraft.world.InteractionResult.SUCCESS;
+        }
+
+        return net.minecraft.world.InteractionResult.SUCCESS;
+    }
+
+    private static final java.util.Map<UUID, Long> SIT_TOGGLE_COOLDOWNS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static boolean toggleSit(LivingEntity mob, Player player) {
+        if (!PettingServerConfig.isPetSittingEnabled()) {
+            return false;
+        }
+        if (mob.isVehicle() || mob.hasPassenger(player) || player.getVehicle() == mob || mob.isPassenger()) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        Long last = SIT_TOGGLE_COOLDOWNS.get(mob.getUUID());
+        if (last != null && now - last < 350L) {
+            return false;
+        }
+        SIT_TOGGLE_COOLDOWNS.put(mob.getUUID(), now);
+
+        PetOrder currentOrder = getOrder(mob);
+        PetOrder newOrder = (currentOrder == PetOrder.SIT) ? PetOrder.FOLLOW : PetOrder.SIT;
+        setOrder(mob, newOrder);
+
+        if (newOrder == PetOrder.SIT) {
+            if (PettingServerConfig.shouldForgiveAttacksOnSit()) {
+                forgiveAttacksAndClearTarget(mob);
+            }
+            boolean hoverFlying = PettingServerConfig.isFlyingPetsHoverWhenSitting() && isFlyingPet(mob);
+            boolean stillSwimming = PettingServerConfig.isSwimmingPetsStayStillWhenSitting() && isSwimmingPet(mob);
+            if (hoverFlying || stillSwimming) {
+                mob.setNoGravity(true);
+                mob.setDeltaMovement(Vec3.ZERO);
+                mob.fallDistance = 0.0F;
+            }
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_sitting", mob.getName()));
+        } else {
+            player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_standing", mob.getName()));
+        }
         return true;
     }
 }

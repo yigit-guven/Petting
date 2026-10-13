@@ -37,7 +37,7 @@ public record RiddenPetAttackPayload(int entityId) implements CustomPacketPayloa
             }
             if (context.player() instanceof ServerPlayer player) {
                 Entity entity = player.level().getEntity(payload.entityId());
-                if (entity instanceof Mob mob && mob.isAlive()) {
+                if (entity instanceof net.minecraft.world.entity.LivingEntity mob && mob.isAlive()) {
                     if (player.getVehicle() == mob && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player)) {
                         PetRidingHandler.performRiddenAttack(player, mob);
                     }

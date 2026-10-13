@@ -11,6 +11,7 @@ import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -23,7 +24,7 @@ public class PetEggHelper {
     private static final Map<EntityType<?>, Item> CUSTOM_REPRESENTATIVE_ITEMS = new HashMap<>();
 
     static {
-        CUSTOM_REPRESENTATIVE_ITEMS.put(EntityTypes.ENDER_DRAGON, Items.DRAGON_EGG);
+        CUSTOM_REPRESENTATIVE_ITEMS.put(EntityTypes.ENDER_DRAGON, PettingModItems.GOLDEN_DRAGON_EGG.get());
     }
 
     private static Map<Item, TagKey<EntityType<?>>> treatTags;
@@ -64,7 +65,11 @@ public class PetEggHelper {
         return Optional.ofNullable(getTreatTags().get(treatItem));
     }
 
-    public static boolean canTame(Mob mob, Item treatItem) {
+    public static boolean canTame(LivingEntity mob, Item treatItem) {
+        if (mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon && !PetHelper.isTamed(mob)) {
+            return false;
+        }
+
         if (net.yigitguven.petting.config.PettingServerConfig.isUntameable(mob.getType())) {
             return false;
         }

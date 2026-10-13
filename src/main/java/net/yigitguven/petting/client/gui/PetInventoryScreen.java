@@ -12,6 +12,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
@@ -97,7 +98,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 this,
                 Component.translatable("petting.gui.tab.collar"),
                 () -> {
-                    Mob pet = this.menu.getPet();
+                    LivingEntity pet = this.menu.getPet();
                     ItemStack collar = pet != null ? PetHelper.getCollar(pet) : ItemStack.EMPTY;
                     return collar.isEmpty() ? PettingModItems.COLLAR.get().getDefaultInstance() : collar;
                 },
@@ -118,7 +119,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.addWidget(this.ridingTabButton);
 
         // Collar tab widgets initialization
-        Mob pet = this.menu.getPet();
+        LivingEntity pet = this.menu.getPet();
         CollarSettings initialSettings = pet != null ? PetHelper.getCollarSettings(pet) : CollarSettings.fromConfig();
 
         int xo = this.leftPos;
@@ -220,7 +221,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.rideAttackOnClickButton = PetButton.petBuilder(
                 getToggleText("petting.gui.riding.attack_on_click", attackOnClick),
                 b -> {
-                    Mob p = this.menu.getPet();
+                    LivingEntity p = this.menu.getPet();
                     if (p != null) {
                         boolean next = !PetHelper.isRideAttackOnClick(p);
                         PetHelper.setRideAttackOnClick(p, next);
@@ -235,7 +236,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.rideAutoAttackButton = PetButton.petBuilder(
                 getToggleText("petting.gui.riding.auto_attack", autoAttack),
                 b -> {
-                    Mob p = this.menu.getPet();
+                    LivingEntity p = this.menu.getPet();
                     if (p != null) {
                         boolean next = !PetHelper.isRideAutoAttackHostiles(p);
                         PetHelper.setRideAutoAttackHostiles(p, next);
@@ -261,7 +262,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         if (this.rideAttackOnClickButton != null) {
             this.rideAttackOnClickButton.visible = isRidingTab;
             if (isRidingTab) {
-                Mob pet = this.menu.getPet();
+                LivingEntity pet = this.menu.getPet();
                 boolean attackOnClick = pet != null && PetHelper.isRideAttackOnClick(pet);
                 this.rideAttackOnClickButton.setMessage(getToggleText("petting.gui.riding.attack_on_click", attackOnClick));
             }
@@ -269,7 +270,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         if (this.rideAutoAttackButton != null) {
             this.rideAutoAttackButton.visible = isRidingTab;
             if (isRidingTab) {
-                Mob pet = this.menu.getPet();
+                LivingEntity pet = this.menu.getPet();
                 boolean autoAttack = pet != null && PetHelper.isRideAutoAttackHostiles(pet);
                 this.rideAutoAttackButton.setMessage(getToggleText("petting.gui.riding.auto_attack", autoAttack));
             }
@@ -277,7 +278,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     }
 
     private CollarSettings getCurrentCollarSettings() {
-        Mob pet = this.menu.getPet();
+        LivingEntity pet = this.menu.getPet();
         if (pet != null) {
             return PetHelper.getCollarSettings(pet);
         }
@@ -285,7 +286,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     }
 
     private void applyCollarSettings(CollarSettings newSettings) {
-        Mob pet = this.menu.getPet();
+        LivingEntity pet = this.menu.getPet();
         if (pet != null) {
             ItemStack collar = PetHelper.getCollar(pet);
             if (!collar.isEmpty()) {
@@ -429,7 +430,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     }
 
     private void updateTabButtons() {
-        Mob pet = this.menu.getPet();
+        LivingEntity pet = this.menu.getPet();
         boolean collarWorn = pet != null && !PetHelper.getCollar(pet).isEmpty();
         boolean saddleWorn = pet != null && PetHelper.hasSaddle(pet) && PetSlotType.canEquipCustomSaddle(pet);
         boolean hasOtherButtons = collarWorn || saddleWorn;
@@ -504,7 +505,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, xo + slot.x - 1, yo + slot.y - 1, 18, 18);
             }
 
-            Mob pet = this.menu.getPet();
+            LivingEntity pet = this.menu.getPet();
             if (pet != null) {
                 float width = pet.getBbWidth();
                 float height = pet.getBbHeight();
@@ -538,7 +539,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             graphics.fill(xo + 165, yo + 20, xo + 166, yo + 37, 0xFFD8D8D8);
             graphics.fill(xo + 11, yo + 36, xo + 166, yo + 37, 0xFFD8D8D8);
 
-            Mob pet = this.menu.getPet();
+            LivingEntity pet = this.menu.getPet();
             ItemStack collar = (pet != null && !PetHelper.getCollar(pet).isEmpty())
                     ? PetHelper.getCollar(pet)
                     : PettingModItems.COLLAR.get().getDefaultInstance();
@@ -565,7 +566,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             graphics.fill(xo + 165, yo + 20, xo + 166, yo + 37, 0xFFD8D8D8);
             graphics.fill(xo + 11, yo + 36, xo + 166, yo + 37, 0xFFD8D8D8);
 
-            Mob pet = this.menu.getPet();
+            LivingEntity pet = this.menu.getPet();
             ItemStack saddle = pet != null ? PetHelper.getSaddle(pet) : ItemStack.EMPTY;
             if (saddle.isEmpty()) {
                 saddle = new ItemStack(Items.SADDLE);
@@ -636,7 +637,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     @Override
     protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         if (this.currentTab == PetInventoryTab.HOME) {
-            Mob pet = this.menu.getPet();
+            LivingEntity pet = this.menu.getPet();
             Component petTitle = pet != null ? pet.getDisplayName() : this.title;
             graphics.text(this.font, petTitle, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
             graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);

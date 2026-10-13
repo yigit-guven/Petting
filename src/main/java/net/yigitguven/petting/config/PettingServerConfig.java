@@ -44,6 +44,7 @@ public class PettingServerConfig {
     public static final ModConfigSpec.BooleanValue DEFAULT_DEFEND_OTHER_PETS;
     public static final ModConfigSpec.BooleanValue DEFAULT_RETALIATE_WHEN_HURT;
     public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_RESPAWN;
+    public static final ModConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -125,6 +126,10 @@ public class PettingServerConfig {
         ENABLE_PET_DEATH_MESSAGES = builder
                 .translation("petting.configuration.behavior.enablePetDeathMessages")
                 .define("enablePetDeathMessages", true);
+
+        ENABLE_EGG_CONVERTED_FEEDBACK = builder
+                .translation("petting.configuration.feedback.enableEggConvertedFeedback")
+                .define("enableEggConvertedFeedback", false);
 
         builder.pop();
 
@@ -443,5 +448,9 @@ public class PettingServerConfig {
 
     public static boolean isCollarRespawnEnabled() {
         return SPEC.isLoaded() ? ENABLE_COLLAR_RESPAWN.get() : true;
+    }
+
+    public static boolean isEggConvertedFeedbackEnabled() {
+        return SPEC.isLoaded() ? ENABLE_EGG_CONVERTED_FEEDBACK.get() : false;
     }
 }

@@ -76,22 +76,26 @@ public class PetRidingHandler {
         FORCED_DISMOUNT_TICKS.remove(player.getUUID());
     }
 
-    public static boolean isMarkedRiddenNoAi(Mob mob) {
+    public static boolean isMarkedRiddenNoAi(LivingEntity mob) {
         return RIDDEN_PETS_NO_AI.contains(mob.getUUID());
     }
 
-    public static void onMount(Mob mob, Player player) {
+    public static void onMount(LivingEntity mob, Player player) {
         if (PetHelper.hasSaddle(mob)) {
             RIDDEN_PETS_NO_AI.add(mob.getUUID());
-            mob.setNoAi(true);
+            if (mob instanceof Mob m && !(mob instanceof EnderDragon)) {
+                m.setNoAi(true);
+            }
             suppressMobAi(mob, player);
             lockRotations(mob, player);
         }
     }
 
-    public static void onDismount(Mob mob) {
+    public static void onDismount(LivingEntity mob) {
         if (RIDDEN_PETS_NO_AI.remove(mob.getUUID())) {
-            mob.setNoAi(false);
+            if (mob instanceof Mob m && !(mob instanceof EnderDragon)) {
+                m.setNoAi(false);
+            }
         }
         restoreMobAi(mob);
         if (!PetHelper.isSitting(mob)) {
@@ -101,16 +105,18 @@ public class PetRidingHandler {
         }
     }
 
-    public static void suppressMobAi(Mob mob, Player player) {
-        mob.getNavigation().stop();
-        mob.setTarget(null);
-        mob.setLastHurtByMob(null);
-        mob.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
-        mob.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
-        mob.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
-        mob.targetSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
-        mob.getMoveControl().setWait();
-        mob.getMoveControl().strafe(0.0F, 0.0F);
+    public static void suppressMobAi(LivingEntity mob, Player player) {
+        if (mob instanceof Mob m) {
+            m.getNavigation().stop();
+            m.setTarget(null);
+            m.setLastHurtByMob(null);
+            m.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
+            m.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
+            m.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
+            m.targetSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
+            m.getMoveControl().setWait();
+            m.getMoveControl().strafe(0.0F, 0.0F);
+        }
         mob.xxa = 0.0F;
         mob.yya = 0.0F;
         mob.zza = 0.0F;
@@ -121,15 +127,19 @@ public class PetRidingHandler {
         }
     }
 
-    public static void restoreMobAi(Mob mob) {
-        mob.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
-        mob.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
-        mob.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
-        mob.targetSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
+    public static void restoreMobAi(LivingEntity mob) {
+        if (mob instanceof Mob m) {
+            m.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
+            m.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
+            m.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
+            m.targetSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
+        }
     }
 
-    public static void lockRotations(Mob mob, Player player) {
-        float yaw = player.getYRot();
+    public static void lockRotations(LivingEntity mob, Player player) {
+        float yaw = (mob instanceof EnderDragon)
+                ? net.minecraft.util.Mth.wrapDegrees(player.getYRot() + 180.0F)
+                : player.getYRot();
         float pitch = player.getXRot();
         mob.setYRot(yaw);
         mob.yRotO = yaw;
@@ -141,7 +151,7 @@ public class PetRidingHandler {
         mob.xRotO = pitch;
     }
 
-    public static boolean isGroundedOrCannotDescend(Mob mob) {
+    public static boolean isGroundedOrCannotDescend(LivingEntity mob) {
         if (mob.onGround() || mob.verticalCollision || mob.verticalCollisionBelow) {
             return true;
         }
@@ -178,11 +188,11 @@ public class PetRidingHandler {
         return false;
     }
 
-    public static boolean isDirectlyAboveGround(Mob mob) {
+    public static boolean isDirectlyAboveGround(LivingEntity mob) {
         return isGroundedOrCannotDescend(mob);
     }
 
-    public static Vec3 findSafeDismountPosition(Player player, Mob mob) {
+    public static Vec3 findSafeDismountPosition(Player player, LivingEntity mob) {
         Level level = mob.level();
         double[][] candidateOffsets = {
                 {1.5D, 0.0D},
@@ -228,7 +238,7 @@ public class PetRidingHandler {
         return new Vec3(mob.getX(), mob.getY(), mob.getZ());
     }
 
-    public static void dismountPlayer(ServerPlayer player, Mob mob) {
+    public static void dismountPlayer(ServerPlayer player, LivingEntity mob) {
         allowForcedDismount(player);
         PacketDistributor.sendToPlayer(player, new DismountPetPayload(mob.getId()));
 
@@ -243,7 +253,7 @@ public class PetRidingHandler {
         player.resetFallDistance();
     }
 
-    public static void tickRiddenMob(Mob mob, Player player) {
+    public static void tickRiddenMob(LivingEntity mob, Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return;
         }
@@ -253,10 +263,17 @@ public class PetRidingHandler {
             input = Input.EMPTY;
         }
 
+        // Ensure ridden mob is never in SIT state; normalize to FOLLOW
+        if (PetHelper.getOrder(mob) == net.yigitguven.petting.data.PetOrder.SIT) {
+            PetHelper.setOrder(mob, net.yigitguven.petting.data.PetOrder.FOLLOW);
+        }
+
         // Without a saddle, player cannot steer the pet; pet acts autonomously
         if (!PetHelper.hasSaddle(mob)) {
             if (RIDDEN_PETS_NO_AI.remove(mob.getUUID())) {
-                mob.setNoAi(false);
+                if (mob instanceof Mob m && !(mob instanceof EnderDragon)) {
+                    m.setNoAi(false);
+                }
                 restoreMobAi(mob);
             }
             if (input.shift()) {
@@ -267,8 +284,8 @@ public class PetRidingHandler {
 
         // Enforce NoAI and complete AI suppression for controlled ride
         RIDDEN_PETS_NO_AI.add(mob.getUUID());
-        if (!mob.isNoAi()) {
-            mob.setNoAi(true);
+        if (mob instanceof Mob m && !m.isNoAi() && !(mob instanceof EnderDragon)) {
+            m.setNoAi(true);
         }
         suppressMobAi(mob, player);
 
@@ -280,8 +297,8 @@ public class PetRidingHandler {
         float strafe = (input.right() ? 1.0F : 0.0F) - (input.left() ? 1.0F : 0.0F);
         double sprintMul = input.sprint() ? 1.35D : 1.0D;
 
-        Vec3 look = Vec3.directionFromRotation(0.0F, mob.getYRot());
-        Vec3 right = Vec3.directionFromRotation(0.0F, mob.getYRot() + 90.0F);
+        Vec3 look = Vec3.directionFromRotation(0.0F, player.getYRot());
+        Vec3 right = Vec3.directionFromRotation(0.0F, player.getYRot() + 90.0F);
         Vec3 wishDir = look.scale(forward).add(right.scale(strafe));
         if (wishDir.lengthSqr() > 1e-4) {
             wishDir = wishDir.normalize();
@@ -301,13 +318,13 @@ public class PetRidingHandler {
                 }
             }
 
-            double baseSpeed = Math.max(0.28D, mob.getAttributeValue(Attributes.MOVEMENT_SPEED))
+            double baseSpeed = (mob instanceof EnderDragon ? 0.85D : Math.max(0.28D, mob.getAttributeValue(Attributes.MOVEMENT_SPEED)))
                     * PettingServerConfig.getFlyingPetSpeedMultiplier() * sprintMul;
             double dy = 0.0D;
             if (input.jump()) {
-                dy = PettingServerConfig.getFlyingPetAscentSpeed();
+                dy = (mob instanceof EnderDragon ? 0.6D : PettingServerConfig.getFlyingPetAscentSpeed());
             } else if (input.shift()) {
-                dy = -PettingServerConfig.getFlyingPetDescentSpeed();
+                dy = -(mob instanceof EnderDragon ? 0.6D : PettingServerConfig.getFlyingPetDescentSpeed());
             }
 
             Vec3 horiz = wishDir.scale(baseSpeed);
@@ -411,7 +428,7 @@ public class PetRidingHandler {
         }
     }
 
-    public static void performRiddenAttack(ServerPlayer player, Mob mob) {
+    public static void performRiddenAttack(ServerPlayer player, LivingEntity mob) {
         if (!(player.level() instanceof ServerLevel serverLevel)) {
             return;
         }
@@ -456,7 +473,7 @@ public class PetRidingHandler {
             serverLevel.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F);
         } else {
             // Melee mob attack
-            mob.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
+            mob.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
             AABB attackBox = mob.getBoundingBox().inflate(2.5D).expandTowards(look.scale(2.0D));
             List<LivingEntity> targets = serverLevel.getEntitiesOfClass(LivingEntity.class, attackBox,
                     e -> e != mob && e != player && !PetHelper.isOwner(e, player) && e.isAlive());
@@ -467,7 +484,7 @@ public class PetRidingHandler {
         }
     }
 
-    private static void checkAndPerformAutoAttack(ServerPlayer player, Mob mob) {
+    private static void checkAndPerformAutoAttack(ServerPlayer player, LivingEntity mob) {
         if (!(player.level() instanceof ServerLevel serverLevel)) {
             return;
         }
@@ -512,7 +529,7 @@ public class PetRidingHandler {
             serverLevel.addFreshEntity(arrow);
             serverLevel.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F);
         } else if (mob.distanceTo(target) <= 3.5D) {
-            mob.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT);
+            mob.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
             mob.doHurtTarget(serverLevel, target);
         }
     }

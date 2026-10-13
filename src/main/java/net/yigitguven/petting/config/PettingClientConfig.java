@@ -28,6 +28,7 @@ public class PettingClientConfig {
     public static final ModConfigSpec.BooleanValue ENABLE_PET_DIED_FEEDBACK;
     public static final ModConfigSpec.BooleanValue ENABLE_PET_RESPAWNED_FEEDBACK;
     public static final ModConfigSpec.BooleanValue ENABLE_PET_RESPAWN_FAILED_FEEDBACK;
+    public static final ModConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -106,6 +107,10 @@ public class PettingClientConfig {
                 .translation("petting.configuration.feedback.enablePetRespawnFailedFeedback")
                 .define("enablePetRespawnFailedFeedback", false);
 
+        ENABLE_EGG_CONVERTED_FEEDBACK = builder
+                .translation("petting.configuration.feedback.enableEggConvertedFeedback")
+                .define("enableEggConvertedFeedback", false);
+
         builder.pop();
 
         SPEC = builder.build();
@@ -183,6 +188,10 @@ public class PettingClientConfig {
         return SPEC.isLoaded() ? (ENABLE_PET_DEATH_MESSAGES.get() || ENABLE_PET_RESPAWN_FAILED_FEEDBACK.get()) : false;
     }
 
+    public static boolean isEggConvertedFeedbackEnabled() {
+        return SPEC.isLoaded() ? ENABLE_EGG_CONVERTED_FEEDBACK.get() : false;
+    }
+
     public static boolean isFeedbackMessageEnabled(String key) {
         if (!SPEC.isLoaded()) {
             return false;
@@ -207,6 +216,7 @@ public class PettingClientConfig {
             case "petting.action.pet_died" -> isPetDiedFeedbackEnabled();
             case "petting.action.pet_respawned" -> isPetRespawnedFeedbackEnabled();
             case "petting.action.pet_respawn_failed" -> isPetRespawnFailedFeedbackEnabled();
+            case "petting.action.egg_converted_to_golden" -> isEggConvertedFeedbackEnabled();
 
             default -> true;
         };

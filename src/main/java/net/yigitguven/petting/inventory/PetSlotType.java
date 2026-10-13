@@ -8,6 +8,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
@@ -52,7 +53,7 @@ public enum PetSlotType {
         return slot;
     }
 
-    public @Nullable Identifier getIcon(@Nullable Mob pet) {
+    public @Nullable Identifier getIcon(@Nullable LivingEntity pet) {
         if (this == BODY && pet != null) {
             if (pet instanceof Llama) {
                 return Identifier.withDefaultNamespace("container/slot/llama_armor");
@@ -64,7 +65,7 @@ public enum PetSlotType {
         return defaultIcon;
     }
 
-    public boolean mayPlace(ItemStack stack, @Nullable Mob pet) {
+    public boolean mayPlace(ItemStack stack, @Nullable LivingEntity pet) {
         if (stack.isEmpty()) return false;
         if (this == COLLAR) {
             return stack.getItem() instanceof net.yigitguven.petting.item.CollarItem;
@@ -100,7 +101,7 @@ public enum PetSlotType {
         return false;
     }
 
-    public static List<PetSlotType> getLeftSlots(@Nullable Mob pet) {
+    public static List<PetSlotType> getLeftSlots(@Nullable LivingEntity pet) {
         List<PetSlotType> slots = new ArrayList<>();
         if (pet == null || !net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) return slots;
 
@@ -115,17 +116,17 @@ public enum PetSlotType {
         return slots;
     }
 
-    public static boolean isDefaultSaddleable(@Nullable Mob mob) {
+    public static boolean isDefaultSaddleable(@Nullable LivingEntity mob) {
         return mob instanceof AbstractHorse;
     }
 
-    public static boolean canEquipCustomSaddle(@Nullable Mob mob) {
+    public static boolean canEquipCustomSaddle(@Nullable LivingEntity mob) {
         return mob != null
                 && net.yigitguven.petting.util.PetHelper.isPetRidingEnabledFor(mob)
                 && !isDefaultSaddleable(mob);
     }
 
-    public static List<PetSlotType> getRightSlots(@Nullable Mob pet) {
+    public static List<PetSlotType> getRightSlots(@Nullable LivingEntity pet) {
         List<PetSlotType> slots = new ArrayList<>();
         if (pet == null || !net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) return slots;
 
@@ -149,7 +150,7 @@ public enum PetSlotType {
         return slots;
     }
 
-    public static boolean canEquipHumanoidArmor(Mob mob) {
+    public static boolean canEquipHumanoidArmor(LivingEntity mob) {
         if (!mob.getItemBySlot(EquipmentSlot.HEAD).isEmpty() ||
                 !mob.getItemBySlot(EquipmentSlot.CHEST).isEmpty() ||
                 !mob.getItemBySlot(EquipmentSlot.LEGS).isEmpty() ||
@@ -182,7 +183,7 @@ public enum PetSlotType {
                 className.contains("npc");
     }
 
-    public static boolean canEquipBodyArmor(Mob mob) {
+    public static boolean canEquipBodyArmor(LivingEntity mob) {
         if (!mob.getItemBySlot(EquipmentSlot.BODY).isEmpty()) {
             return true;
         }
@@ -202,7 +203,7 @@ public enum PetSlotType {
         return false;
     }
 
-    public static boolean canEquipSaddle(Mob mob) {
+    public static boolean canEquipSaddle(LivingEntity mob) {
         if (!mob.getItemBySlot(EquipmentSlot.SADDLE).isEmpty()) {
             return true;
         }
@@ -216,11 +217,11 @@ public enum PetSlotType {
         return false;
     }
 
-    public static boolean canEquipChest(Mob mob) {
+    public static boolean canEquipChest(LivingEntity mob) {
         return mob instanceof AbstractChestedHorse;
     }
 
-    public static boolean canUseHands(Mob mob) {
+    public static boolean canUseHands(LivingEntity mob) {
         if (!mob.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty() || !mob.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty()) {
             return true;
         }
@@ -237,7 +238,7 @@ public enum PetSlotType {
                 type == EntityTypes.VEX || type == EntityTypes.ENDERMAN;
     }
 
-    public static boolean canUseOffHand(Mob mob) {
+    public static boolean canUseOffHand(LivingEntity mob) {
         EntityType<?> type = mob.getType();
         if (type == EntityTypes.FOX || type == EntityTypes.ALLAY || type == EntityTypes.ENDERMAN) {
             return false;

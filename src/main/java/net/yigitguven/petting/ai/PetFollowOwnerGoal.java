@@ -40,12 +40,12 @@ public class PetFollowOwnerGoal extends Goal {
     }
 
     private double getStartDistanceSqr() {
-        double dist = getSettings().followDistance();
+        double dist = PetHelper.getFollowDistance(this.mob);
         return dist * dist;
     }
 
     private double getStopDistanceSqr() {
-        double dist = Math.max(1.5D, getSettings().followDistance() * 0.5D);
+        double dist = Math.max(1.5D, PetHelper.getFollowDistance(this.mob) * 0.5D);
         return dist * dist;
     }
 
@@ -54,7 +54,7 @@ public class PetFollowOwnerGoal extends Goal {
         if (!settings.teleportEnabled()) {
             return Double.MAX_VALUE;
         }
-        double dist = settings.teleportDistance();
+        double dist = PetHelper.getTeleportDistance(this.mob);
         return dist * dist;
     }
 

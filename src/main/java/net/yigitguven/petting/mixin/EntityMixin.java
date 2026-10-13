@@ -1,8 +1,16 @@
 package net.yigitguven.petting.mixin;
 
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ItemLike;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.init.PettingDataComponents;
+import net.yigitguven.petting.init.PettingModBlocks;
 import net.yigitguven.petting.util.PetHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -71,6 +79,59 @@ public abstract class EntityMixin {
         // Vehicle / passenger relationship: prevent inadvertent collision/team damage
         if (self.isPassengerOfSameVehicle(other) || self.hasPassenger(other) || other.hasPassenger(self)) {
             cir.setReturnValue(false);
+        }
+    }
+
+    @Inject(
+            method = "getPassengerAttachmentPoint(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/EntityDimensions;F)Lnet/minecraft/world/phys/Vec3;",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void petting$getPassengerAttachmentPoint(Entity passenger, net.minecraft.world.entity.EntityDimensions dimensions, float scale, CallbackInfoReturnable<net.minecraft.world.phys.Vec3> cir) {
+        Entity self = (Entity) (Object) this;
+        if (self instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon && PetHelper.isTamed(dragon)) {
+            cir.setReturnValue(new net.minecraft.world.phys.Vec3(0.0D, 1.85D, 0.0D));
+        }
+    }
+
+    @Inject(method = "interact", at = @At("HEAD"), cancellable = true)
+    private void petting$onEntityInteract(Player player, net.minecraft.world.InteractionHand hand, net.minecraft.world.phys.Vec3 location, CallbackInfoReturnable<net.minecraft.world.InteractionResult> cir) {
+        Entity self = (Entity) (Object) this;
+        if (self instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragonPart part) {
+            if (part.parentMob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon && PetHelper.isTamed(dragon)) {
+                net.minecraft.world.InteractionResult result = PetHelper.handleTamedDragonInteract(dragon, player, hand);
+                if (result.consumesAction()) {
+                    cir.setReturnValue(result);
+                }
+            }
+        } else if (self instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon && PetHelper.isTamed(dragon)) {
+            net.minecraft.world.InteractionResult result = PetHelper.handleTamedDragonInteract(dragon, player, hand);
+            if (result.consumesAction()) {
+                cir.setReturnValue(result);
+            }
+        }
+    }
+
+    @Inject(
+            method = "spawnAtLocation(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/ItemLike;)Lnet/minecraft/world/entity/item/ItemEntity;",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    private void petting$onSpawnItemLikeAtLocation(ServerLevel level, ItemLike itemLike, CallbackInfoReturnable<ItemEntity> cir) {
+        Entity self = (Entity) (Object) this;
+        if (self instanceof FallingBlockEntity fallingBlock) {
+            if (fallingBlock.getBlockState().is(PettingModBlocks.GOLDEN_DRAGON_EGG.get())) {
+                ItemStack stack = new ItemStack(itemLike);
+                if (fallingBlock.blockData != null) {
+                    fallingBlock.blockData.read("OwnerUUID", UUIDUtil.CODEC).ifPresent(uuid -> {
+                        stack.set(PettingDataComponents.DRAGON_EGG_OWNER.get(), uuid);
+                    });
+                    fallingBlock.blockData.getString("OwnerName").ifPresent(name -> {
+                        stack.set(PettingDataComponents.DRAGON_EGG_OWNER_NAME.get(), name);
+                    });
+                }
+                cir.setReturnValue(self.spawnAtLocation(level, stack, 0.0F));
+            }
         }
     }
 }

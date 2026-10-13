@@ -16,7 +16,7 @@ public class PetRidingEvents {
 
     @SubscribeEvent
     public static void onEntityTickPre(EntityTickEvent.Pre event) {
-        if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
+        if (event.getEntity() instanceof net.minecraft.world.entity.LivingEntity mob && PetHelper.isTamed(mob)) {
             if (mob.getFirstPassenger() instanceof Player player && PetHelper.isOwner(mob, player)) {
                 PetRidingHandler.tickRiddenMob(mob, player);
             } else if (PetRidingHandler.isMarkedRiddenNoAi(mob)) {
@@ -27,7 +27,7 @@ public class PetRidingEvents {
 
     @SubscribeEvent
     public static void onEntityTickPost(EntityTickEvent.Post event) {
-        if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
+        if (event.getEntity() instanceof net.minecraft.world.entity.LivingEntity mob && PetHelper.isTamed(mob)) {
             if (mob.getFirstPassenger() instanceof Player player && PetHelper.isOwner(mob, player) && PetHelper.hasSaddle(mob)) {
                 PetRidingHandler.lockRotations(mob, player);
                 PetRidingHandler.suppressMobAi(mob, player);
@@ -37,7 +37,7 @@ public class PetRidingEvents {
 
     @SubscribeEvent
     public static void onEntityMount(EntityMountEvent event) {
-        if (event.getEntityMounting() instanceof Player player && event.getEntityBeingMounted() instanceof Mob mob) {
+        if (event.getEntityMounting() instanceof Player player && event.getEntityBeingMounted() instanceof net.minecraft.world.entity.LivingEntity mob) {
             if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player)) {
                 if (event.isDismounting()) {
                     // 1. If forced dismount was triggered (e.g. via keybind, grounded sneak, or DismountPetPayload), allow immediately

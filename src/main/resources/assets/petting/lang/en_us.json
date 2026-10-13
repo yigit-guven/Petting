@@ -139,6 +139,8 @@
   "petting.configuration.feedback.enablePetRespawnedFeedback.tooltip": "Whether to display notifications in chat when your pet respawns at a bound bed or cushion.",
   "petting.configuration.feedback.enablePetRespawnFailedFeedback": "Enable Pet Respawn Failed Feedback",
   "petting.configuration.feedback.enablePetRespawnFailedFeedback.tooltip": "Whether to display notifications in chat when your pet fails to respawn because its bed or cushion was missing.",
+  "petting.configuration.feedback.enableEggConvertedFeedback": "Enable Egg Conversion Feedback",
+  "petting.configuration.feedback.enableEggConvertedFeedback.tooltip": "Whether to display chat notifications when converting a Dragon Egg into a Golden Dragon Egg.",
   "petting.action.pet_died": "Your pet %s died!",
   "petting.action.pet_healed": "%s was healed!",
   "petting.action.pet_full_health": "%s is already at full health.",
@@ -262,5 +264,15 @@
   "petting.configuration.riding.swimmingPetSpeedMultiplier": "Swimming Pet Speed Multiplier",
   "petting.configuration.riding.swimmingPetSpeedMultiplier.tooltip": "Swimming speed multiplier for aquatic pets.",
   "petting.configuration.riding.riddenAttackCooldownTicks": "Ridden Attack Cooldown (Ticks)",
-  "petting.configuration.riding.riddenAttackCooldownTicks.tooltip": "Minimum ticks between attacks performed by ridden pets (20 ticks = 1 second)."
+  "petting.configuration.riding.riddenAttackCooldownTicks.tooltip": "Minimum ticks between attacks performed by ridden pets (20 ticks = 1 second).",
+  "block.petting.golden_dragon_egg": "Golden Dragon Egg",
+  "item.petting.golden_dragon_egg": "Golden Dragon Egg",
+  "petting.action.egg_converted_to_golden": "The Dragon Egg radiates golden energy and transforms into a Golden Dragon Egg!",
+  "petting.action.dragon_cannot_be_tamed_directly": "The Ender Dragon cannot be tamed directly! Infuse its egg with a Golden Star and summon it at the End Exit Portal.",
+  "petting.action.golden_dragon_hatched": "Your Golden Ender Dragon has hatched and bonded with you!",
+  "petting.action.golden_dragon_summoned": "%s has summoned a tamed Golden Ender Dragon!",
+  "petting.action.golden_egg_info_owner": "This Golden Dragon Egg is infused by %s. Summon it at the End Exit Portal using 4 End Crystals.",
+  "petting.action.golden_egg_info_unbound": "This Golden Dragon Egg is ready to hatch! Place it at the End Exit Portal with 4 End Crystals.",
+  "petting.tooltip.golden_egg_owner": "Infused by: %s",
+  "petting.tooltip.golden_egg_ritual": "Summon at the End Exit Portal using 4 End Crystals"
 }

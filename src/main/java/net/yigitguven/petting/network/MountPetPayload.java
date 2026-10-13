@@ -38,14 +38,15 @@ public record MountPetPayload(int entityId) implements CustomPacketPayload {
             }
             if (context.player() instanceof ServerPlayer player) {
                 // If player is already riding a pet, pressing ride triggers dismount
-                if (player.getVehicle() instanceof Mob riddenMob && PetHelper.isTamed(riddenMob) && PetHelper.isOwner(riddenMob, player)) {
+                if (player.getVehicle() instanceof net.minecraft.world.entity.LivingEntity riddenMob && PetHelper.isTamed(riddenMob) && PetHelper.isOwner(riddenMob, player)) {
                     PetRidingHandler.dismountPlayer(player, riddenMob);
                     return;
                 }
 
                 Entity entity = player.level().getEntity(payload.entityId());
-                if (entity instanceof Mob mob && mob.isAlive()) {
-                    if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player) && player.distanceTo(mob) <= 6.0D) {
+                if (entity instanceof net.minecraft.world.entity.LivingEntity mob && mob.isAlive()) {
+                    double maxDist = (mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) ? 18.0D : 6.0D;
+                    if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player) && (player.isWithinEntityInteractionRange(mob, 3.0D) || player.distanceTo(mob) <= maxDist)) {
                         if (!PetHelper.isPetRidingEnabledFor(mob)) {
                             return;
                         }
@@ -61,6 +62,9 @@ public record MountPetPayload(int entityId) implements CustomPacketPayload {
                         }
 
                         player.startRiding(mob, true, false);
+                        if (mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
+                            player.setYRot(net.minecraft.util.Mth.wrapDegrees(mob.getYRot() + 180.0F));
+                        }
 
                         if (hasSaddle) {
                             player.sendSystemMessage(Component.translatable("petting.action.mount_controlled", mob.getDisplayName()), true);

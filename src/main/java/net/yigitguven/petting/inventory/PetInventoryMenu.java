@@ -7,6 +7,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
 import net.minecraft.world.entity.player.Inventory;
@@ -23,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PetInventoryMenu extends AbstractContainerMenu {
-    private final @Nullable Mob pet;
+    private final @Nullable LivingEntity pet;
     private final Player player;
     private final List<PetSlotType> petSlots;
     private final int petSlotCount;
@@ -34,13 +35,13 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         this(windowId, playerInv, getPetFromBuf(playerInv.player, extraData));
     }
 
-    private static @Nullable Mob getPetFromBuf(Player player, RegistryFriendlyByteBuf extraData) {
+    private static @Nullable LivingEntity getPetFromBuf(Player player, RegistryFriendlyByteBuf extraData) {
         int entityId = extraData.readVarInt();
         Entity entity = player.level().getEntity(entityId);
-        return entity instanceof Mob mob ? mob : null;
+        return entity instanceof LivingEntity living ? living : null;
     }
 
-    public PetInventoryMenu(int windowId, Inventory playerInv, @Nullable Mob pet) {
+    public PetInventoryMenu(int windowId, Inventory playerInv, @Nullable LivingEntity pet) {
         super(PettingModMenus.PET_MENU.get(), windowId);
         this.pet = pet;
         this.player = playerInv.player;
@@ -87,7 +88,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         }
     }
 
-    public static void open(ServerPlayer player, Mob pet) {
+    public static void open(ServerPlayer player, LivingEntity pet) {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return;
         }
@@ -97,7 +98,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         ), buf -> buf.writeVarInt(pet.getId()));
     }
 
-    public @Nullable Mob getPet() {
+    public @Nullable LivingEntity getPet() {
         return this.pet;
     }
 
@@ -212,10 +213,10 @@ public class PetInventoryMenu extends AbstractContainerMenu {
     }
 
     public class DynamicPetSlot extends Slot {
-        private final Mob pet;
+        private final @Nullable LivingEntity pet;
         private final PetSlotType slotType;
 
-        public DynamicPetSlot(Container container, int index, int x, int y, PetSlotType slotType, @Nullable Mob pet) {
+        public DynamicPetSlot(Container container, int index, int x, int y, PetSlotType slotType, @Nullable LivingEntity pet) {
             super(container, index, x, y);
             this.pet = pet;
             this.slotType = slotType;
@@ -258,10 +259,10 @@ public class PetInventoryMenu extends AbstractContainerMenu {
     }
 
     private static class PetSlotContainer implements Container {
-        private final @Nullable Mob pet;
+        private final @Nullable LivingEntity pet;
         private final List<PetSlotType> slotTypes;
 
-        public PetSlotContainer(@Nullable Mob pet, List<PetSlotType> slotTypes) {
+        public PetSlotContainer(@Nullable LivingEntity pet, List<PetSlotType> slotTypes) {
             this.pet = pet;
             this.slotTypes = slotTypes;
         }
@@ -407,18 +408,20 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             EquipmentSlot eq = type.getEquipmentSlot();
             if (eq != null) {
                 this.pet.setItemSlot(eq, stack);
-                this.pet.setDropChance(eq, 1.0F);
+                if (this.pet instanceof Mob m) {
+                    m.setDropChance(eq, 1.0F);
+                }
                 this.setChanged();
             }
         }
 
         @Override
         public void setChanged() {
-            if (this.pet != null) {
+            if (this.pet instanceof Mob m) {
                 for (PetSlotType type : this.slotTypes) {
                     EquipmentSlot eq = type.getEquipmentSlot();
                     if (eq != null) {
-                        this.pet.setDropChance(eq, 1.0F);
+                        m.setDropChance(eq, 1.0F);
                     }
                 }
             }

@@ -35,30 +35,12 @@ public record TogglePetSitPayload(int entityId) implements CustomPacketPayload {
         context.enqueueWork(() -> {
             if (context.player() instanceof ServerPlayer player) {
                 Entity entity = player.level().getEntity(payload.entityId());
-                if (entity instanceof Mob mob && mob.isAlive()) {
+                if (entity instanceof net.minecraft.world.entity.LivingEntity mob && mob.isAlive()) {
+                    if (player.getVehicle() == mob || mob.hasPassenger(player) || mob.isVehicle() || mob.isPassenger()) {
+                        return;
+                    }
                     if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player) && (player.isWithinEntityInteractionRange(mob, 3.0D) || player.distanceTo(mob) <= 16.0D)) {
-                        if (!PettingServerConfig.isPetSittingEnabled()) {
-                            return;
-                        }
-                        PetOrder currentOrder = PetHelper.getOrder(mob);
-                        PetOrder newOrder = (currentOrder == PetOrder.SIT) ? PetOrder.FOLLOW : PetOrder.SIT;
-                        PetHelper.setOrder(mob, newOrder);
-
-                        if (newOrder == PetOrder.SIT) {
-                            if (PettingServerConfig.shouldForgiveAttacksOnSit()) {
-                                PetHelper.forgiveAttacksAndClearTarget(mob);
-                            }
-                            boolean hoverFlying = PettingServerConfig.isFlyingPetsHoverWhenSitting() && PetHelper.isFlyingPet(mob);
-                            boolean stillSwimming = PettingServerConfig.isSwimmingPetsStayStillWhenSitting() && PetHelper.isSwimmingPet(mob);
-                            if (hoverFlying || stillSwimming) {
-                                mob.setNoGravity(true);
-                                mob.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-                                mob.fallDistance = 0.0F;
-                            }
-                            player.sendSystemMessage(Component.translatable("petting.action.pet_sitting", mob.getName()));
-                        } else {
-                            player.sendSystemMessage(Component.translatable("petting.action.pet_standing", mob.getName()));
-                        }
+                        PetHelper.toggleSit(mob, player);
                     }
                 }
             }
