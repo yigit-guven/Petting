@@ -179,25 +179,33 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.teleportEnabledButton = PetButton.petBuilder(getToggleText("petting.gui.collar.teleport", initialSettings.teleportEnabled()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withTeleportEnabled(!cur.teleportEnabled()));
-        }).bounds(xo + 10, yo + 103, 76, 18).tooltip(Tooltip.create(Component.translatable("petting.gui.collar.teleport.tooltip"))).build();
+        }).bounds(xo + 10, yo + 103, 76, 18).tooltip(Tooltip.create(initialSettings.teleportEnabled()
+                ? Component.translatable("petting.gui.collar.teleport.on.tooltip", initialSettings.teleportDistance())
+                : Component.translatable("petting.gui.collar.teleport.off.tooltip"))).build();
 
         // 5. Prefer ranged attack toggle
         this.preferRangedButton = PetButton.petBuilder(getToggleText("petting.gui.collar.ranged", initialSettings.preferRangedAttack()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withPreferRangedAttack(!cur.preferRangedAttack()));
-        }).bounds(xo + 90, yo + 103, 76, 18).tooltip(Tooltip.create(Component.translatable("petting.gui.collar.ranged.tooltip"))).build();
+        }).bounds(xo + 90, yo + 103, 76, 18).tooltip(Tooltip.create(initialSettings.preferRangedAttack()
+                ? Component.translatable("petting.gui.collar.ranged.on.tooltip")
+                : Component.translatable("petting.gui.collar.ranged.off.tooltip"))).build();
 
         // 6. Defend other pets toggle
         this.defendOtherPetsButton = PetButton.petBuilder(getToggleText("petting.gui.collar.defend_pets", initialSettings.defendOtherPets()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withDefendOtherPets(!cur.defendOtherPets()));
-        }).bounds(xo + 10, yo + 124, 76, 18).tooltip(Tooltip.create(Component.translatable("petting.gui.collar.defend_pets.tooltip"))).build();
+        }).bounds(xo + 10, yo + 124, 76, 18).tooltip(Tooltip.create(initialSettings.defendOtherPets()
+                ? Component.translatable("petting.gui.collar.defend_pets.on.tooltip")
+                : Component.translatable("petting.gui.collar.defend_pets.off.tooltip"))).build();
 
         // 7. Retaliate when hurt toggle
         this.retaliateButton = PetButton.petBuilder(getToggleText("petting.gui.collar.retaliate", initialSettings.retaliateWhenHurt()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withRetaliateWhenHurt(!cur.retaliateWhenHurt()));
-        }).bounds(xo + 90, yo + 124, 76, 18).tooltip(Tooltip.create(Component.translatable("petting.gui.collar.retaliate.tooltip"))).build();
+        }).bounds(xo + 90, yo + 124, 76, 18).tooltip(Tooltip.create(initialSettings.retaliateWhenHurt()
+                ? Component.translatable("petting.gui.collar.retaliate.on.tooltip")
+                : Component.translatable("petting.gui.collar.retaliate.off.tooltip"))).build();
 
         // 8. Reset defaults button
         this.resetDefaultsButton = PetButton.petBuilder(Component.translatable("petting.gui.collar.reset"), b -> {
