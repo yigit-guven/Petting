@@ -8,20 +8,20 @@ Every mob is tamed with a *golden treat*. The three most common ones:
 
 | Treat | Recipe (3x3, `N` = gold nugget) | Used for |
 |---|---|---|
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="24" alt=""> Golden Wheat | 8 gold nuggets around 1 wheat | Peaceful / ordinary mobs |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_bone.png" width="24" alt=""> Golden Bone | Gold nuggets in the corners, gold ingots on the edges, 1 bone in the centre | Skeletons, wolves and (as fallback) hostile mobs |
-| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_star.png" width="24" alt=""> Golden Star | 8 gold blocks around 1 nether star | Bosses and other very strong mobs |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="24" alt="Golden Wheat"> Golden Wheat | 8 gold nuggets around 1 wheat | Peaceful / ordinary mobs |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_bone.png" width="24" alt="Golden Bone"> Golden Bone | Gold nuggets in the corners, gold ingots on the edges, 1 bone in the centre | Skeletons, wolves and (as fallback) hostile mobs |
+| <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_star.png" width="24" alt="Golden Star"> Golden Star | 8 gold blocks around 1 nether star | Bosses and other very strong mobs |
 
 All nine treats, their recipes and the mobs they are tied to are listed on [Golden Treats](Golden-Treats).
 
 ## 2. Weaken the mob if it is hostile
 
-By default a **hostile** mob (anything implementing Minecraft's `Enemy` interface) can only be tamed while its health is **at or below 30 %** of its maximum. Peaceful mobs do not need to be weakened by default. Both rules are configurable, see [Configuration](Configuration#taming).
+By default a **hostile** mob can only be tamed while its health is **at or below 30%** of its maximum. Peaceful mobs do not need to be weakened by default. Both rules are configurable, see [Configuration](Configuration#taming).
 
 ## 3. Right-click the mob with the treat
 
 - The treat must be in your **main hand**.
-- By default 33.3 % of attempts fail. A failed attempt still consumes the treat.
+- By default 33.3% of attempts fail. A failed attempt still consumes the treat.
 - In Creative mode treats are not consumed.
 
 Details: [Taming](Taming).
@@ -33,7 +33,7 @@ Details: [Taming](Taming).
 | Sit / stand | Right-click the pet |
 | Open the pet inventory | Shift + right-click the pet |
 | Ride / dismount | `R` |
-| Heal the pet | Right-click with a treat that fits it (heals 50 % of max health) |
+| Heal the pet | Right-click with a treat that fits it (heals 50% of max health) |
 
 All three actions are rebindable key mappings, see [Controls](Controls).
 
@@ -52,4 +52,4 @@ A collar stores the pet's combat mode, follow distance, teleport settings and mo
 - Tame the Ender Dragon: [Golden Dragon Egg](Golden-Dragon-Egg).
 
 > [!NOTE]
-> The client configuration hides every Petting chat notification by default (taming success, healing, sitting, and so on). If you see no messages, that is expected. See [Chat Messages](Chat-Messages) for how to turn them on.
+> Client feedback notifications (taming success, healing, sitting, etc.) are disabled by default. If you see no chat messages, that is normal. See [Chat Messages](Chat-Messages) for how to turn them on.

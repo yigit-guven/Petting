@@ -1,1 +1,1 @@
-[Home](Home) · [Configuration](Configuration) · [FAQ](FAQ) · [Report an issue](https://github.com/yigit-guven/Petting/issues) · [Source code](https://github.com/yigit-guven/Petting/tree/26.3-NeoForge/src)
+[Home](Home) · [Configuration](Configuration) · [FAQ](FAQ) · [Report an issue](https://github.com/yigit-guven/Petting/issues) · [Source code](https://github.com/yigit-guven/Petting)

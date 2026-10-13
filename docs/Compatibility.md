@@ -6,32 +6,32 @@
 
 ## Just Enough Items (JEI) Integration
 
-Petting includes dedicated, native Just Enough Items (JEI) integration (`PettingJeiPlugin.java`):
+Petting includes dedicated, native Just Enough Items (JEI) integration:
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="32" height="32" alt="Golden Wheat">
+  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/golden_wheat.png" width="32" height="32" alt="Golden Wheat">
 </p>
 
-- **Recipe Category**: **Pet Taming** (`petting:taming`, title: `petting.jei.taming.title`).
+- **Recipe Category**: **Pet Taming** (`petting:taming`).
 - **Category Icon**: Golden Wheat.
 - **Recipe Catalysts**: All nine Golden Treats are registered as catalysts. Clicking any Golden Treat in JEI displays its taming category.
-- **Recipe Layout (`PetTamingCategory`)**:
+- **Recipe Layout**:
   - **Input Slot (Left)**: The Golden Treat.
   - **Output Grid (Right)**: Up to 18 slots (3 rows of 6) displaying the **Spawn Egg** corresponding to each mob tamed by that treat.
   - **Dynamic Pagination**: If a treat tag contains more mobs than fit in the grid, the slots automatically cycle through all eligible mobs.
-  - **Custom Representatives**: Entities without spawn eggs (such as the Ender Dragon) use custom representative items (`PetEggHelper`), displaying the Golden Dragon Egg.
-- **Hidden Items**: In accordance with the common conventions (`c:hidden_from_recipe_viewers`), the **Golden Paw** (creative tab icon only) and **Golden Dragon Egg** (ritual only) are hidden from default JEI recipe lists.
+  - **Custom Representatives**: Entities without standard spawn eggs (such as the Ender Dragon) display custom icons (e.g. the Golden Dragon Egg).
+- **Hidden Items**: In accordance with common recipe viewer conventions (`c:hidden_from_recipe_viewers`), the **Golden Paw** (creative tab icon only) and **Golden Dragon Egg** (ritual only) are hidden from default recipe lists.
 
 ---
 
 ## Modded Mobs Compatibility
 
-Petting does not rely on hardcoded mob lists for core features. Any modded entity extending standard Minecraft entity classes (`Mob`, `LivingEntity`, `PathfinderMob`) is fully compatible:
+Petting does not rely on hardcoded mob lists for core features. Any modded entity is fully compatible:
 
 ### 1. Automatic Fallback Matching
 Even if a modded mob is not registered in any of Petting's tags, it can still be tamed immediately using the automatic fallback hierarchy:
-- **Max Health > 300.0 HP** $\rightarrow$ Requires **Golden Star**.
-- **Hostile Mobs (`Enemy`)** $\rightarrow$ Requires **Golden Bone**.
+- **Max Health > 300 HP** $\rightarrow$ Requires **Golden Star**.
+- **Hostile Mobs** $\rightarrow$ Requires **Golden Bone**.
 - **All Other Mobs** $\rightarrow$ Requires **Golden Wheat**.
 
 ### 2. Universal Equipment & Armor
@@ -39,18 +39,18 @@ Even if a modded mob is not registered in any of Petting's tags, it can still be
 - Modded mounts and quadrupeds gain the Body Slot (compatible with modded horse/wolf armors).
 
 ### 3. Universal Collar Rendering
-`PetCollarLayer` is registered on **all** `LivingEntity` renderers across the game. When a collar is equipped on a modded mob, the 3D collar strap and golden medallion attach to its head model automatically.
+When a collar is equipped on a modded mob, the 3D collar strap and golden medallion attach to its head model automatically across all living entity models.
 
 ### 4. Modded Riding
-Any modded mob can be ridden (subject to the server `whitelist`/`blacklist`). Aerial and aquatic modded mobs are dynamically classified by checking movement controllers, water navigation, or `NoGravity` flags.
+Any modded mob can be ridden (subject to the server `whitelist`/`blacklist`). Aerial and aquatic modded mobs are dynamically classified by checking movement controllers, water navigation, or flight flags.
 
 ---
 
 ## Bed & Cushion Mod Compatibility
 
 When binding collars for the [Collar Respawn](Collar-Respawn) mechanic:
-- **Beds**: Matches any block belonging to the `#minecraft:beds` tag, any block extending `BedBlock`, or any block registry identifier containing `"bed"`.
-- **Cushions**: Matches any block or entity belonging to the `#c:cushions` common convention tag, or any registry identifier containing `"cushion"`.
+- **Beds**: Matches any block belonging to the `#minecraft:beds` tag or any block matching bed definitions.
+- **Cushions**: Matches any block or entity belonging to the `#c:cushions` common convention tag, or any identifier containing `"cushion"`.
 
 ---
 

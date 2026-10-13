@@ -14,7 +14,7 @@ Spawns any valid mob into the world and immediately bonds it as a tamed pet to t
 ```
 
 ### Permission Level
-- Requires **Gamemaster / Operator Level 2** (`Commands.LEVEL_GAMEMASTERS` / cheats enabled).
+- Requires **Operator Level 2** (cheats enabled).
 
 ### Arguments
 
@@ -30,16 +30,15 @@ Spawns any valid mob into the world and immediately bonds it as a tamed pet to t
 ## Behavior & Rules
 
 1. **Mob Validation**:
-   - The entity type must resolve to an instance of `net.minecraft.world.entity.Mob`.
+   - The entity type must resolve to a living mob.
    - If an invalid entity type is specified (such as a boat, minecart, arrow, or experience orb), the command fails with the error message:  
-     > *"Target entity is not a mob and cannot be tamed as a pet."* (`commands.petting.summon.error.not_a_mob`)
+     > *"Target entity is not a mob and cannot be tamed as a pet."*
 2. **Immediate Taming**:
-   - Calls `PetHelper.setTamed(mob, owner.getUUID())` upon spawning.
    - Bypasses health weakening requirements and failure chances.
    - Bypasses the server `maxPetCount` limit, allowing operators to gift pets beyond standard survival limits.
 3. **Success Feedback**:
    - Sends a confirmation message to the command executor:  
-     > *"Summoned `<Entity>` as a pet for `<Player>`"* (`commands.petting.summon.success`)
+     > *"Summoned `<Entity>` as a pet for `<Player>`"*
 
 ---
 
@@ -64,4 +63,4 @@ Spawns any valid mob into the world and immediately bonds it as a tamed pet to t
 
 ---
 
-*Related Pages*: [Taming](Taming) · [Configuration](Configuration) · [Technical Reference](Technical-Reference)
+*Related Pages*: [Taming](Taming) · [Configuration](Configuration)
