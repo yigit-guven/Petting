@@ -1,123 +1,108 @@
-# Customizing Taming Treats (Datapacks & KubeJS)
+# Custom Treat Tags
 
-Petting uses Minecraft’s native entity type tagging system (`TagKey<EntityType<?>>`). This allows server administrators, modpack creators, and singleplayer users to easily assign any mob (vanilla or modded) to any Golden Treat using **Datapacks** or **KubeJS** without editing core mod files.
+**Petting** is fully data-driven. Which entities can be tamed by which [Golden Treat](Golden-Treats) is determined by Minecraft **entity type tags** (`Registries.ENTITY_TYPE`).
 
----
-
-## Treat Tag List
-
-Each Golden Treat is linked to a specific entity tag under the `petting` namespace:
-
-| Golden Treat | Entity Type Tag ID |
-| :--- | :--- |
-| **Golden Wheat** | `#petting:golden_wheat` |
-| **Golden Star** | `#petting:golden_star` |
-| **Golden Flesh** | `#petting:golden_flesh` |
-| **Golden Bone** | `#petting:golden_bone` |
-| **Golden Fish** | `#petting:golden_fish` |
-| **Golden Kelp** | `#petting:golden_kelp` |
-| **Golden Fungus** | `#petting:golden_fungus` |
-| **Golden Eye** | `#petting:golden_eye` |
-| **Golden Slime** | `#petting:golden_slime` |
+You can customize, add modded mobs, or reassign vanilla mobs to any treat using a simple datapack.
 
 ---
 
-## Method 1: Using a Data Pack
+## Tag IDs and File Locations
 
-A data pack can add new mobs to an existing treat tag or completely rewrite a treat's acceptable mobs.
+All nine treat tags reside in the `petting` namespace:
 
-### Directory Structure
-Inside your world or server directory, navigate to `datapacks/`:
+| Treat Item | Entity Type Tag ID | Datapack JSON Path |
+|---|---|---|
+| **Golden Wheat** | `petting:tames_with/golden_wheat` | `data/petting/tags/entity_type/tames_with/golden_wheat.json` |
+| **Golden Star** | `petting:tames_with/golden_star` | `data/petting/tags/entity_type/tames_with/golden_star.json` |
+| **Golden Flesh** | `petting:tames_with/golden_flesh` | `data/petting/tags/entity_type/tames_with/golden_flesh.json` |
+| **Golden Bone** | `petting:tames_with/golden_bone` | `data/petting/tags/entity_type/tames_with/golden_bone.json` |
+| **Golden Fish** | `petting:tames_with/golden_fish` | `data/petting/tags/entity_type/tames_with/golden_fish.json` |
+| **Golden Kelp** | `petting:tames_with/golden_kelp` | `data/petting/tags/entity_type/tames_with/golden_kelp.json` |
+| **Golden Fungus** | `petting:tames_with/golden_fungus` | `data/petting/tags/entity_type/tames_with/golden_fungus.json` |
+| **Golden Eye** | `petting:tames_with/golden_eye` | `data/petting/tags/entity_type/tames_with/golden_eye.json` |
+| **Golden Slime** | `petting:tames_with/golden_slime` | `data/petting/tags/entity_type/tames_with/golden_slime.json` |
 
-```text
-datapacks/
-└── MyCustomPetting/
-    ├── pack.mcmeta
-    └── data/
-        └── petting/
-            └── tags/
-                └── entity_type/
-                    └── tames_with/
-                        ├── golden_wheat.json
-                        └── golden_star.json
-```
+---
 
-### 1. Create `pack.mcmeta`
-```json
-{
-  "pack": {
-    "pack_format": 48,
-    "description": "Custom Petting Mob Treat Mappings"
-  }
-}
-```
+## Creating a Datapack
 
-### 2. Create or Edit the Tag JSON Files
-Place the JSON file under:  
-`data/petting/tags/entity_type/tames_with/<treat_name>.json`
+To add or modify treat tags:
 
-#### Example A: Appending Modded Mobs
-To make modded mobs accept **Golden Wheat** alongside existing vanilla mobs, keep `"replace": false`:
+1. In your world folder, navigate to `datapacks/` and create a folder (e.g. `MyPettingTweaks`).
+2. Create `pack.mcmeta` inside `MyPettingTweaks`:
+   ```json
+   {
+     "pack": {
+       "pack_format": 48,
+       "description": "Custom Treat Tags for Petting"
+     }
+   }
+   ```
+3. Create the directory path:  
+   `MyPettingTweaks/data/petting/tags/entity_type/tames_with/`
+4. Add the JSON file for the treat you want to edit.
+
+### Example 1: Adding Modded Mobs (Appending)
+To make custom modded creatures tameable with **Golden Wheat** without removing existing vanilla animals, set `"replace": false`:
 
 ```json
 {
   "replace": false,
   "values": [
-    "alexsmobs:capybara",
-    "alexsmobs:kangaroo",
-    "autumnity:turkey"
+    "alexsmobs:capuchin_monkey",
+    "alexsmobs:elephant",
+    "twilightforest:deer"
   ]
 }
 ```
 
-#### Example B: Completely Overwriting Default Mobs
-If you want **Golden Star** to *only* tame a specific set of bosses:
+### Example 2: Reassigning an Entire Tag (Overwriting)
+If you want **Golden Flesh** to *only* tame Phantoms and nothing else, set `"replace": true`:
 
 ```json
 {
   "replace": true,
   "values": [
-    "minecraft:ender_dragon",
-    "minecraft:wither",
-    "cataclysm:ignis"
+    "minecraft:phantom"
+  ]
+}
+```
+
+### Example 3: Referencing Other Tags
+You can include entire tags inside your treat definition. Use `"required": false` so your datapack does not crash if another mod is not installed:
+
+```json
+{
+  "replace": false,
+  "values": [
+    { "id": "#c:bosses", "required": false },
+    { "id": "#mymod:custom_dragons", "required": false }
   ]
 }
 ```
 
 ---
 
-## Method 2: Using KubeJS
+## Tag Matching Rules & Priority
 
-If you are running a modpack with [KubeJS](https://curseforge.com/minecraft/mc-mods/kubejs), you can modify Petting's treat tags via server scripts.
+When a player interacts with a mob using a treat, `PetEggHelper.canTame` processes tags in the following order:
 
-Place a script in `kubejs/server_scripts/petting_tags.js`:
-
-```javascript
-ServerEvents.tags('entity_type', event => {
-    // Add custom modded mobs to Golden Wheat
-    event.add('petting:golden_wheat', [
-        'alexsmobs:capybara',
-        'alexsmobs:kangaroo'
-    ])
-
-    // Add modded bosses to Golden Star
-    event.add('petting:golden_star', [
-        'cataclysm:ignis',
-        'cataclysm:netherite_monstrosity',
-        'twilightforest:naga'
-    ])
-
-    // Remove a mob from a treat tag if desired
-    event.remove('petting:golden_flesh', 'minecraft:phantom')
-})
-```
+1. **Explicit Tag Match**: If the entity type is included in `petting:tames_with/<treat>`, the treat is accepted.
+2. **Exclusion Check**: If the entity type is present in *another* treat's `tames_with` tag, it will **reject** all other treats.
+3. **Fallback Matching** (only active for mobs belonging to **none** of the nine treat tags):
+   - Max health $> 300.0 \rightarrow$ Requires **Golden Star**.
+   - Hostile mob (`Enemy`) $\rightarrow$ Requires **Golden Bone**.
+   - Any other mob $\rightarrow$ Requires **Golden Wheat**.
+4. **Server Configuration Overrides**:
+   - If an entity ID is listed in `untameableEntities` (`petting-server.toml`), it can never be tamed, regardless of tags.
+   - The wild **Ender Dragon** cannot be tamed directly by treat even if in the tag; it must be summoned via the [Golden Dragon Egg](Golden-Dragon-Egg) ritual.
 
 ---
 
-## Automatic Fallback Rule
+## JEI Live Synchronization
 
-If a mob is **not** assigned to any of the 9 treat tags via Petting or your data pack, the following fallback logic automatically applies:
+Because Petting's Just Enough Items (JEI) integration dynamically inspects the entity type tags at runtime (`PetEggHelper.getRepresentativeItemsForTreat`), any mobs added or modified via datapacks will **automatically appear in JEI's "Pet Taming" recipe view**!
 
-1. **Max Health > 300**: Tamed with **Golden Star**.
-2. **Hostile Monsters (`Enemy`)**: Tamed with **Golden Bone**.
-3. **Passive & Neutral Mobs**: Tamed with **Golden Wheat**.
+---
+
+*Related Pages*: [Golden Treats](Golden-Treats) · [Taming](Taming) · [Compatibility](Compatibility)
