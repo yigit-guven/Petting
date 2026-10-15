@@ -1,15 +1,15 @@
 # Configuration
 
-**Petting** provides extensive configuration options split between **Server Configuration** (`petting-server.toml`, world-specific) and **Client Configuration** (`petting-client.toml`, player-specific).
+**Petting** provides extensive configuration options split between **Server / Synced Configuration** (`petting-synced.toml`, world/server-synced) and **Client Configuration** (`petting-client.toml`, player-specific).
 
 You can edit these files using a text editor or via the in-game configuration screen accessible from the **Mods** menu.
 
 ---
 
-## Server Configuration (`petting-server.toml`)
+## Server / Synced Configuration (`petting-synced.toml`)
 
-Server settings govern gameplay rules, taming mechanics, combat AI, and physics across a world or dedicated server. In singleplayer, this file is located in your world save directory at:  
-`.minecraft/saves/<WorldName>/serverconfig/petting-server.toml`
+Server settings govern gameplay rules, taming mechanics, combat AI, and physics across a world or dedicated server. Values are authoritative on the server and automatically synced to connected clients. In singleplayer, this file is located in your world save directory at:  
+`.minecraft/saves/<WorldName>/serverconfig/petting-synced.toml`
 
 ### Taming Settings (`[taming]`)
 
