@@ -18,7 +18,7 @@ To open a pet's inventory:
 The inventory will only open if you are the pet's owner and within interaction distance.
 
 > [!NOTE]
-> If `enablePetInventory` is disabled in `petting-server.toml`, pets operate solely on server defaults, cannot open inventory screens, cannot equip items, and cannot be custom-ridden.
+> If `enablePetInventory` is disabled in `petting-synced.toml`, pets operate solely on server defaults, cannot open inventory screens, cannot equip items, and cannot be custom-ridden.
 
 ---
 

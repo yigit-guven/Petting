@@ -33,7 +33,7 @@ Please be respectful, constructive, and considerate when opening issues, reviewi
 Encountered a bug or crash? Please submit an issue using our [Bug Report Template](https://github.com/yigit-guven/Petting/issues/new?template=bug_report.md).
 
 **Please include:**
-1. **Minecraft & Mod Version**: e.g., Minecraft 26.3, NeoForge 26.3.0.6-beta, Petting 5.0.0.
+1. **Minecraft & Mod Version**: e.g., Minecraft 26.3, NeoForge 26.3.0.83, Petting 5.0.1.
 2. **Environment**: Singleplayer or Multiplayer (Dedicated Server / LAN).
 3. **Crash Reports / Logs**: Provide the full log or crash report via [mclo.gs](https://mclo.gs/) or a GitHub Gist.
 4. **Steps to Reproduce**: Clear, numbered steps to replicate the bug.

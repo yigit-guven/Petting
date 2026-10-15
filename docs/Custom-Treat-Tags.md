@@ -94,7 +94,7 @@ When interacting with a mob using a treat:
    - Hostile mob $\rightarrow$ Requires **Golden Bone**.
    - Any other mob $\rightarrow$ Requires **Golden Wheat**.
 4. **Server Configuration Overrides**:
-   - If an entity ID is listed in `untameableEntities` (`petting-server.toml`), it can never be tamed, regardless of tags.
+   - If an entity ID is listed in `untameableEntities` (`petting-synced.toml`), it can never be tamed, regardless of tags.
    - The wild **Ender Dragon** cannot be tamed directly by treat even if in the tag; it must be summoned via the [Golden Dragon Egg](Golden-Dragon-Egg) ritual.
 
 ---
