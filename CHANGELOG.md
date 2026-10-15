@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.1]
+### Changed
+- **NeoForge Compatibility Update**: Updated NeoForge dependency to **`26.3.0.83`** (latest recommended release for Minecraft 26.3).
+- **Configuration Migration (`SYNCED`)**: Migrated server-side configuration from `ModConfig.Type.SERVER` to `ModConfig.Type.SYNCED` (`petting-synced.toml`), fixing the startup crash (`java.lang.NoSuchFieldError: Class net.neoforged.fml.config.ModConfig$Type does not have member field 'SERVER'`) caused by breaking API changes in NeoForge 26.3.
+- **In-Game Configuration UI**: Updated `PettingConfigurationScreen` to properly detect and apply online dedicated server and LAN edit restrictions to `SYNCED` configurations.
+- **Developer & Runtime Dependencies**: Updated Just Enough Items (JEI) dependency to `31.12.0.66` and `net.neoforged.moddev` Gradle plugin to `2.0.148` to ensure full compatibility with NeoForge 26.3.0.83.
+- **Documentation**: Updated wiki and reference guides to reflect the new `petting-synced.toml` configuration filename.
+
 ## [5.0.0]
 ### Added
 - Ported mod to Minecraft 26.3 and NeoForge.

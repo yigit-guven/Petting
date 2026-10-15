@@ -24,7 +24,7 @@ Whether you can steer your mount depends on whether it has an equipped [Saddle](
 | **Unsaddled (Uncontrolled)** | Passive Passenger | If `allowRidingWithoutSaddle` is enabled (default `true`), you sit on the mob while it wanders using its own AI. You cannot steer it. |
 
 > [!NOTE]
-> If `allowRidingWithoutSaddle` is set to `false` in `petting-server.toml`, attempting to mount an unsaddled pet is blocked with the message: *"This pet requires an equipped saddle to be ridden!"*
+> If `allowRidingWithoutSaddle` is set to `false` in `petting-synced.toml`, attempting to mount an unsaddled pet is blocked with the message: *"This pet requires an equipped saddle to be ridden!"*
 
 ---
 
@@ -82,7 +82,7 @@ Configurable in the [Pet Inventory](Pet-Inventory) Riding Tab:
 
 ## Server Whitelist & Blacklist
 
-Server administrators can restrict which entity types can be ridden in `petting-server.toml` under `[riding]`:
+Server administrators can restrict which entity types can be ridden in `petting-synced.toml` under `[riding]`:
 
 - `useWhitelist = false` (default): All entities are ridable except those listed in `blacklist`.
 - `useWhitelist = true`: Only entity types explicitly specified in `whitelist` can be ridden.
