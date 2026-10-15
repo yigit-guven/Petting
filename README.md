@@ -86,7 +86,7 @@ For detailed guides, tables, configuration options, and mechanics, visit the [**
 - [**Collar Respawn**](docs/Collar-Respawn.md) — Binding collars to beds and cushions.
 - [**Golden Dragon Egg & Ritual**](docs/Golden-Dragon-Egg.md) — How to hatch and fly a tamed dragon.
 - [**Controls Reference**](docs/Controls.md) — Key bindings and smart right-click interactions.
-- [**Configuration Guide**](docs/Configuration.md) — Server rules (`petting-server.toml`) and client feedback toggles.
+- [**Configuration Guide**](docs/Configuration.md) — Server rules (`petting-synced.toml`) and client feedback toggles.
 - [**Custom Treat Tags (Datapacks)**](docs/Custom-Treat-Tags.md) — Adding or customizing mobs with datapacks.
 - [**Compatibility & JEI**](docs/Compatibility.md) — Just Enough Items recipe integration and mod compatibility.
 - [**FAQ**](docs/FAQ.md) — Quick solutions to common questions.
