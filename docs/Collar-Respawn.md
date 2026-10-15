@@ -61,7 +61,7 @@ When an equipped pet takes fatal damage in the world, the game intercepts the de
   - For beds: Teleports the pet to `X + 0.5, Y + 0.6, Z + 0.5`.
   - For cushions: Teleports the pet to `X + 0.5, Y + 0.25, Z + 0.5`.
 - **Anchor Integrity**: If the bound bed or cushion is broken or mined away while the pet is adventuring, the pet cannot respawn. Re-bind the collar whenever you move your bed.
-- **Server Toggle**: Server admins can disable this feature entirely by setting `enableCollarRespawn = false` in `petting-server.toml`.
+- **Server Toggle**: Server admins can disable this feature entirely by setting `enableCollarRespawn = false` in `petting-synced.toml`.
 
 ---
 
