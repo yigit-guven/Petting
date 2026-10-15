@@ -55,10 +55,10 @@ public class PettingConfigurationScreen extends OptionsSubScreen {
                     if (!((net.neoforged.neoforge.common.ModConfigSpec) modConfig.getSpec()).isLoaded()) {
                         tooltip.append(ConfigurationScreen.TOOLTIP_CANNOT_EDIT_NOT_LOADED).append(Component.literal("\n\n"));
                         btn.active = false;
-                    } else if (type == ModConfig.Type.SERVER && minecraft.getCurrentServer() != null && (!minecraft.hasSingleplayerServer() || !minecraft.getSingleplayerServer().isPublished())) {
+                    } else if (type == ModConfig.Type.SYNCED && minecraft.getCurrentServer() != null && (!minecraft.hasSingleplayerServer() || !minecraft.getSingleplayerServer().isPublished())) {
                         tooltip.append(ConfigurationScreen.TOOLTIP_CANNOT_EDIT_THIS_WHILE_ONLINE).append(Component.literal("\n\n"));
                         btn.active = false;
-                    } else if (type == ModConfig.Type.SERVER && minecraft.hasSingleplayerServer() && minecraft.getSingleplayerServer().isPublished()) {
+                    } else if (type == ModConfig.Type.SYNCED && minecraft.hasSingleplayerServer() && minecraft.getSingleplayerServer().isPublished()) {
                         tooltip.append(ConfigurationScreen.TOOLTIP_CANNOT_EDIT_THIS_WHILE_OPEN_TO_LAN).append(Component.literal("\n\n"));
                         btn.active = false;
                     }

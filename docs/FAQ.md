@@ -66,7 +66,7 @@ Yes! You have two ways:
 ---
 
 ### Where are the configuration files?
-- **Server Settings** (`petting-server.toml`): Saved inside your world folder at `.minecraft/saves/<WorldName>/serverconfig/petting-server.toml`.
+- **Server / Synced Settings** (`petting-synced.toml`): Saved inside your world folder at `.minecraft/saves/<WorldName>/serverconfig/petting-synced.toml`.
 - **Client Settings** (`petting-client.toml`): Saved globally for your client at `.minecraft/config/petting-client.toml`.
 - You can also edit both through the in-game **Mods** configuration menu.
 

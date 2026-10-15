@@ -32,7 +32,7 @@ public class Petting {
 
         modEventBus.addListener(net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent.class, net.yigitguven.petting.network.PettingNetwork::registerPayloads);
 
-        modContainer.registerConfig(ModConfig.Type.SERVER, PettingServerConfig.SPEC);
+        modContainer.registerConfig(ModConfig.Type.SYNCED, PettingServerConfig.SPEC);
         modContainer.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC);
 
         if (FMLEnvironment.getDist().isClient()) {
