@@ -5,7 +5,7 @@
 There are 16 color variants matching the 16 Minecraft dyes. All collar variants share the same functionality, differing only in visual strap color and item registry name.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/collar(red).png" width="32" height="32" alt="Red Collar">
+  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/collar.png" width="32" height="32" alt="Red Collar">
   <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/orange_collar.png" width="32" height="32" alt="Orange Collar">
   <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/yellow_collar.png" width="32" height="32" alt="Yellow Collar">
   <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/lime_collar.png" width="32" height="32" alt="Lime Collar">
