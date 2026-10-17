@@ -1,43 +1,44 @@
 package net.yigitguven.petting.network;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import net.yigitguven.petting.PettingMod;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.Entity;
-import net.yigitguven.petting.world.inventory.PetInventoryMenu;
+import net.minecraft.world.entity.Mob;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.yigitguven.petting.Petting;
+import net.yigitguven.petting.inventory.PetInventoryMenu;
+import net.yigitguven.petting.util.PetHelper;
 
-public record OpenPetInventoryPayload() implements CustomPacketPayload {
-    public static final CustomPacketPayload.Type<OpenPetInventoryPayload> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(PettingMod.MODID, "open_pet_inventory"));
+public record OpenPetInventoryPayload(int entityId) implements CustomPacketPayload {
+    public static final Type<OpenPetInventoryPayload> TYPE =
+            new Type<>(ResourceLocation.fromNamespaceAndPath(Petting.MODID, "open_pet_inventory"));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, OpenPetInventoryPayload> STREAM_CODEC = StreamCodec.unit(new OpenPetInventoryPayload());
+    public static final StreamCodec<ByteBuf, OpenPetInventoryPayload> STREAM_CODEC =
+            StreamCodec.composite(
+                    ByteBufCodecs.VAR_INT,
+                    OpenPetInventoryPayload::entityId,
+                    OpenPetInventoryPayload::new
+            );
 
     @Override
-    public CustomPacketPayload.Type<OpenPetInventoryPayload> type() {
+    public Type<? extends CustomPacketPayload> type() {
         return TYPE;
     }
 
-    public static void handle(final OpenPetInventoryPayload payload, final IPayloadContext context) {
+    public static void handle(OpenPetInventoryPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
+            if (!net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) {
+                return;
+            }
             if (context.player() instanceof ServerPlayer player) {
-                if (player.getVehicle() != null) {
-                    Entity pet = player.getVehicle();
-                    boolean isOwner = false;
-                    if (pet.getPersistentData().contains("ownerUUID") && pet.getPersistentData().getString("ownerUUID").equals(player.getStringUUID())) {
-                        isOwner = true;
-                    } else if (pet instanceof net.minecraft.world.entity.TamableAnimal tamable) {
-                        if (tamable.isOwnedBy(player)) isOwner = true;
-                    }
-
-                    if (isOwner || pet.getPersistentData().getBoolean("pettingtamed")) {
-                        player.openMenu(new SimpleMenuProvider(
-                            (id, inv, p) -> new PetInventoryMenu(id, inv, pet),
-                            pet.getDisplayName()
-                        ), buf -> buf.writeInt(pet.getId()));
+                Entity entity = player.level().getEntity(payload.entityId());
+                if (entity instanceof net.minecraft.world.entity.LivingEntity mob && mob.isAlive()) {
+                    if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player) && player.distanceTo(mob) <= 16.0D) {
+                        PetInventoryMenu.open(player, mob);
                     }
                 }
             }

@@ -1,21 +1,21 @@
 {
   "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "pattern": [
-    "aaa",
-    "aba",
-    "aaa"
-  ],
   "key": {
-    "a": {
-      "item": "minecraft:gold_block"
+    "N": {
+      "item": "minecraft:gold_nugget"
     },
-    "b": {
+    "W": {
       "item": "minecraft:wheat"
     }
   },
+  "pattern": [
+    "NNN",
+    "NWN",
+    "NNN"
+  ],
   "result": {
-    "id": "petting:golden_wheat",
-    "count": 1
+    "count": 1,
+    "id": "petting:golden_wheat"
   }
 }

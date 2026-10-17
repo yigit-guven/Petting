@@ -1,10 +1,6 @@
 {
   "pack": {
-    "pack_format": 48,
-    "supported_formats": {
-      "min_inclusive": 34,
-      "max_inclusive": 48
-    },
-    "description": "${mod_description}"
+    "pack_format": 26,
+    "description": "Break the limits of Minecraft taming. This mod introduces a universal Petting mechanic that allows you to tame any mob - whether vanilla or mods."
   }
 }

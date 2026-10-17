@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_components",
+              "include": [
+                "petting:dragon_egg_owner",
+                "petting:dragon_egg_owner_name"
+              ],
+              "source": "block_entity"
+            }
+          ],
+          "name": "petting:golden_dragon_egg"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "petting:blocks/golden_dragon_egg"
+}
