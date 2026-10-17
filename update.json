@@ -1,14 +1,15 @@
 {
   "homepage": "https://github.com/yigit-guven/Petting",
   "promos": {
-    "26.3-latest": "5.0.1",
-    "26.3-recommended": "5.0.1",
+    "26.3-latest": "5.0.2",
+    "26.3-recommended": "5.0.2",
     "1.21.1-latest": "5.0.2",
     "1.21.1-recommended": "5.0.2",
     "1.20.1-latest": "4.2.3-beta.4-forge-1.20.1",
     "1.20.1-recommended": "4.2.2"
   },
   "26.3": {
+    "5.0.2": "Added server and client configuration options to toggle collar models on pets.",
     "5.0.1": "Updated NeoForge to 26.3.0.83, migrated server configuration to SYNCED config type (petting-synced.toml), and updated JEI dependency.",
     "5.0.0": "Major update: NeoForge 26.3 support, overhauled architecture and updated mechanics."
   },

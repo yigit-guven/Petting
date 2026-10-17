@@ -13,6 +13,8 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.yigitguven.petting.Petting;
+import net.yigitguven.petting.config.PettingClientConfig;
+import net.yigitguven.petting.config.PettingServerConfig;
 
 public class PetCollarLayer<S extends LivingEntityRenderState, M extends EntityModel<? super S>> extends RenderLayer<S, M> {
     private static final Identifier COLLAR_TEXTURE =
@@ -33,6 +35,10 @@ public class PetCollarLayer<S extends LivingEntityRenderState, M extends EntityM
     @Override
     public void submit(PoseStack poseStack, SubmitNodeCollector submitNodeCollector, int packedLight, S state, float yRot, float xRot) {
         if (state.isInvisible) {
+            return;
+        }
+
+        if (!PettingServerConfig.isCollarModelsEnabled() || !PettingClientConfig.isCollarModelsEnabled()) {
             return;
         }
 
