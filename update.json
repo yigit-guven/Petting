@@ -3,8 +3,8 @@
   "promos": {
     "26.3-latest": "5.0.1",
     "26.3-recommended": "5.0.1",
-    "1.21.1-latest": "4.2.3-beta.2",
-    "1.21.1-recommended": "4.2.2",
+    "1.21.1-latest": "5.0.2",
+    "1.21.1-recommended": "5.0.2",
     "1.20.1-latest": "4.2.3-beta.4-forge-1.20.1",
     "1.20.1-recommended": "4.2.2"
   },
@@ -13,6 +13,7 @@
     "5.0.0": "Major update: NeoForge 26.3 support, overhauled architecture and updated mechanics."
   },
   "1.21.1": {
+    "5.0.2": "Added server and client configuration options to toggle collar models on pets.",
     "4.2.3-beta.2": "Multiplayer fixes: fixed owner scoping for Pet Settings UI and spectator desyncs.",
     "4.2.3-beta1": "Complete Pet Settings and Key Mapping UI system, RUN_COMMAND support, and cross-dimension bed binding.",
     "4.2.2": "Critical crash fix in creative tab and improved registry initialization.",
