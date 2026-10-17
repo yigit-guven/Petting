@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.2]
+### Added
+- **Collar Model Visibility Configurations**:
+  - Added `enableCollarModels` option under `[collar]` in server/synced configuration (`petting-synced.toml`), allowing server administrators to disable worn collar models on pets globally for everyone on the server.
+  - Added `enableCollarModels` option under `[visuals]` in client configuration (`petting-client.toml`), allowing individual players to choose whether they want collar models to appear on pets on their client.
+  - Configured visibility precedence so that if collar models are disabled on the server, they will remain hidden for all clients regardless of individual client configuration settings.
+
 ## [5.0.1]
 ### Changed
 - **NeoForge Compatibility Update**: Updated NeoForge dependency to **`26.3.0.83`** (latest recommended release for Minecraft 26.3).

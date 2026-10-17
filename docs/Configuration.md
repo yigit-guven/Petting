@@ -76,6 +76,7 @@ Server settings govern gameplay rules, taming mechanics, combat AI, and physics 
 | `defaultDefendOtherPets` | boolean | `true` | `true`/`false` | Whether pets defend fellow pets by default. |
 | `defaultRetaliateWhenHurt` | boolean | `true` | `true`/`false` | Whether pets fight back when damaged by default. |
 | `enableCollarRespawn` | boolean | `true` | `true`/`false` | When `true`, right-clicking a bed or cushion binds a collar, enabling pet respawning upon death. |
+| `enableCollarModels` | boolean | `true` | `true`/`false` | When `true`, collars worn by pets are visually rendered in-world on their models. When `false`, collar models are hidden server-wide for all players. |
 
 ---
 
@@ -108,6 +109,12 @@ Petting includes 19 client-side feedback toggles (all default to `false`) allowi
 | `enablePetRespawnedFeedback` | `false` | Displays notification when your pet respawns at a bound bed/cushion. |
 | `enablePetRespawnFailedFeedback` | `false` | Displays notification when your pet fails to respawn because its bed/cushion was missing. |
 | `enableEggConvertedFeedback` | `false` | Displays notification when converting a Dragon Egg into a Golden Dragon Egg. |
+
+### Visual Settings (`[visuals]`)
+
+| Client Option | Default | Description |
+|---|:---:|---|
+| `enableCollarModels` | `true` | When `true`, collar models are visible on pets for this client. When `false`, this client will not see collar models on any pets. Note: If the server disables collar models (`enableCollarModels = false` in `petting-synced.toml`), collar models will remain hidden regardless of this client setting. |
 
 ---
 
