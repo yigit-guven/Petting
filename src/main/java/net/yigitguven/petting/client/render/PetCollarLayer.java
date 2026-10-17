@@ -16,6 +16,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.yigitguven.petting.Petting;
+import net.yigitguven.petting.config.PettingClientConfig;
+import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.item.CollarItem;
 import net.yigitguven.petting.util.PetHelper;
@@ -55,6 +57,10 @@ public class PetCollarLayer<T extends LivingEntity, M extends EntityModel<T>> ex
             float headPitch
     ) {
         if (livingEntity.isInvisible()) {
+            return;
+        }
+
+        if (!PettingServerConfig.isCollarModelsEnabled() || !PettingClientConfig.isCollarModelsEnabled()) {
             return;
         }
 

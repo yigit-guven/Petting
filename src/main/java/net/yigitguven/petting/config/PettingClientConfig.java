@@ -30,6 +30,9 @@ public class PettingClientConfig {
     public static final ModConfigSpec.BooleanValue ENABLE_PET_RESPAWN_FAILED_FEEDBACK;
     public static final ModConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
 
+    // Visual toggles
+    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_MODELS;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
 
@@ -113,7 +116,19 @@ public class PettingClientConfig {
 
         builder.pop();
 
+        builder.push("visuals");
+
+        ENABLE_COLLAR_MODELS = builder
+                .translation("petting.configuration.visuals.enableCollarModels")
+                .define("enableCollarModels", true);
+
+        builder.pop();
+
         SPEC = builder.build();
+    }
+
+    public static boolean isCollarModelsEnabled() {
+        return SPEC.isLoaded() ? ENABLE_COLLAR_MODELS.get() : true;
     }
 
     public static boolean isTamedSuccessFeedbackEnabled() {
