@@ -72,6 +72,7 @@ When equipped on a pet, the collar is rendered directly onto the mob in the game
 - **Color Tinting**: The strap texture is dynamically tinted to match the collar's dye color.
 - **Enchantment Foil**: If the collar is bound to a valid respawn point (bed or cushion), the collar renders with an animated enchantment glint.
 - **Universal Attachment**: The collar layer attaches to all living entity models across the game.
+- **Configurable Visibility**: Collar models can be disabled server-wide via `enableCollarModels` in `petting-synced.toml` (overriding all clients), or disabled individually per player via `enableCollarModels` in `petting-client.toml`.
 
 ---
 
