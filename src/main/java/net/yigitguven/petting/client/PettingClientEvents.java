@@ -10,7 +10,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientChatReceivedEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
 import net.neoforged.neoforge.client.event.RenderNameTagEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.yigitguven.petting.Petting;
@@ -202,24 +201,9 @@ public class PettingClientEvents {
 
     @SubscribeEvent
     public static void onRenderNameTag(RenderNameTagEvent event) {
-        if (event.getEntity() instanceof LivingEntity entity && PetHelper.isTamed(entity) && PetHelper.isSitting(entity) && !entity.isPassenger() && entity.onGround()) {
-            if (PetSlotType.canEquipHumanoidArmor(entity)) {
-                float baseOffset = 0.5F;
-                float finalOffset = baseOffset * (entity.isBaby() ? 0.5F : 1.0F) * entity.getScale();
-                event.getPoseStack().translate(0.0D, -finalOffset, 0.0D);
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event) {
-        LivingEntity entity = event.getEntity();
-        if (PetHelper.isTamed(entity) && PetHelper.isSitting(entity) && !entity.isPassenger() && entity.onGround()) {
-            if (PetSlotType.canEquipHumanoidArmor(entity)) {
-                float baseOffset = 0.5F;
-                float finalOffset = baseOffset * (entity.isBaby() ? 0.5F : 1.0F) * entity.getScale();
-                event.getPoseStack().translate(0.0D, -finalOffset, 0.0D);
-            }
+        if (event.getEntity() instanceof LivingEntity entity && PetHelper.isSittingHumanoidPet(entity)) {
+            float finalOffset = PetHelper.getSittingOffset(entity);
+            event.getPoseStack().translate(0.0D, -finalOffset, 0.0D);
         }
     }
 }

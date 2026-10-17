@@ -12,7 +12,8 @@
     "MonsterMixin"
   ],
   "client": [
-    "EnderDragonRendererMixin"
+    "EnderDragonRendererMixin",
+    "LivingEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

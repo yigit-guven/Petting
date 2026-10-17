@@ -39,7 +39,7 @@ public class PetSitGoal extends Goal {
         if (this.mob instanceof TamableAnimal tamable) {
             tamable.setInSittingPose(true);
         }
-        this.mob.setShiftKeyDown(true);
+        this.mob.setShiftKeyDown(false);
         if (PettingServerConfig.shouldForgiveAttacksOnSit()) {
             PetHelper.forgiveAttacksAndClearTarget(this.mob);
         }
@@ -69,8 +69,8 @@ public class PetSitGoal extends Goal {
 
     private void applySittingPhysics() {
         this.mob.getNavigation().stop();
-        if (!this.mob.isShiftKeyDown()) {
-            this.mob.setShiftKeyDown(true);
+        if (this.mob.isShiftKeyDown()) {
+            this.mob.setShiftKeyDown(false);
         }
 
         boolean hoverFlying = PettingServerConfig.isFlyingPetsHoverWhenSitting() && PetHelper.isFlyingPet(this.mob);

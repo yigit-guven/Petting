@@ -285,6 +285,18 @@ public class PetHelper {
         return false;
     }
 
+    public static boolean isSittingHumanoidPet(LivingEntity entity) {
+        return isTamed(entity)
+                && isSitting(entity)
+                && !entity.isPassenger()
+                && net.yigitguven.petting.inventory.PetSlotType.canEquipHumanoidArmor(entity);
+    }
+
+    public static float getSittingOffset(LivingEntity entity) {
+        float baseOffset = 0.55F;
+        return baseOffset * (entity.isBaby() ? 0.5F : 1.0F) * entity.getScale();
+    }
+
     public static void setOrder(LivingEntity entity, PetOrder order) {
         if (entity.hasData(PettingModAttachments.PET_DATA)) {
             PetData data = entity.getData(PettingModAttachments.PET_DATA);
@@ -297,7 +309,9 @@ public class PetHelper {
             tamable.setInSittingPose(sit);
         }
         if (entity instanceof Mob mob) {
-            mob.setShiftKeyDown(order == PetOrder.SIT);
+            if (order == PetOrder.SIT) {
+                mob.setShiftKeyDown(false);
+            }
             if (order != PetOrder.SIT && isFlyingPet(mob)) {
                 mob.setNoGravity(false);
             }
