@@ -62,12 +62,12 @@ public class PetGuardTargetGoal extends TargetGoal {
         if (!(this.mob instanceof Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
             return false;
         }
-        if (!this.mob.hasHome()) {
-            this.mob.setHomeTo(this.mob.blockPosition(), (int) PetHelper.getFollowDistance(this.mob));
+        if (!this.mob.hasRestriction()) {
+            this.mob.restrictTo(this.mob.blockPosition(), (int) PetHelper.getFollowDistance(this.mob));
         }
 
-        BlockPos homePos = this.mob.getHomePosition();
-        int radius = Math.max(2, this.mob.getHomeRadius());
+        BlockPos homePos = this.mob.getRestrictCenter();
+        int radius = Math.max(2, (int) this.mob.getRestrictRadius());
         double radiusSqr = (double) radius * radius;
 
         Player owner = PetHelper.getOwner(this.mob);
@@ -121,9 +121,9 @@ public class PetGuardTargetGoal extends TargetGoal {
             return false;
         }
 
-        if (this.mob.hasHome()) {
-            BlockPos homePos = this.mob.getHomePosition();
-            double leashDist = this.mob.getHomeRadius() + 8.0D;
+        if (this.mob.hasRestriction()) {
+            BlockPos homePos = this.mob.getRestrictCenter();
+            double leashDist = this.mob.getRestrictRadius() + 8.0D;
             if (currentTarget.distanceToSqr(Vec3.atBottomCenterOf(homePos)) > leashDist * leashDist) {
                 return false;
             }

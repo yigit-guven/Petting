@@ -22,7 +22,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.util.PetHelper;
@@ -42,10 +42,10 @@ public class SummonPetCommand {
         dispatcher.register(
                 Commands.literal("summon")
                         .then(Commands.literal("pet")
-                                .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                                .requires(source -> source.hasPermission(2))
                                 .then(Commands.argument("owner", EntityArgument.player())
                                         .then(Commands.argument("entity", ResourceArgument.resource(context, Registries.ENTITY_TYPE))
-                                                .suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES))
+                                                .suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
                                                 .executes(ctx -> spawnPet(ctx.getSource(),
                                                         EntityArgument.getPlayer(ctx, "owner"),
                                                         ResourceArgument.getResource(ctx, "entity", Registries.ENTITY_TYPE),
@@ -59,10 +59,10 @@ public class SummonPetCommand {
                                                                 new CompoundTag()))
                                                         .then(Commands.argument("nbt", CompoundTagArgument.compoundTag())
                                                                 .executes(ctx -> spawnPet(ctx.getSource(),
-                                                                        EntityArgument.getPlayer(ctx, "owner"),
-                                                                        ResourceArgument.getResource(ctx, "entity", Registries.ENTITY_TYPE),
-                                                                        Vec3Argument.getVec3(ctx, "pos"),
-                                                                        CompoundTagArgument.getCompoundTag(ctx, "nbt")))))))));
+                                                                EntityArgument.getPlayer(ctx, "owner"),
+                                                                ResourceArgument.getResource(ctx, "entity", Registries.ENTITY_TYPE),
+                                                                Vec3Argument.getVec3(ctx, "pos"),
+                                                                CompoundTagArgument.getCompoundTag(ctx, "nbt")))))))));
     }
 
     private static int spawnPet(CommandSourceStack source, ServerPlayer owner, Holder.Reference<EntityType<?>> entityTypeHolder, Vec3 pos, CompoundTag nbt) throws CommandSyntaxException {

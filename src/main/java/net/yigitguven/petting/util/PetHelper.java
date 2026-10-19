@@ -8,10 +8,12 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.animal.equine.AbstractHorse;
+import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.util.ObfuscationReflectionHelper;
 import net.yigitguven.petting.ai.PetAttackOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetDefendOwnerTargetGoal;
 import net.yigitguven.petting.ai.PetFollowOwnerGoal;
@@ -26,7 +28,6 @@ import net.yigitguven.petting.data.PetData;
 import net.yigitguven.petting.data.PetOrder;
 import net.minecraft.world.item.ItemStack;
 import net.yigitguven.petting.capability.PetDataProvider;
-import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.network.PettingNetwork;
 import net.yigitguven.petting.network.SyncPetDataPayload;
 
@@ -81,7 +82,7 @@ public class PetHelper {
             return true;
         }
         if (entity instanceof OwnableEntity ownable) {
-            if (ownable.getOwnerReference() != null && ownable.getOwnerReference().getUUID() != null) {
+            if (ownable.getOwnerUUID() != null) {
                 return true;
             }
             if (ownable.getOwner() != null) {
@@ -155,8 +156,8 @@ public class PetHelper {
                     current = owner;
                     continue;
                 }
-                if (ownable.getOwnerReference() != null && ownable.getOwnerReference().getUUID() != null) {
-                    UUID ownerUuid = ownable.getOwnerReference().getUUID();
+                if (ownable.getOwnerUUID() != null) {
+                    UUID ownerUuid = ownable.getOwnerUUID();
                     Player player = current.level().getPlayerByUUID(ownerUuid);
                     if (player != null) {
                         return player;
@@ -256,8 +257,8 @@ public class PetHelper {
             return Optional.of(data.getOwnerUUID());
         }
         if (entity instanceof OwnableEntity ownable) {
-            if (ownable.getOwnerReference() != null && ownable.getOwnerReference().getUUID() != null) {
-                return Optional.of(ownable.getOwnerReference().getUUID());
+            if (ownable.getOwnerUUID() != null) {
+                return Optional.of(ownable.getOwnerUUID());
             }
             if (ownable.getOwner() != null) {
                 if (ownable.getOwner() instanceof Player) {
@@ -342,8 +343,8 @@ public class PetHelper {
             return PettingServerConfig.getDefaultCombatMode();
         }
         ItemStack collar = getCollar(entity);
-        if (!collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS.get())) {
-            return collar.get(PettingDataComponents.COLLAR_SETTINGS.get()).combatMode();
+        if (!collar.isEmpty() && collar.getTag() != null && collar.getTag().contains("petting:collar_settings")) {
+            return CollarSettings.fromNbt(collar.getTag().getCompound("petting:collar_settings")).combatMode();
         }
         PetData data = getPetData(entity);
         if (data == null) {
@@ -362,7 +363,7 @@ public class PetHelper {
         if (!collar.isEmpty()) {
             CollarSettings current = getCollarSettings(entity);
             if (current.combatMode() != mode) {
-                collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), current.withCombatMode(mode));
+                collar.getOrCreateTag().put("petting:collar_settings", current.withCombatMode(mode).toNbt());
                 setCollar(entity, collar);
             }
         }
@@ -387,8 +388,8 @@ public class PetHelper {
         PetData data = getPetData(entity);
         if (data != null) {
             data.setCollar(collar != null ? collar : ItemStack.EMPTY);
-            if (collar != null && !collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS.get())) {
-                data.setCombatMode(collar.get(PettingDataComponents.COLLAR_SETTINGS.get()).combatMode());
+            if (collar != null && !collar.isEmpty() && collar.getTag() != null && collar.getTag().contains("petting:collar_settings")) {
+                data.setCombatMode(CollarSettings.fromNbt(collar.getTag().getCompound("petting:collar_settings")).combatMode());
             }
             syncPetData(entity);
         }
@@ -399,10 +400,12 @@ public class PetHelper {
             return ItemStack.EMPTY;
         }
         if (entity instanceof AbstractHorse horse) {
-            ItemStack horseSaddle = horse.getItemBySlot(EquipmentSlot.SADDLE);
-            if (!horseSaddle.isEmpty()) {
-                return horseSaddle;
-            }
+            try {
+                net.minecraft.world.Container horseInv = ObfuscationReflectionHelper.getPrivateValue(AbstractHorse.class, horse, "f_30528_");
+                if (horseInv != null && !horseInv.getItem(0).isEmpty()) {
+                    return horseInv.getItem(0);
+                }
+            } catch (Exception ignored) {}
         }
         PetData data = getPetData(entity);
         if (data != null) {
@@ -417,8 +420,12 @@ public class PetHelper {
         }
         ItemStack item = saddle != null ? saddle : ItemStack.EMPTY;
         if (entity instanceof AbstractHorse horse) {
-            horse.setItemSlot(EquipmentSlot.SADDLE, item);
-            horse.setDropChance(EquipmentSlot.SADDLE, 1.0F);
+            try {
+                net.minecraft.world.Container horseInv = ObfuscationReflectionHelper.getPrivateValue(AbstractHorse.class, horse, "f_30528_");
+                if (horseInv != null) {
+                    horseInv.setItem(0, item.copy());
+                }
+            } catch (Exception ignored) {}
         }
         PetData data = getPetData(entity);
         if (data != null) {
@@ -469,15 +476,15 @@ public class PetHelper {
         }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
-            if (collar.has(PettingDataComponents.COLLAR_SETTINGS.get())) {
-                return collar.get(PettingDataComponents.COLLAR_SETTINGS.get());
+            if (collar.getTag() != null && collar.getTag().contains("petting:collar_settings")) {
+                return CollarSettings.fromNbt(collar.getTag().getCompound("petting:collar_settings"));
             }
             CollarSettings defaults = CollarSettings.fromConfig();
             PetData data = getPetData(entity);
             if (data != null) {
                 defaults = defaults.withCombatMode(data.getCombatMode());
             }
-            collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), defaults);
+            collar.getOrCreateTag().put("petting:collar_settings", defaults.toNbt());
             setCollar(entity, collar);
             return defaults;
         }
@@ -490,7 +497,7 @@ public class PetHelper {
         }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
-            collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), settings);
+            collar.getOrCreateTag().put("petting:collar_settings", settings.toNbt());
             setCollar(entity, collar);
         }
         setCombatMode(entity, settings.combatMode());
@@ -509,14 +516,14 @@ public class PetHelper {
         if (entity instanceof Mob mob) {
             if (settings.combatMode() == CombatMode.WANDER || settings.combatMode() == CombatMode.GUARD) {
                 int radius = Math.max(2, (int) getFollowDistance(entity));
-                if (!mob.hasHome()) {
-                    mob.setHomeTo(mob.blockPosition(), radius);
+                if (!mob.hasRestriction()) {
+                    mob.restrictTo(mob.blockPosition(), radius);
                 } else {
-                    mob.setHomeTo(mob.getHomePosition(), radius);
+                    mob.restrictTo(mob.getRestrictCenter(), radius);
                 }
             } else {
-                if (mob.hasHome()) {
-                    mob.clearHome();
+                if (mob.hasRestriction()) {
+                    mob.clearRestriction();
                 }
             }
         }
@@ -529,7 +536,7 @@ public class PetHelper {
         if (pet == null) {
             return false;
         }
-        if (pet instanceof net.minecraft.world.entity.animal.equine.AbstractHorse) {
+        if (pet instanceof net.minecraft.world.entity.animal.horse.AbstractHorse) {
             return false;
         }
         if (pet instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {
@@ -599,7 +606,7 @@ public class PetHelper {
                 horse.setTamed(true);
             }
             if (owner != null) {
-                horse.setOwner(owner);
+                horse.setOwnerUUID(owner.getUUID());
             }
             horse.setTemper(horse.getMaxTemper());
             horse.goalSelector.getAvailableGoals().removeIf(wrapped -> wrapped.getGoal() instanceof RunAroundLikeCrazyGoal);
@@ -607,10 +614,10 @@ public class PetHelper {
 
         if (mob instanceof TamableAnimal tamable) {
             if (!tamable.isTame()) {
-                tamable.setTame(true, false);
+                tamable.setTame(true);
             }
             if (owner != null) {
-                tamable.setOwner(owner);
+                tamable.setOwnerUUID(owner.getUUID());
             }
             boolean sit = (getOrder(mob) == PetOrder.SIT);
             tamable.setOrderedToSit(sit);
@@ -661,23 +668,19 @@ public class PetHelper {
     }
 
     public static void setUntamed(Mob mob) {
-        if (mob.hasHome()) {
-            mob.clearHome();
+        if (mob.hasRestriction()) {
+            mob.clearRestriction();
         }
         PetData data = getPetData(mob);
         if (data != null) {
             ItemStack collar = data.getCollar();
             if (!collar.isEmpty()) {
-                if (mob.level() instanceof ServerLevel serverLevel) {
-                    mob.spawnAtLocation(serverLevel, collar);
-                }
+                mob.spawnAtLocation(collar);
                 data.setCollar(ItemStack.EMPTY);
             }
             ItemStack saddle = data.getSaddle();
             if (!saddle.isEmpty()) {
-                if (mob.level() instanceof ServerLevel serverLevel) {
-                    mob.spawnAtLocation(serverLevel, saddle);
-                }
+                mob.spawnAtLocation(saddle);
                 data.setSaddle(ItemStack.EMPTY);
             }
             data.setTamed(false);
@@ -688,11 +691,11 @@ public class PetHelper {
         }
         if (mob instanceof AbstractHorse horse) {
             horse.setTamed(false);
-            horse.setOwner(null);
+            horse.setOwnerUUID(null);
         }
         if (mob instanceof TamableAnimal tamable) {
-            tamable.setTame(false, false);
-            tamable.setOwner(null);
+            tamable.setTame(false);
+            tamable.setOwnerUUID(null);
         }
         if (mob.level() instanceof ServerLevel serverLevel) {
             PetSavedData.get(serverLevel).removePet(mob.getUUID());
@@ -753,9 +756,9 @@ public class PetHelper {
         if (pet instanceof Mob mob) {
             if (mob.getTarget() == target) {
                 CollarSettings cs = getCollarSettings(pet);
-                if (cs.combatMode() == CombatMode.GUARD && mob.hasHome()) {
-                    double leashDist = mob.getHomeRadius() + 10.0D;
-                    if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getHomePosition())) > leashDist * leashDist) {
+                if (cs.combatMode() == CombatMode.GUARD && mob.hasRestriction()) {
+                    double leashDist = mob.getRestrictRadius() + 10.0D;
+                    if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getRestrictCenter())) > leashDist * leashDist) {
                         return false;
                     }
                 }
@@ -764,9 +767,9 @@ public class PetHelper {
             if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                     && mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null) == target) {
                 CollarSettings cs = getCollarSettings(pet);
-                if (cs.combatMode() == CombatMode.GUARD && mob.hasHome()) {
-                    double leashDist = mob.getHomeRadius() + 10.0D;
-                    if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getHomePosition())) > leashDist * leashDist) {
+                if (cs.combatMode() == CombatMode.GUARD && mob.hasRestriction()) {
+                    double leashDist = mob.getRestrictRadius() + 10.0D;
+                    if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getRestrictCenter())) > leashDist * leashDist) {
                         return false;
                     }
                 }
@@ -802,9 +805,9 @@ public class PetHelper {
 
         // 5. Guard mode: untamed hostile monsters within patrol/leash area
         if (settings.combatMode() == CombatMode.GUARD && target instanceof net.minecraft.world.entity.monster.Enemy && !isTamed(target)) {
-            if (pet instanceof Mob mob && mob.hasHome()) {
-                double leashDist = mob.getHomeRadius() + 10.0D;
-                if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getHomePosition())) > leashDist * leashDist) {
+            if (pet instanceof Mob mob && mob.hasRestriction()) {
+                double leashDist = mob.getRestrictRadius() + 10.0D;
+                if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getRestrictCenter())) > leashDist * leashDist) {
                     return false;
                 }
             }
@@ -841,8 +844,8 @@ public class PetHelper {
                 || entity instanceof net.minecraft.world.entity.monster.Vex
                 || entity instanceof net.minecraft.world.entity.ambient.Bat
                 || entity instanceof net.minecraft.world.entity.animal.allay.Allay
-                || entity instanceof net.minecraft.world.entity.animal.bee.Bee
-                || entity instanceof net.minecraft.world.entity.animal.parrot.Parrot) {
+                || entity instanceof net.minecraft.world.entity.animal.Bee
+                || entity instanceof net.minecraft.world.entity.animal.Parrot) {
             return true;
         }
         String name = entity.getClass().getSimpleName().toLowerCase();
@@ -850,7 +853,7 @@ public class PetHelper {
     }
 
     public static boolean isSwimmingPet(LivingEntity entity) {
-        if (entity instanceof net.minecraft.world.entity.animal.fish.WaterAnimal) {
+        if (entity instanceof net.minecraft.world.entity.animal.WaterAnimal) {
             return true;
         }
         if (entity instanceof net.minecraft.world.entity.monster.Guardian) {
@@ -974,7 +977,7 @@ public class PetHelper {
 
         // 1. Check EnderDragon via EnderDragonFight
         if (mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
-            net.minecraft.world.level.dimension.end.EnderDragonFight fight = dragon.getDragonFight();
+            net.minecraft.world.level.dimension.end.EndDragonFight fight = dragon.getDragonFight();
             if (fight != null) {
                 setFightBossEventVisible(fight, visible);
             }
@@ -1010,13 +1013,13 @@ public class PetHelper {
         return list;
     }
 
-    private static void setFightBossEventVisible(net.minecraft.world.level.dimension.end.EnderDragonFight fight, boolean visible) {
+    private static void setFightBossEventVisible(net.minecraft.world.level.dimension.end.EndDragonFight fight, boolean visible) {
         if (endDragonFightFieldFailed) {
             return;
         }
         try {
             if (endDragonFightEventField == null) {
-                for (java.lang.reflect.Field f : net.minecraft.world.level.dimension.end.EnderDragonFight.class.getDeclaredFields()) {
+                for (java.lang.reflect.Field f : net.minecraft.world.level.dimension.end.EndDragonFight.class.getDeclaredFields()) {
                     if (net.minecraft.server.level.ServerBossEvent.class.isAssignableFrom(f.getType())) {
                         f.setAccessible(true);
                         endDragonFightEventField = f;
@@ -1051,15 +1054,14 @@ public class PetHelper {
             return false;
         }
         return state.getBlock().getDescriptionId().contains("cushion")
-                || state.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK, net.minecraft.resources.Identifier.fromNamespaceAndPath("c", "cushions")));
+                || state.is(net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK, new ResourceLocation("c", "cushions")));
     }
 
     public static boolean isCushionEntity(@Nullable net.minecraft.world.entity.Entity entity) {
         if (entity == null) {
             return false;
         }
-        return entity instanceof net.minecraft.world.entity.decoration.Cushion
-                || entity.getType().getDescriptionId().contains("cushion")
+        return entity.getType().getDescriptionId().contains("cushion")
                 || entity.getClass().getSimpleName().toLowerCase().contains("cushion");
     }
 
@@ -1074,10 +1076,6 @@ public class PetHelper {
 
         if (respawnPoint.isCushion()) {
             net.minecraft.world.phys.AABB searchBox = new net.minecraft.world.phys.AABB(pos).inflate(1.5);
-            boolean hasCushionEntity = !level.getEntitiesOfClass(net.minecraft.world.entity.decoration.Cushion.class, searchBox, c -> !c.isRemoved() && c.isAlive()).isEmpty();
-            if (hasCushionEntity) {
-                return true;
-            }
             boolean hasModdedCushion = !level.getEntitiesOfClass(net.minecraft.world.entity.Entity.class, searchBox,
                     e -> !e.isRemoved() && e.isAlive() && isCushionEntity(e)).isEmpty();
             if (hasModdedCushion) {
@@ -1109,23 +1107,25 @@ public class PetHelper {
         mob.setDeltaMovement(Vec3.ZERO);
         mob.setTarget(null);
         mob.setLastHurtByMob(null);
-        mob.setInvulnerableTime(60);
+        mob.invulnerableTime = 60;
         mob.getNavigation().stop();
-        mob.syncVelocity = false;
+        mob.hasImpulse = false;
 
         net.minecraft.world.entity.Entity respawnedEntity;
         if (targetLevel != currentLevel) {
-            respawnedEntity = mob.teleport(new net.minecraft.world.level.portal.TeleportTransition(
-                    targetLevel, respawnPos, Vec3.ZERO, mob.getYRot(), 0.0F,
-                    net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING
-            ));
+            respawnedEntity = mob.changeDimension(targetLevel, new net.minecraftforge.common.util.ITeleporter() {
+                @Override
+                public net.minecraft.world.entity.Entity placeEntity(net.minecraft.world.entity.Entity entity, ServerLevel currentWorld, ServerLevel destWorld, float yaw, java.util.function.Function<Boolean, net.minecraft.world.entity.Entity> repositionEntity) {
+                    net.minecraft.world.entity.Entity placed = repositionEntity.apply(false);
+                    if (placed != null) {
+                        placed.moveTo(respawnPos.x, respawnPos.y, respawnPos.z, yaw, 0.0F);
+                    }
+                    return placed;
+                }
+            });
         } else {
-            currentLevel.getChunkSource().removeEntity(mob);
-            respawnedEntity = mob.teleport(new net.minecraft.world.level.portal.TeleportTransition(
-                    targetLevel, respawnPos, Vec3.ZERO, mob.getYRot(), 0.0F,
-                    net.minecraft.world.level.portal.TeleportTransition.DO_NOTHING
-            ));
-            currentLevel.getChunkSource().addEntity(respawnedEntity != null ? respawnedEntity : mob);
+            mob.teleportTo(respawnPos.x, respawnPos.y, respawnPos.z);
+            respawnedEntity = mob;
         }
 
         if (respawnedEntity == null) {
@@ -1135,7 +1135,7 @@ public class PetHelper {
         if (respawnedEntity instanceof Mob respawnedMob) {
             respawnedMob.getNavigation().stop();
             respawnedMob.setDeltaMovement(Vec3.ZERO);
-            respawnedMob.syncVelocity = false;
+            respawnedMob.hasImpulse = false;
             setOrder(respawnedMob, PetOrder.SIT);
             if (respawnedMob instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
                 wither.setAlternativeTarget(0, 0);
@@ -1165,10 +1165,10 @@ public class PetHelper {
         }
 
         final net.minecraft.world.entity.Entity finalEntity = respawnedEntity;
-        targetLevel.getServer().schedule(new net.minecraft.server.TickTask(targetLevel.getServer().getTickCount(), () -> {
+        targetLevel.getServer().tell(new net.minecraft.server.TickTask(targetLevel.getServer().getTickCount(), () -> {
             if (finalEntity.isAlive()) {
                 finalEntity.setDeltaMovement(Vec3.ZERO);
-                finalEntity.syncVelocity = false;
+                finalEntity.hasImpulse = false;
                 if (finalEntity instanceof Mob m) {
                     m.getNavigation().stop();
                 }
@@ -1244,8 +1244,8 @@ public class PetHelper {
 
         // Guard mode: patrol orbit around home position
         if (mode == CombatMode.GUARD) {
-            net.minecraft.core.BlockPos home = dragon.hasHome() ? dragon.getHomePosition() : dragon.blockPosition();
-            double radius = dragon.hasHome() ? Math.min(24.0D, Math.max(8.0D, dragon.getHomeRadius())) : 14.0D;
+            net.minecraft.core.BlockPos home = dragon.hasRestriction() ? dragon.getRestrictCenter() : dragon.blockPosition();
+            double radius = dragon.hasRestriction() ? Math.min(24.0D, Math.max(8.0D, dragon.getRestrictRadius())) : 14.0D;
             double angle = dragon.tickCount * 0.025D;
             double gx = home.getX() + 0.5D + Math.cos(angle) * radius;
             double gy = home.getY() + 7.0D + Math.sin(angle * 0.5D) * 2.0D;
@@ -1255,7 +1255,7 @@ public class PetHelper {
 
         // Wander mode: smooth wandering orbit around anchor point
         if (mode == CombatMode.WANDER || order == PetOrder.WANDER) {
-            net.minecraft.core.BlockPos anchor = dragon.hasHome() ? dragon.getHomePosition() : dragon.blockPosition();
+            net.minecraft.core.BlockPos anchor = dragon.hasRestriction() ? dragon.getRestrictCenter() : dragon.blockPosition();
             double time = dragon.tickCount * 0.015D;
             double wanderRadius = 24.0D;
             double wx = anchor.getX() + 0.5D + Math.sin(time) * wanderRadius + Math.cos(time * 0.5D) * 12.0D;
@@ -1322,9 +1322,9 @@ public class PetHelper {
             } else if (dragon.distanceToSqr(target) > 64.0D * 64.0D) {
                 dragon.setTarget(null);
                 target = null;
-            } else if (combatMode == CombatMode.GUARD && dragon.hasHome()) {
-                double leash = dragon.getHomeRadius() + 16.0D;
-                if (target.distanceToSqr(Vec3.atBottomCenterOf(dragon.getHomePosition())) > leash * leash) {
+            } else if (combatMode == CombatMode.GUARD && dragon.hasRestriction()) {
+                double leash = dragon.getRestrictRadius() + 16.0D;
+                if (target.distanceToSqr(Vec3.atBottomCenterOf(dragon.getRestrictCenter())) > leash * leash) {
                     dragon.setTarget(null);
                     target = null;
                 }
@@ -1362,8 +1362,8 @@ public class PetHelper {
 
             // Guard mode: untamed hostiles within guard radius
             if (target == null && combatMode == CombatMode.GUARD) {
-                net.minecraft.core.BlockPos home = dragon.hasHome() ? dragon.getHomePosition() : dragon.blockPosition();
-                int radius = dragon.hasHome() ? dragon.getHomeRadius() : 16;
+                net.minecraft.core.BlockPos home = dragon.hasRestriction() ? dragon.getRestrictCenter() : dragon.blockPosition();
+                int radius = dragon.hasRestriction() ? (int) dragon.getRestrictRadius() : 16;
                 net.minecraft.world.phys.AABB guardArea = new net.minecraft.world.phys.AABB(home).inflate(radius);
                 java.util.List<LivingEntity> enemies = sl.getEntitiesOfClass(LivingEntity.class, guardArea,
                         e -> e.isAlive() && e instanceof net.minecraft.world.entity.monster.Enemy && isValidPetTarget(dragon, e));
@@ -1396,8 +1396,8 @@ public class PetHelper {
                 if (dragon.tickCount % 40 == 0) {
                     Vec3 headPos = dragon.head.position();
                     Vec3 aim = target.getEyePosition().subtract(headPos).normalize();
-                    net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball fireball =
-                            new net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball(sl, dragon, aim);
+                    net.minecraft.world.entity.projectile.DragonFireball fireball =
+                            new net.minecraft.world.entity.projectile.DragonFireball(sl, dragon, aim.x, aim.y, aim.z);
                     fireball.setPos(headPos.x + aim.x * 2.5D, headPos.y + aim.y * 2.5D, headPos.z + aim.z * 2.5D);
                     sl.addFreshEntity(fireball);
                     sl.playSound(null, headPos.x, headPos.y, headPos.z, net.minecraft.sounds.SoundEvents.ENDER_DRAGON_SHOOT, net.minecraft.sounds.SoundSource.HOSTILE, 2.0F, 1.0F);
@@ -1495,7 +1495,9 @@ public class PetHelper {
                     if (!player.level().isClientSide()) {
                         net.minecraft.world.item.Item newCollarItem = net.yigitguven.petting.init.PettingModItems.getCollar(dyeColor).get();
                         ItemStack newCollar = new ItemStack(newCollarItem);
-                        newCollar.applyComponents(currentCollar.getComponents());
+                        if (currentCollar.hasTag()) {
+                            newCollar.setTag(currentCollar.getTag().copy());
+                        }
                         setCollar(dragon, newCollar);
                         if (!player.getAbilities().instabuild) {
                             stack.shrink(1);
@@ -1596,7 +1598,11 @@ public class PetHelper {
         return true;
     }
 
-    public static boolean doPetHurtTarget(Mob mob, ServerLevel level, net.minecraft.world.entity.Entity target) {
+    public static boolean doPetHurtTarget(Mob mob, @Nullable ServerLevel level, net.minecraft.world.entity.Entity target) {
+        return doPetHurtTarget(mob, target);
+    }
+
+    public static boolean doPetHurtTarget(Mob mob, net.minecraft.world.entity.Entity target) {
         boolean isPassive = !(mob instanceof net.minecraft.world.entity.monster.Enemy);
         if (isPassive && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
             return false;
@@ -1605,7 +1611,7 @@ public class PetHelper {
         if (isPassive) {
             float damage = (float) PettingServerConfig.getPassiveMobAttackDamage();
             DamageSource damageSource = mob.damageSources().mobAttack(mob);
-            boolean wasHurt = target.hurtServer(level, damageSource, damage);
+            boolean wasHurt = target.hurt(damageSource, damage);
             if (wasHurt) {
                 mob.setLastHurtMob(target);
             }
@@ -1613,10 +1619,10 @@ public class PetHelper {
         }
 
         if (mob.getAttributes().hasAttribute(Attributes.ATTACK_DAMAGE)) {
-            return mob.doHurtTarget(level, target);
+            return mob.doHurtTarget(target);
         }
         DamageSource damageSource = mob.damageSources().mobAttack(mob);
-        boolean wasHurt = target.hurtServer(level, damageSource, (float) PettingServerConfig.getPassiveMobAttackDamage());
+        boolean wasHurt = target.hurt(damageSource, (float) PettingServerConfig.getPassiveMobAttackDamage());
         if (wasHurt) {
             mob.setLastHurtMob(target);
         }

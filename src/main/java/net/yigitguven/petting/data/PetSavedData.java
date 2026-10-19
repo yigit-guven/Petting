@@ -1,46 +1,21 @@
 package net.yigitguven.petting.data;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.resources.Identifier;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.saveddata.SavedData;
-import net.minecraft.world.level.saveddata.SavedDataType;
-import net.yigitguven.petting.Petting;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 public class PetSavedData extends SavedData {
-
-    public record PlayerPetsEntry(UUID playerUuid, List<UUID> petUuids) {
-        public static final Codec<PlayerPetsEntry> CODEC = RecordCodecBuilder.create(instance ->
-                instance.group(
-                        UUIDUtil.CODEC.fieldOf("player").forGetter(PlayerPetsEntry::playerUuid),
-                        UUIDUtil.CODEC.listOf().fieldOf("pets").forGetter(PlayerPetsEntry::petUuids)
-                ).apply(instance, PlayerPetsEntry::new)
-        );
-    }
-
-    public static final Codec<PetSavedData> CODEC = RecordCodecBuilder.create(instance ->
-            instance.group(
-                    PlayerPetsEntry.CODEC.listOf().fieldOf("entries").forGetter(PetSavedData::toEntries)
-            ).apply(instance, PetSavedData::new)
-    );
-
-    public static final SavedDataType<PetSavedData> TYPE = new SavedDataType<>(
-            Identifier.fromNamespaceAndPath(Petting.MODID, "pets"),
-            PetSavedData::new,
-            CODEC,
-            null
-    );
+    private static final String DATA_NAME = "petting_pets";
 
     private final Map<UUID, Set<UUID>> playerPets = new HashMap<>();
     private final Map<UUID, UUID> petOwner = new HashMap<>();
@@ -48,28 +23,49 @@ public class PetSavedData extends SavedData {
     public PetSavedData() {
     }
 
-    public PetSavedData(List<PlayerPetsEntry> entries) {
-        for (PlayerPetsEntry entry : entries) {
-            Set<UUID> pets = new HashSet<>(entry.petUuids());
-            playerPets.put(entry.playerUuid(), pets);
-            for (UUID petUuid : pets) {
-                petOwner.put(petUuid, entry.playerUuid());
+    public static PetSavedData load(CompoundTag nbt) {
+        PetSavedData data = new PetSavedData();
+        ListTag entries = nbt.getList("entries", Tag.TAG_COMPOUND);
+        for (int i = 0; i < entries.size(); i++) {
+            CompoundTag entry = entries.getCompound(i);
+            if (entry.hasUUID("player")) {
+                UUID playerUuid = entry.getUUID("player");
+                ListTag petList = entry.getList("pets", Tag.TAG_INT_ARRAY);
+                Set<UUID> pets = new HashSet<>();
+                for (int j = 0; j < petList.size(); j++) {
+                    try {
+                        UUID petUuid = NbtUtils.loadUUID(petList.get(j));
+                        pets.add(petUuid);
+                        data.petOwner.put(petUuid, playerUuid);
+                    } catch (Exception ignored) {}
+                }
+                data.playerPets.put(playerUuid, pets);
             }
         }
+        return data;
     }
 
-    public List<PlayerPetsEntry> toEntries() {
-        List<PlayerPetsEntry> entries = new ArrayList<>();
+    @Override
+    public CompoundTag save(CompoundTag nbt) {
+        ListTag entries = new ListTag();
         for (Map.Entry<UUID, Set<UUID>> entry : playerPets.entrySet()) {
             if (!entry.getValue().isEmpty()) {
-                entries.add(new PlayerPetsEntry(entry.getKey(), new ArrayList<>(entry.getValue())));
+                CompoundTag entryTag = new CompoundTag();
+                entryTag.putUUID("player", entry.getKey());
+                ListTag petList = new ListTag();
+                for (UUID pet : entry.getValue()) {
+                    petList.add(NbtUtils.createUUID(pet));
+                }
+                entryTag.put("pets", petList);
+                entries.add(entryTag);
             }
         }
-        return entries;
+        nbt.put("entries", entries);
+        return nbt;
     }
 
     public static PetSavedData get(ServerLevel level) {
-        return level.getServer().overworld().getDataStorage().computeIfAbsent(TYPE);
+        return level.getServer().overworld().getDataStorage().computeIfAbsent(PetSavedData::load, PetSavedData::new, DATA_NAME);
     }
 
     public int getPetCount(UUID playerUuid) {

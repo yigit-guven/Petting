@@ -1,7 +1,8 @@
 {
   "required": true,
   "package": "net.yigitguven.petting.mixin",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "petting.refmap.json",
   "mixins": [
     "DragonHoverPhaseMixin",
     "EnderDragonFightMixin",
@@ -11,8 +12,7 @@
     "MonsterMixin"
   ],
   "client": [
-    "EnderDragonRendererMixin",
-    "LivingEntityRendererMixin"
+    "EnderDragonRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

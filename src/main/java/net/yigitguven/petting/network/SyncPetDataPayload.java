@@ -1,36 +1,27 @@
 package net.yigitguven.petting.network;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
-import net.minecraftforge.event.network.CustomPayloadEvent;
-import net.yigitguven.petting.Petting;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 import net.yigitguven.petting.data.PetData;
 
-public record SyncPetDataPayload(int entityId, PetData petData) implements CustomPacketPayload {
-    public static final Type<SyncPetDataPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath(Petting.MODID, "sync_pet_data"));
+import java.util.function.Supplier;
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, SyncPetDataPayload> STREAM_CODEC =
-            StreamCodec.composite(
-                    ByteBufCodecs.VAR_INT,
-                    SyncPetDataPayload::entityId,
-                    PetData.STREAM_CODEC,
-                    SyncPetDataPayload::petData,
-                    SyncPetDataPayload::new
-            );
+public record SyncPetDataPayload(int entityId, PetData petData) {
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public SyncPetDataPayload(FriendlyByteBuf buf) {
+        this(buf.readVarInt(), PetData.fromBytes(buf));
     }
 
-    public static void handle(SyncPetDataPayload payload, CustomPayloadEvent.Context context) {
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeVarInt(this.entityId);
+        this.petData.toBytes(buf);
+    }
+
+    public void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
+        NetworkEvent.Context context = ctxSupplier.get();
         context.enqueueWork(() -> {
-            if (context.isClientSide()) {
-                net.yigitguven.petting.client.PettingClientPacketHandler.handleSyncData(payload);
+            if (context.getDirection().getReceptionSide().isClient()) {
+                net.yigitguven.petting.client.PettingClientPacketHandler.handleSyncData(this);
             }
         });
         context.setPacketHandled(true);

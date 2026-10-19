@@ -1,41 +1,34 @@
 package net.yigitguven.petting.client.gui;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.yigitguven.petting.Petting;
-import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.CollarSettings;
 import net.yigitguven.petting.data.CombatMode;
-import net.yigitguven.petting.network.PettingNetwork;
-import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.inventory.PetInventoryMenu;
 import net.yigitguven.petting.inventory.PetSlotType;
+import net.yigitguven.petting.network.PettingNetwork;
 import net.yigitguven.petting.network.UpdateCollarSettingsPayload;
 import net.yigitguven.petting.network.UpdateRidingSettingsPayload;
 import net.yigitguven.petting.util.PetHelper;
 
 public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu> {
-    private static final Identifier TEXTURE =
-            Identifier.fromNamespaceAndPath(Petting.MODID, "textures/gui/container/pet_inventory.png");
-    private static final Identifier SLOT_SPRITE =
-            Identifier.withDefaultNamespace("container/slot");
+    private static final ResourceLocation TEXTURE =
+            new ResourceLocation(Petting.MODID, "textures/gui/container/pet_inventory.png");
+    private static final ResourceLocation SLOT_TEXTURE =
+            new ResourceLocation("minecraft", "textures/gui/container/horse.png");
 
     private float xMouse;
     private float yMouse;
@@ -60,7 +53,9 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     private PetButton rideAutoAttackButton;
 
     public PetInventoryScreen(PetInventoryMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 176, 186);
+        super(menu, inventory, title);
+        this.imageWidth = 176;
+        this.imageHeight = 186;
         this.titleLabelX = 8;
         this.titleLabelY = 6;
         this.inventoryLabelX = 8;
@@ -99,8 +94,13 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 Component.translatable("petting.gui.tab.collar"),
                 () -> {
                     LivingEntity pet = this.menu.getPet();
-                    ItemStack collar = pet != null ? PetHelper.getCollar(pet) : ItemStack.EMPTY;
-                    return collar.isEmpty() ? PettingModItems.COLLAR.get().getDefaultInstance() : collar;
+                    if (pet != null) {
+                        ItemStack collar = PetHelper.getCollar(pet);
+                        if (!collar.isEmpty()) {
+                            return collar;
+                        }
+                    }
+                    return new ItemStack(PettingModItems.COLLAR.get());
                 },
                 this::setCurrentTab
         );
@@ -110,48 +110,49 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 PetInventoryTab.RIDING,
                 this,
                 Component.translatable("petting.gui.tab.riding"),
-                () -> new ItemStack(Items.SADDLE),
+                () -> {
+                    LivingEntity pet = this.menu.getPet();
+                    if (pet != null) {
+                        ItemStack saddle = PetHelper.getSaddle(pet);
+                        if (!saddle.isEmpty()) {
+                            return saddle;
+                        }
+                    }
+                    return new ItemStack(Items.SADDLE);
+                },
                 this::setCurrentTab
         );
 
-        this.addWidget(this.homeTabButton);
-        this.addWidget(this.collarTabButton);
-        this.addWidget(this.ridingTabButton);
+        this.addRenderableWidget(this.homeTabButton);
+        this.addRenderableWidget(this.collarTabButton);
+        this.addRenderableWidget(this.ridingTabButton);
 
-        // Collar tab widgets initialization
-        LivingEntity pet = this.menu.getPet();
-        CollarSettings initialSettings = pet != null ? PetHelper.getCollarSettings(pet) : CollarSettings.fromConfig();
-
+        // Collar tab widgets
+        CollarSettings initialSettings = this.getCurrentCollarSettings();
         int xo = this.leftPos;
         int yo = this.topPos;
 
         // 1. Combat mode cycle button
         this.combatModeButton = PetButton.petBuilder(getCombatModeText(initialSettings.combatMode()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
-            CombatMode next = switch (cur.combatMode()) {
-                case PASSIVE -> CombatMode.DEFENSIVE;
-                case DEFENSIVE -> CombatMode.AGGRESSIVE;
-                case AGGRESSIVE -> CombatMode.WANDER;
-                case WANDER -> CombatMode.GUARD;
-                case GUARD -> CombatMode.PASSIVE;
-            };
-            applyCollarSettings(cur.withCombatMode(next));
-        }).bounds(xo + 10, yo + 40, 156, 18).build();
+            CombatMode nextMode = cur.combatMode().next();
+            applyCollarSettings(cur.withCombatMode(nextMode));
+        }).bounds(xo + 10, yo + 41, 156, 18).tooltip(Tooltip.create(getCombatModeTooltip(initialSettings))).build();
 
-        // 2. Follow distance / Wander / Guard radius slider
-        String distKey = initialSettings.combatMode() == CombatMode.WANDER ? "petting.gui.collar.wander_radius"
-                : initialSettings.combatMode() == CombatMode.GUARD ? "petting.gui.collar.guard_radius"
-                : "petting.gui.collar.follow_distance";
-        String distTooltipKey = initialSettings.combatMode() == CombatMode.WANDER ? "petting.gui.collar.wander_radius.tooltip"
-                : initialSettings.combatMode() == CombatMode.GUARD ? "petting.gui.collar.guard_radius.tooltip"
-                : "petting.gui.collar.follow_distance.tooltip";
+        // 2. Follow / Wander / Guard distance slider
+        String distKey = initialSettings.combatMode() == CombatMode.WANDER
+                ? "petting.gui.collar.wander_radius"
+                : (initialSettings.combatMode() == CombatMode.GUARD ? "petting.gui.collar.guard_radius" : "petting.gui.collar.follow_distance");
+        String distTooltipKey = initialSettings.combatMode() == CombatMode.WANDER
+                ? "petting.gui.collar.wander_radius.tooltip"
+                : (initialSettings.combatMode() == CombatMode.GUARD ? "petting.gui.collar.guard_radius.tooltip" : "petting.gui.collar.follow_distance.tooltip");
 
         this.followDistanceSlider = new PetIntSliderButton(
-                xo + 10, yo + 61, 156, 18,
+                xo + 10, yo + 62, 156, 18,
                 distKey,
                 "blocks",
-                PettingServerConfig.getMinFollowDistance(),
-                PettingServerConfig.getMaxFollowDistance(),
+                net.yigitguven.petting.config.PettingServerConfig.MIN_FOLLOW_DISTANCE.get(),
+                net.yigitguven.petting.config.PettingServerConfig.MAX_FOLLOW_DISTANCE.get(),
                 initialSettings.followDistance(),
                 dist -> {
                     CollarSettings cur = getCurrentCollarSettings();
@@ -162,11 +163,11 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
 
         // 3. Teleport distance slider
         this.teleportDistanceSlider = new PetIntSliderButton(
-                xo + 10, yo + 82, 156, 18,
+                xo + 10, yo + 83, 156, 18,
                 "petting.gui.collar.teleport_distance",
                 "blocks",
-                PettingServerConfig.getMinTeleportDistance(),
-                PettingServerConfig.getMaxTeleportDistance(),
+                net.yigitguven.petting.config.PettingServerConfig.MIN_TELEPORT_DISTANCE.get(),
+                net.yigitguven.petting.config.PettingServerConfig.MAX_TELEPORT_DISTANCE.get(),
                 initialSettings.teleportDistance(),
                 dist -> {
                     CollarSettings cur = getCurrentCollarSettings();
@@ -223,6 +224,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.addRenderableWidget(this.resetDefaultsButton);
 
         // Riding tab widgets
+        LivingEntity pet = this.menu.getPet();
         boolean attackOnClick = pet != null && PetHelper.isRideAttackOnClick(pet);
         boolean autoAttack = pet != null && PetHelper.isRideAutoAttackHostiles(pet);
 
@@ -298,7 +300,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         if (pet != null) {
             ItemStack collar = PetHelper.getCollar(pet);
             if (!collar.isEmpty()) {
-                collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), newSettings);
+                collar.getOrCreateTag().put("petting:collar_settings", newSettings.toNbt());
                 PetHelper.setCollarSettings(pet, newSettings);
             }
             PettingNetwork.sendToServer(new UpdateCollarSettingsPayload(pet.getId(), newSettings));
@@ -476,41 +478,34 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        this.xMouse = mouseX;
-        this.yMouse = mouseY;
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.xMouse = (float) mouseX;
+        this.yMouse = (float) mouseY;
         this.updateTabButtons();
         if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             this.hoveredSlot = null;
         }
-        super.extractRenderState(graphics, mouseX, mouseY, a);
-
-        // Queue tab tooltips and cursor states (sprites and icons are rendered during extractBackground)
-        PetInventoryTabButton[] buttons = {this.homeTabButton, this.collarTabButton, this.ridingTabButton};
-        for (PetInventoryTabButton button : buttons) {
-            if (button != null && button.visible) {
-                button.extractRenderState(graphics, mouseX, mouseY, a);
-            }
-        }
+        this.renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+        this.renderTooltip(graphics, mouseX, mouseY);
     }
 
     @Override
-    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-        super.extractBackground(graphics, mouseX, mouseY, a);
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
         int xo = this.leftPos;
         int yo = this.topPos;
 
-        // 1. Draw UNSELECTED tabs background FIRST (behind the main container frame, tucked under container border)
+        // 1. Draw UNSELECTED tabs background FIRST (behind the main container frame)
         this.renderTabBackgrounds(graphics, false);
 
-        // 2. Draw Main container background (and scene contents)
+        // 2. Draw Main container background
         if (this.currentTab == PetInventoryTab.HOME) {
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+            graphics.blit(TEXTURE, xo, yo, 0, 0, this.imageWidth, this.imageHeight);
 
-            // Dynamically draw slot background sprite for each active pet slot
+            // Dynamically draw slot background box for each active pet slot
             for (int i = 0; i < this.menu.getPetSlotCount(); i++) {
                 Slot slot = this.menu.slots.get(i);
-                graphics.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_SPRITE, xo + slot.x - 1, yo + slot.y - 1, 18, 18);
+                graphics.blit(SLOT_TEXTURE, xo + slot.x - 1, yo + slot.y - 1, 0, 166, 18, 18);
             }
 
             LivingEntity pet = this.menu.getPet();
@@ -520,19 +515,17 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 float maxDim = Math.max(width, height);
                 int scale = Math.max(14, Math.min(36, (int) (26.0F / Math.max(0.6F, maxDim))));
 
-                InventoryScreen.extractEntityInInventoryFollowsMouse(
+                InventoryScreen.renderEntityInInventoryFollowsMouse(
                         graphics,
-                        xo + 29, yo + 18,
-                        xo + 147, yo + 88,
+                        xo + 88, yo + 78,
                         scale,
-                        0.15F,
-                        this.xMouse, this.yMouse,
+                        (float)(xo + 88) - mouseX,
+                        (float)(yo + 45) - mouseY,
                         pet
                 );
             }
         } else if (this.currentTab == PetInventoryTab.COLLAR) {
-            // Container panel fill & border
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+            graphics.blit(TEXTURE, xo, yo, 0, 0, this.imageWidth, this.imageHeight);
 
             graphics.fill(xo + 7, yo + 17, xo + 169, yo + 179, 0xFFC6C6C6);
             graphics.fill(xo + 7, yo + 17, xo + 169, yo + 18, 0xFF373737);
@@ -552,22 +545,21 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                     ? PetHelper.getCollar(pet)
                     : PettingModItems.COLLAR.get().getDefaultInstance();
 
-            graphics.item(collar, xo + 12, yo + 20);
+            graphics.renderItem(collar, xo + 12, yo + 20);
 
             Component collarName = collar.getHoverName();
-            graphics.text(this.font, collarName, xo + 32, yo + 24, 0xFF202020, false);
+            graphics.drawString(this.font, collarName, xo + 32, yo + 24, 0xFF202020, false);
         } else {
-            // Riding tab container background & dashboard (full panel, removing player inventory)
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, xo, yo, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+            // Riding tab
+            graphics.blit(TEXTURE, xo, yo, 0, 0, this.imageWidth, this.imageHeight);
 
-            // Container panel fill & border (xo + 7, yo + 17 to xo + 169, yo + 179)
             graphics.fill(xo + 7, yo + 17, xo + 169, yo + 179, 0xFFC6C6C6);
             graphics.fill(xo + 7, yo + 17, xo + 169, yo + 18, 0xFF373737);
             graphics.fill(xo + 7, yo + 17, xo + 8, yo + 179, 0xFF373737);
             graphics.fill(xo + 168, yo + 18, xo + 169, yo + 179, 0xFFFFFFFF);
             graphics.fill(xo + 8, yo + 178, xo + 169, yo + 179, 0xFFFFFFFF);
 
-            // Header status banner (xo + 10, yo + 19 to xo + 166, yo + 37)
+            // Header status banner
             graphics.fill(xo + 10, yo + 19, xo + 166, yo + 37, 0xFFB0B0B0);
             graphics.fill(xo + 10, yo + 19, xo + 166, yo + 20, 0xFF8F8F8F);
             graphics.fill(xo + 10, yo + 19, xo + 11, yo + 37, 0xFF8F8F8F);
@@ -579,49 +571,49 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             if (saddle.isEmpty()) {
                 saddle = new ItemStack(Items.SADDLE);
             }
-            graphics.item(saddle, xo + 12, yo + 20);
+            graphics.renderItem(saddle, xo + 12, yo + 20);
 
             Component petTitle = pet != null ? pet.getDisplayName() : Component.translatable("petting.gui.scene.riding_settings");
-            graphics.text(this.font, petTitle, xo + 32, yo + 24, 0xFF202020, false);
+            graphics.drawString(this.font, petTitle, xo + 32, yo + 24, 0xFF202020, false);
 
-            // Controls & Guide recessed box (xo + 10, yo + 84 to xo + 166, yo + 175)
+            // Controls & Guide recessed box
             graphics.fill(xo + 10, yo + 84, xo + 166, yo + 175, 0xFFB0B0B0);
             graphics.fill(xo + 10, yo + 84, xo + 166, yo + 85, 0xFF8F8F8F);
             graphics.fill(xo + 10, yo + 84, xo + 11, yo + 175, 0xFF8F8F8F);
             graphics.fill(xo + 165, yo + 85, xo + 166, yo + 175, 0xFFD8D8D8);
             graphics.fill(xo + 11, yo + 174, xo + 166, yo + 175, 0xFFD8D8D8);
 
-            graphics.text(this.font, Component.translatable("petting.gui.riding.controls.header").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), xo + 14, yo + 88, 0xFF1B5E20, false);
+            graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.header").withStyle(ChatFormatting.DARK_GREEN, ChatFormatting.BOLD), xo + 14, yo + 88, 0xFF1B5E20, false);
 
             if (pet != null && PetHelper.isFlyingPet(pet)) {
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.steer"), xo + 14, yo + 102, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.ascend"), xo + 14, yo + 115, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.descend"), xo + 14, yo + 128, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.fly.dismount"), xo + 14, yo + 141, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.fly.steer"), xo + 14, yo + 102, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.fly.ascend"), xo + 14, yo + 115, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.fly.descend"), xo + 14, yo + 128, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.fly.dismount"), xo + 14, yo + 141, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
             } else if (pet != null && PetHelper.isSwimmingPet(pet)) {
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.steer"), xo + 14, yo + 102, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.ascend"), xo + 14, yo + 115, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.descend"), xo + 14, yo + 128, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.swim.dismount"), xo + 14, yo + 141, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.swim.steer"), xo + 14, yo + 102, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.swim.ascend"), xo + 14, yo + 115, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.swim.descend"), xo + 14, yo + 128, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.swim.dismount"), xo + 14, yo + 141, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
             } else {
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.steer"), xo + 14, yo + 102, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.jump"), xo + 14, yo + 115, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.sprint"), xo + 14, yo + 128, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.walk.dismount"), xo + 14, yo + 141, 0xFF282828, false);
-                graphics.text(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.walk.steer"), xo + 14, yo + 102, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.walk.jump"), xo + 14, yo + 115, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.walk.sprint"), xo + 14, yo + 128, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.walk.dismount"), xo + 14, yo + 141, 0xFF282828, false);
+                graphics.drawString(this.font, Component.translatable("petting.gui.riding.controls.attack"), xo + 14, yo + 154, 0xFF282828, false);
             }
         }
 
-        // 3. Draw SELECTED tab background (in front of container frame, seamlessly connected)
+        // 3. Draw SELECTED tab background
         this.renderTabBackgrounds(graphics, true);
 
         // 4. Draw tab item icons
         this.renderTabIcons(graphics);
     }
 
-    private void renderTabBackgrounds(GuiGraphicsExtractor graphics, boolean selectedOnly) {
+    private void renderTabBackgrounds(GuiGraphics graphics, boolean selectedOnly) {
         PetInventoryTabButton[] buttons = {this.homeTabButton, this.collarTabButton, this.ridingTabButton};
         for (PetInventoryTabButton button : buttons) {
             if (button != null && button.visible) {
@@ -633,7 +625,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         }
     }
 
-    private void renderTabIcons(GuiGraphicsExtractor graphics) {
+    private void renderTabIcons(GuiGraphics graphics) {
         PetInventoryTabButton[] buttons = {this.homeTabButton, this.collarTabButton, this.ridingTabButton};
         for (PetInventoryTabButton button : buttons) {
             if (button != null && button.visible) {
@@ -643,73 +635,68 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     }
 
     @Override
-    protected void extractLabels(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
         if (this.currentTab == PetInventoryTab.HOME) {
             LivingEntity pet = this.menu.getPet();
             Component petTitle = pet != null ? pet.getDisplayName() : this.title;
-            graphics.text(this.font, petTitle, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
-            graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
+            graphics.drawString(this.font, petTitle, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
+            graphics.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 0xFF404040, false);
         } else if (this.currentTab == PetInventoryTab.COLLAR) {
-            graphics.text(this.font, Component.translatable("petting.gui.scene.collar_settings"), this.titleLabelX, this.titleLabelY, 0xFF404040, false);
+            graphics.drawString(this.font, Component.translatable("petting.gui.scene.collar_settings"), this.titleLabelX, this.titleLabelY, 0xFF404040, false);
         } else if (this.currentTab == PetInventoryTab.RIDING) {
-            graphics.text(this.font, Component.translatable("petting.gui.scene.riding_settings"), this.titleLabelX, this.titleLabelY, 0xFF404040, false);
+            graphics.drawString(this.font, Component.translatable("petting.gui.scene.riding_settings"), this.titleLabelX, this.titleLabelY, 0xFF404040, false);
         }
     }
 
     @Override
-    protected void extractSlots(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        if (this.currentTab == PetInventoryTab.HOME) {
-            super.extractSlots(graphics, mouseX, mouseY);
-        }
-    }
-
-    @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             for (GuiEventListener listener : this.children()) {
-                if (listener.mouseClicked(event, doubleClick)) {
+                if (listener.mouseClicked(mouseX, mouseY, button)) {
                     this.setFocused(listener);
-                    this.setDragging(true);
+                    if (button == 0) {
+                        this.setDragging(true);
+                    }
                     return true;
                 }
             }
             return false;
         }
-        return super.mouseClicked(event, doubleClick);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
         if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             if (this.getFocused() != null && this.isDragging()) {
-                return this.getFocused().mouseDragged(event, dx, dy);
+                return this.getFocused().mouseDragged(mouseX, mouseY, button, dragX, dragY);
             }
             return false;
         }
-        return super.mouseDragged(event, dx, dy);
+        return super.mouseDragged(mouseX, mouseY, button, dragX, dragY);
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
             this.setDragging(false);
             if (this.getFocused() != null) {
-                return this.getFocused().mouseReleased(event);
+                return this.getFocused().mouseReleased(mouseX, mouseY, button);
             }
             return false;
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
-    public boolean keyPressed(KeyEvent event) {
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.currentTab == PetInventoryTab.COLLAR || this.currentTab == PetInventoryTab.RIDING) {
-            if (this.minecraft.options.keyInventory.matches(event)) {
+            if (this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
                 this.onClose();
                 return true;
             }
         }
-        return super.keyPressed(event);
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
     @Override

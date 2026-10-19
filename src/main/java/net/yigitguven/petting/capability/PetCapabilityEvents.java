@@ -1,12 +1,12 @@
 package net.yigitguven.petting.capability;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.data.PetData;
@@ -18,9 +18,9 @@ import net.yigitguven.petting.util.PetHelper;
 public class PetCapabilityEvents {
 
     @SubscribeEvent
-    public static void attachEntityCapabilities(AttachCapabilitiesEvent.Entities event) {
+    public static void attachEntityCapabilities(AttachCapabilitiesEvent<Entity> event) {
         if (event.getObject() instanceof LivingEntity) {
-            event.addCapability(Identifier.fromNamespaceAndPath(Petting.MODID, "pet_data"), new PetDataProvider());
+            event.addCapability(new ResourceLocation(Petting.MODID, "pet_data"), new PetDataProvider());
         }
     }
 

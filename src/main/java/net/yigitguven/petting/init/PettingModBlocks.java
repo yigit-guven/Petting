@@ -14,7 +14,6 @@ public class PettingModBlocks {
 
     public static final RegistryObject<GoldenDragonEggBlock> GOLDEN_DRAGON_EGG =
             BLOCKS.register("golden_dragon_egg",
-                    () -> new GoldenDragonEggBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.DRAGON_EGG)
-                            .setId(BLOCKS.key("golden_dragon_egg"))
+                    () -> new GoldenDragonEggBlock(BlockBehaviour.Properties.copy(Blocks.DRAGON_EGG)
                             .lightLevel(state -> 6)));
 }

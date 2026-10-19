@@ -47,7 +47,7 @@ public class PetWanderGoal extends Goal {
         if (this.wasVehicle) {
             this.wasVehicle = false;
             int radius = (int) PetHelper.getFollowDistance(this.mob);
-            this.mob.setHomeTo(this.mob.blockPosition(), radius);
+            this.mob.restrictTo(this.mob.blockPosition(), radius);
         }
 
         CombatMode mode = PetHelper.getCombatMode(this.mob);
@@ -62,12 +62,12 @@ public class PetWanderGoal extends Goal {
         if (this.wasLeashed) {
             this.wasLeashed = false;
             int radius = (int) PetHelper.getFollowDistance(this.mob);
-            this.mob.setHomeTo(this.mob.blockPosition(), radius);
+            this.mob.restrictTo(this.mob.blockPosition(), radius);
         }
 
-        if (!this.mob.hasHome()) {
+        if (!this.mob.hasRestriction()) {
             int radius = (int) PetHelper.getFollowDistance(this.mob);
-            this.mob.setHomeTo(this.mob.blockPosition(), radius);
+            this.mob.restrictTo(this.mob.blockPosition(), radius);
         }
 
         // If mob has an active target, let combat goals handle it
@@ -79,11 +79,11 @@ public class PetWanderGoal extends Goal {
             return false;
         }
 
-        // If outside home radius, return back towards home
-        if (!this.mob.isWithinHome()) {
-            BlockPos home = this.mob.getHomePosition();
+        // If outside restriction radius, return back towards restriction center
+        if (!this.mob.isWithinRestriction()) {
+            BlockPos home = this.mob.getRestrictCenter();
             if (this.mob.distanceToSqr(Vec3.atBottomCenterOf(home)) > 64.0D * 64.0D) {
-                this.mob.snapTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D, this.mob.getYRot(), this.mob.getXRot());
+                this.mob.moveTo(home.getX() + 0.5D, home.getY(), home.getZ() + 0.5D, this.mob.getYRot(), this.mob.getXRot());
                 this.mob.getNavigation().stop();
                 this.cooldown = 20;
                 return false;
@@ -94,7 +94,7 @@ public class PetWanderGoal extends Goal {
             return true;
         }
 
-        // Inside home, randomly wander around home
+        // Inside restriction, randomly wander around restriction center
         Vec3 pos = findWanderPosition();
         if (pos == null) {
             this.cooldown = 40;
@@ -138,16 +138,16 @@ public class PetWanderGoal extends Goal {
     }
 
     private Vec3 findWanderPosition() {
-        BlockPos home = this.mob.getHomePosition();
-        int radius = Math.max(2, this.mob.getHomeRadius());
+        BlockPos home = this.mob.getRestrictCenter();
+        int radius = Math.max(2, (int) this.mob.getRestrictRadius());
 
         if (this.mob instanceof PathfinderMob pathfinderMob && !PetHelper.isFlyingPet(this.mob)) {
             Vec3 pos = LandRandomPos.getPos(pathfinderMob, Math.min(radius, 10), 4);
-            if (pos != null && this.mob.isWithinHome(pos)) {
+            if (pos != null && this.mob.isWithinRestriction(new BlockPos((int) pos.x, (int) pos.y, (int) pos.z))) {
                 return pos;
             }
             Vec3 towardHome = DefaultRandomPos.getPosTowards(pathfinderMob, Math.min(radius, 10), 4, Vec3.atBottomCenterOf(home), (float) (Math.PI / 2));
-            if (towardHome != null && this.mob.isWithinHome(towardHome)) {
+            if (towardHome != null && this.mob.isWithinRestriction(new BlockPos((int) towardHome.x, (int) towardHome.y, (int) towardHome.z))) {
                 return towardHome;
             }
         }
@@ -158,7 +158,7 @@ public class PetWanderGoal extends Goal {
             double rz = (this.mob.getRandom().nextDouble() * 2 - 1) * radius;
             double ry = (this.mob.getRandom().nextDouble() * 2 - 1) * Math.min(4, radius);
             Vec3 target = new Vec3(home.getX() + 0.5D + rx, home.getY() + ry, home.getZ() + 0.5D + rz);
-            if (this.mob.isWithinHome(target)) {
+            if (this.mob.isWithinRestriction(new BlockPos((int) target.x, (int) target.y, (int) target.z))) {
                 return target;
             }
         }

@@ -10,9 +10,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -24,7 +22,7 @@ public class PetEggHelper {
     private static final Map<EntityType<?>, Item> CUSTOM_REPRESENTATIVE_ITEMS = new HashMap<>();
 
     static {
-        CUSTOM_REPRESENTATIVE_ITEMS.put(EntityTypes.ENDER_DRAGON, PettingModItems.GOLDEN_DRAGON_EGG.get());
+        CUSTOM_REPRESENTATIVE_ITEMS.put(EntityType.ENDER_DRAGON, PettingModItems.GOLDEN_DRAGON_EGG.get());
     }
 
     private static Map<Item, TagKey<EntityType<?>>> treatTags;
@@ -56,9 +54,8 @@ public class PetEggHelper {
             return custom;
         }
 
-        return SpawnEggItem.byId(entityType)
-                .map(Holder::value)
-                .orElse(Items.AIR);
+        SpawnEggItem egg = SpawnEggItem.byId(entityType);
+        return egg != null ? egg : Items.AIR;
     }
 
     public static Optional<TagKey<EntityType<?>>> getTagForTreat(Item treatItem) {

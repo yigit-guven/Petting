@@ -1,0 +1,16 @@
+{
+    "type":  "minecraft:crafting_shapeless",
+    "category":  "equipment",
+    "ingredients":  [
+                        {
+                            "tag":  "petting:collars"
+                        },
+                        {
+                            "item":  "minecraft:cyan_dye"
+                        }
+                    ],
+    "result":  {
+                   "item":  "petting:cyan_collar",
+                   "count":  1
+               }
+}

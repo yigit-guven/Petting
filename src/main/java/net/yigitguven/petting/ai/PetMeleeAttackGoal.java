@@ -1,6 +1,5 @@
 package net.yigitguven.petting.ai;
 
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
@@ -88,13 +87,12 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
     }
 
     @Override
-    protected void checkAndPerformAttack(LivingEntity target) {
-        if (this.canPerformAttack(target)) {
+    protected void checkAndPerformAttack(LivingEntity target, double distToEnemySqr) {
+        double attackReach = this.getAttackReachSqr(target);
+        if (distToEnemySqr <= attackReach && this.isTimeToAttack()) {
             this.resetAttackCooldown();
-            this.mob.swingForAttack(InteractionHand.MAIN_HAND);
-            if (this.mob.level() instanceof ServerLevel serverLevel) {
-                PetHelper.doPetHurtTarget(this.mob, serverLevel, target);
-            }
+            this.mob.swing(InteractionHand.MAIN_HAND);
+            PetHelper.doPetHurtTarget(this.mob, target);
         }
     }
 }

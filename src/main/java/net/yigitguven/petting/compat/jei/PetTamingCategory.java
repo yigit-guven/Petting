@@ -5,11 +5,12 @@ import mezz.jei.api.gui.drawable.IDrawable;
 import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import mezz.jei.api.recipe.types.IRecipeType;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.init.PettingModItems;
@@ -18,16 +19,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PetTamingCategory implements IRecipeCategory<PetTamingRecipe> {
-    public static final IRecipeType<PetTamingRecipe> RECIPE_TYPE =
-            IRecipeType.create(Identifier.fromNamespaceAndPath(Petting.MODID, "taming"), PetTamingRecipe.class);
+    public static final RecipeType<PetTamingRecipe> RECIPE_TYPE =
+            RecipeType.create(Petting.MODID, "taming", PetTamingRecipe.class);
 
+    private final IDrawable background;
     private final IDrawable icon;
     private final IDrawable arrow;
+    private final IDrawable slotDrawable;
     private final Component title;
 
     public PetTamingCategory(IGuiHelper guiHelper) {
-        this.icon = guiHelper.createDrawableItemLike(PettingModItems.GOLDEN_WHEAT.get());
-        this.arrow = guiHelper.getRecipeArrow();
+        this.background = guiHelper.createBlankDrawable(170, 64);
+        this.icon = guiHelper.createDrawableItemStack(new ItemStack(PettingModItems.GOLDEN_WHEAT.get()));
+        this.arrow = guiHelper.createDrawable(new ResourceLocation("minecraft", "textures/gui/container/furnace.png"), 79, 35, 24, 17);
+        this.slotDrawable = guiHelper.getSlotDrawable();
         this.title = Component.translatable("petting.jei.taming.title");
     }
 
@@ -36,7 +41,7 @@ public class PetTamingCategory implements IRecipeCategory<PetTamingRecipe> {
     }
 
     @Override
-    public IRecipeType<PetTamingRecipe> getRecipeType() {
+    public RecipeType<PetTamingRecipe> getRecipeType() {
         return RECIPE_TYPE;
     }
 
@@ -46,13 +51,8 @@ public class PetTamingCategory implements IRecipeCategory<PetTamingRecipe> {
     }
 
     @Override
-    public int getWidth() {
-        return 170;
-    }
-
-    @Override
-    public int getHeight() {
-        return 64;
+    public IDrawable getBackground() {
+        return background;
     }
 
     @Override
@@ -61,15 +61,15 @@ public class PetTamingCategory implements IRecipeCategory<PetTamingRecipe> {
     }
 
     @Override
-    public void draw(PetTamingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphicsExtractor guiGraphics, double mouseX, double mouseY) {
+    public void draw(PetTamingRecipe recipe, IRecipeSlotsView recipeSlotsView, GuiGraphics guiGraphics, double mouseX, double mouseY) {
         arrow.draw(guiGraphics, 31, 23);
     }
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, PetTamingRecipe recipe, IFocusGroup focuses) {
-        builder.addInputSlot(8, 23)
-                .add(recipe.treat())
-                .setStandardSlotBackground();
+        builder.addSlot(RecipeIngredientRole.INPUT, 8, 23)
+                .addItemStack(recipe.treat())
+                .setBackground(slotDrawable, -1, -1);
 
         List<ItemStack> mobs = recipe.tameableMobs();
         int rowCount = getRowCount(recipe);
@@ -93,9 +93,9 @@ public class PetTamingCategory implements IRecipeCategory<PetTamingRecipe> {
                 }
             }
 
-            builder.addOutputSlot(x, y)
+            builder.addSlot(RecipeIngredientRole.OUTPUT, x, y)
                     .addItemStacks(slotItems)
-                    .setStandardSlotBackground();
+                    .setBackground(slotDrawable, -1, -1);
         }
     }
 }

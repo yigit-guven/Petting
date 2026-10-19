@@ -9,7 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.dimension.end.EnderDragonFight;
+import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.yigitguven.petting.block.entity.GoldenDragonEggBlockEntity;
 import net.yigitguven.petting.init.PettingModBlocks;
 import net.yigitguven.petting.util.PetHelper;
@@ -22,14 +22,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-@Mixin(EnderDragonFight.class)
+@Mixin(EndDragonFight.class)
 public abstract class EnderDragonFightMixin {
 
     @Shadow
     private ServerLevel level;
 
     @Shadow
-    private @Nullable BlockPos exitPortalLocation;
+    private @Nullable BlockPos portalLocation;
 
     @Shadow
     private @Nullable UUID dragonUUID;
@@ -44,7 +44,7 @@ public abstract class EnderDragonFightMixin {
             return;
         }
 
-        int portalY = this.exitPortalLocation != null ? this.exitPortalLocation.getY() : 65;
+        int portalY = this.portalLocation != null ? this.portalLocation.getY() : 65;
 
         // Search for Golden Dragon Egg on or near the exit portal structure
         BlockPos foundEggPos = null;

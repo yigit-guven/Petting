@@ -7,13 +7,11 @@ import net.minecraftforge.registries.RegistryObject;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.block.entity.GoldenDragonEggBlockEntity;
 
-import java.util.Set;
-
 public class PettingModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, Petting.MODID);
 
     public static final RegistryObject<BlockEntityType<GoldenDragonEggBlockEntity>> GOLDEN_DRAGON_EGG =
             BLOCK_ENTITY_TYPES.register("golden_dragon_egg", () ->
-                    new BlockEntityType<>(GoldenDragonEggBlockEntity::new, Set.of(PettingModBlocks.GOLDEN_DRAGON_EGG.get())));
+                    BlockEntityType.Builder.of(GoldenDragonEggBlockEntity::new, PettingModBlocks.GOLDEN_DRAGON_EGG.get()).build(null));
 }

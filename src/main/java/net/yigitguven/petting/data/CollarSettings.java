@@ -1,12 +1,9 @@
 package net.yigitguven.petting.data;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.yigitguven.petting.config.PettingServerConfig;
 
 public record CollarSettings(
@@ -18,7 +15,7 @@ public record CollarSettings(
         boolean defendOtherPets,
         boolean retaliateWhenHurt
 ) {
-    public static final MapCodec<CollarSettings> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
+    public static final Codec<CollarSettings> CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     Codec.STRING.xmap(CombatMode::valueOf, CombatMode::name).fieldOf("combat_mode").forGetter(CollarSettings::combatMode),
                     Codec.INT.fieldOf("follow_distance").forGetter(CollarSettings::followDistance),
@@ -28,26 +25,6 @@ public record CollarSettings(
                     Codec.BOOL.fieldOf("defend_other_pets").forGetter(CollarSettings::defendOtherPets),
                     Codec.BOOL.fieldOf("retaliate_when_hurt").forGetter(CollarSettings::retaliateWhenHurt)
             ).apply(instance, CollarSettings::new)
-    );
-
-    public static final Codec<CollarSettings> CODEC = MAP_CODEC.codec();
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, CollarSettings> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.stringUtf8(32).map(CombatMode::valueOf, CombatMode::name),
-            CollarSettings::combatMode,
-            ByteBufCodecs.VAR_INT,
-            CollarSettings::followDistance,
-            ByteBufCodecs.VAR_INT,
-            CollarSettings::teleportDistance,
-            ByteBufCodecs.BOOL,
-            CollarSettings::teleportEnabled,
-            ByteBufCodecs.BOOL,
-            CollarSettings::preferRangedAttack,
-            ByteBufCodecs.BOOL,
-            CollarSettings::defendOtherPets,
-            ByteBufCodecs.BOOL,
-            CollarSettings::retaliateWhenHurt,
-            CollarSettings::new
     );
 
     public static CollarSettings fromConfig() {
@@ -60,6 +37,61 @@ public record CollarSettings(
                 PettingServerConfig.isDefaultDefendOtherPets(),
                 PettingServerConfig.isDefaultRetaliateWhenHurt()
         );
+    }
+
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeUtf(combatMode.name());
+        buf.writeVarInt(followDistance);
+        buf.writeVarInt(teleportDistance);
+        buf.writeBoolean(teleportEnabled);
+        buf.writeBoolean(preferRangedAttack);
+        buf.writeBoolean(defendOtherPets);
+        buf.writeBoolean(retaliateWhenHurt);
+    }
+
+    public static CollarSettings fromBytes(FriendlyByteBuf buf) {
+        CombatMode mode;
+        try {
+            mode = CombatMode.valueOf(buf.readUtf(32));
+        } catch (Exception e) {
+            mode = CombatMode.DEFENSIVE;
+        }
+        int followDist = buf.readVarInt();
+        int teleDist = buf.readVarInt();
+        boolean teleEnabled = buf.readBoolean();
+        boolean preferRanged = buf.readBoolean();
+        boolean defendOther = buf.readBoolean();
+        boolean retaliate = buf.readBoolean();
+        return new CollarSettings(mode, followDist, teleDist, teleEnabled, preferRanged, defendOther, retaliate);
+    }
+
+    public CompoundTag toNbt() {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("combat_mode", combatMode.name());
+        tag.putInt("follow_distance", followDistance);
+        tag.putInt("teleport_distance", teleportDistance);
+        tag.putBoolean("teleport_enabled", teleportEnabled);
+        tag.putBoolean("prefer_ranged_attack", preferRangedAttack);
+        tag.putBoolean("defend_other_pets", defendOtherPets);
+        tag.putBoolean("retaliate_when_hurt", retaliateWhenHurt);
+        return tag;
+    }
+
+    public static CollarSettings fromNbt(CompoundTag tag) {
+        if (tag == null) return fromConfig();
+        CombatMode mode = CombatMode.DEFENSIVE;
+        if (tag.contains("combat_mode")) {
+            try {
+                mode = CombatMode.valueOf(tag.getString("combat_mode"));
+            } catch (Exception ignored) {}
+        }
+        int followDist = tag.contains("follow_distance") ? tag.getInt("follow_distance") : 3;
+        int teleDist = tag.contains("teleport_distance") ? tag.getInt("teleport_distance") : 12;
+        boolean teleEnabled = !tag.contains("teleport_enabled") || tag.getBoolean("teleport_enabled");
+        boolean preferRanged = tag.getBoolean("prefer_ranged_attack");
+        boolean defendOther = !tag.contains("defend_other_pets") || tag.getBoolean("defend_other_pets");
+        boolean retaliate = !tag.contains("retaliate_when_hurt") || tag.getBoolean("retaliate_when_hurt");
+        return new CollarSettings(mode, followDist, teleDist, teleEnabled, preferRanged, defendOther, retaliate);
     }
 
     public CollarSettings withCombatMode(CombatMode mode) {

@@ -1,32 +1,24 @@
 package net.yigitguven.petting.network;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
-import net.minecraftforge.event.network.CustomPayloadEvent;
-import net.yigitguven.petting.Petting;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
-public record DismountPetPayload(int entityId) implements CustomPacketPayload {
-    public static final Type<DismountPetPayload> TYPE =
-            new Type<>(Identifier.fromNamespaceAndPath(Petting.MODID, "dismount_pet"));
+import java.util.function.Supplier;
 
-    public static final StreamCodec<ByteBuf, DismountPetPayload> STREAM_CODEC =
-            StreamCodec.composite(
-                    ByteBufCodecs.VAR_INT,
-                    DismountPetPayload::entityId,
-                    DismountPetPayload::new
-            );
+public record DismountPetPayload(int entityId) {
 
-    @Override
-    public Type<? extends CustomPacketPayload> type() {
-        return TYPE;
+    public DismountPetPayload(FriendlyByteBuf buf) {
+        this(buf.readVarInt());
     }
 
-    public static void handle(DismountPetPayload payload, CustomPayloadEvent.Context context) {
+    public void encode(FriendlyByteBuf buf) {
+        buf.writeVarInt(this.entityId);
+    }
+
+    public void handle(Supplier<NetworkEvent.Context> ctxSupplier) {
+        NetworkEvent.Context context = ctxSupplier.get();
         context.enqueueWork(() -> {
-            if (context.isClientSide()) {
+            if (context.getDirection().getReceptionSide().isClient()) {
                 net.yigitguven.petting.client.PettingClientPacketHandler.handleDismount();
             }
         });

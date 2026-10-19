@@ -14,10 +14,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.event.entity.living.AnimalTameEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.ExplosionEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.data.CollarRespawnPoint;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.util.PetEggHelper;
 import net.yigitguven.petting.util.PetHelper;
@@ -26,11 +27,10 @@ import net.yigitguven.petting.util.PetHelper;
 public class PetTamingEvents {
 
     @SubscribeEvent
-    public static boolean onAnimalTame(AnimalTameEvent event) {
+    public static void onAnimalTame(AnimalTameEvent event) {
         if (PetHelper.isTamed(event.getAnimal())) {
-            return true;
+            event.setCanceled(true);
         }
-        return false;
     }
 
 
@@ -43,24 +43,25 @@ public class PetTamingEvents {
     }
 
     @SubscribeEvent
-    public static boolean onEntityInteract(PlayerInteractEvent.EntityInteractSpecific event) {
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteractSpecific event) {
         Player player = event.getEntity();
         ItemStack stack = event.getItemStack();
 
         net.minecraft.world.entity.Entity rawTarget = event.getTarget();
-        if (rawTarget instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragonPart part && part.parentMob != null) {
+        if (rawTarget instanceof net.minecraft.world.entity.boss.EnderDragonPart part && part.parentMob != null) {
             rawTarget = part.parentMob;
         }
 
         if (PetHelper.isCushionEntity(rawTarget)) {
             if (handleCushionBinding(player, rawTarget, stack, event.getLevel(), event.getHand())) {
                 event.setCancellationResult(InteractionResult.SUCCESS);
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
 
         if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) {
-            return false;
+            return;
         }
 
         boolean isClient = event.getLevel().isClientSide();
@@ -70,20 +71,22 @@ public class PetTamingEvents {
                 InteractionResult result = PetHelper.handleTamedDragonInteract(dragon, player, event.getHand());
                 if (result.consumesAction()) {
                     event.setCancellationResult(result);
-                    return true;
+                    event.setCanceled(true);
+                    return;
                 }
-                return false;
+                return;
             } else {
                 if (!isClient && stack.is(PettingModItems.GOLDEN_STAR.get())) {
                     player.sendSystemMessage(Component.translatable("petting.action.dragon_cannot_be_tamed_directly"));
                 }
                 event.setCancellationResult(InteractionResult.PASS);
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
 
         if (!(rawTarget instanceof Mob mob)) {
-            return false;
+            return;
         }
 
         if (PetHelper.isTamed(mob)) {
@@ -99,7 +102,8 @@ public class PetTamingEvents {
                                 mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, 1.0F);
                             }
                             event.setCancellationResult(InteractionResult.SUCCESS);
-                            return true;
+                            event.setCanceled(true);
+                            return;
                         }
                     }
 
@@ -111,7 +115,9 @@ public class PetTamingEvents {
                                 if (!isClient) {
                                     net.minecraft.world.item.Item newCollarItem = net.yigitguven.petting.init.PettingModItems.getCollar(dyeColor).get();
                                     ItemStack newCollar = new ItemStack(newCollarItem);
-                                    newCollar.applyComponents(currentCollar.getComponents());
+                                    if (currentCollar.hasTag()) {
+                                        newCollar.setTag(currentCollar.getTag().copy());
+                                    }
                                     PetHelper.setCollar(mob, newCollar);
                                     if (!player.getAbilities().instabuild) {
                                         stack.shrink(1);
@@ -119,7 +125,8 @@ public class PetTamingEvents {
                                     mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
                                 }
                                 event.setCancellationResult(InteractionResult.SUCCESS);
-                                return true;
+                                event.setCanceled(true);
+                                return;
                             }
                         }
                     }
@@ -138,40 +145,44 @@ public class PetTamingEvents {
                             player.sendSystemMessage(Component.translatable("petting.action.pet_healed", mob.getName()));
                         }
                         event.setCancellationResult(InteractionResult.SUCCESS);
-                        return true;
+                        event.setCanceled(true);
+                        return;
                     } else {
                         if (!isClient) {
                             player.sendSystemMessage(Component.translatable("petting.action.pet_full_health", mob.getName()));
                         }
                         event.setCancellationResult(InteractionResult.SUCCESS);
-                        return true;
+                        event.setCanceled(true);
+                        return;
                     }
                 }
                 if (PetHelper.isInteractionItem(mob, stack)) {
                     PetHelper.syncEntityTameStatus(mob);
-                    return false;
+                    return;
                 }
                 boolean isRidingThisMob = mob.hasPassenger(player) || player.getVehicle() == mob;
                 if (isRidingThisMob) {
-                    return false;
+                    return;
                 }
                 PetHelper.syncEntityTameStatus(mob);
                 if (PettingServerConfig.isPetSittingEnabled()) {
                     event.setCancellationResult(InteractionResult.SUCCESS);
-                    return true;
+                    event.setCanceled(true);
+                    return;
                 }
-                return false;
+                return;
             } else {
                 if (!isClient) {
                     player.sendSystemMessage(Component.translatable("petting.action.already_tamed_other"));
                 }
                 event.setCancellationResult(InteractionResult.SUCCESS);
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
 
         if (!PetEggHelper.canTame(mob, stack.getItem())) {
-            return false;
+            return;
         }
 
         if (PetHelper.isVanillaTamed(mob)) {
@@ -182,7 +193,8 @@ public class PetTamingEvents {
                 player.sendSystemMessage(Component.translatable("petting.action.already_vanilla_tamed"));
             }
             event.setCancellationResult(InteractionResult.SUCCESS);
-            return true;
+            event.setCanceled(true);
+            return;
         }
 
         if (!isClient && mob.level() instanceof ServerLevel serverLevel) {
@@ -191,7 +203,8 @@ public class PetTamingEvents {
                 mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0F, 1.0F);
                 player.sendSystemMessage(Component.translatable("petting.action.pet_limit_reached", PettingServerConfig.getMaxPetCount()));
                 event.setCancellationResult(InteractionResult.SUCCESS);
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
 
@@ -205,7 +218,8 @@ public class PetTamingEvents {
                 player.sendSystemMessage(Component.translatable("petting.action.too_healthy", (int) Math.round(PettingServerConfig.getMaxHealthPercentage())));
             }
             event.setCancellationResult(InteractionResult.SUCCESS);
-            return true;
+            event.setCanceled(true);
+            return;
         }
 
         if (!isClient) {
@@ -230,11 +244,11 @@ public class PetTamingEvents {
         }
 
         event.setCancellationResult(InteractionResult.SUCCESS);
-        return true;
+        event.setCanceled(true);
     }
 
     @SubscribeEvent
-    public static boolean onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
         net.minecraft.core.BlockPos pos = event.getPos();
         net.minecraft.world.level.Level level = event.getLevel();
         net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
@@ -265,30 +279,30 @@ public class PetTamingEvents {
                     player.sendSystemMessage(Component.translatable("petting.action.egg_converted_to_golden"));
                 }
             }
-            player.swing(event.getHand(), net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
-            return true;
+            player.swing(event.getHand(), true);
+            event.setCanceled(true);
+            return;
         }
 
         if (!PettingServerConfig.isCollarRespawnEnabled() || !PettingServerConfig.isPetInventoryEnabled()) {
-            return false;
+            return;
         }
 
         if (!(stack.getItem() instanceof net.yigitguven.petting.item.CollarItem)) {
-            return false;
+            return;
         }
 
         boolean isBed = PetHelper.isBedBlock(state);
         boolean isCushion = PetHelper.isCushionBlock(state);
 
         if (!isBed && !isCushion) {
-            return false;
+            return;
         }
 
         if (!level.isClientSide()) {
             net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(level.dimension(), pos);
             net.yigitguven.petting.data.CollarRespawnPoint point = new net.yigitguven.petting.data.CollarRespawnPoint(globalPos, isCushion);
-            stack.set(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT.get(), point);
-            stack.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+            stack.getOrCreateTag().put("petting:collar_respawn", point.toNbt());
 
             ServerLevel serverLevel = (ServerLevel) level;
             serverLevel.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 16, 0.4, 0.4, 0.4, 0.2);
@@ -299,9 +313,9 @@ public class PetTamingEvents {
             player.sendSystemMessage(Component.translatable("petting.action.collar_bound", targetType, pos.getX(), pos.getY(), pos.getZ()));
         }
 
-        player.swing(event.getHand(), net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
+        player.swing(event.getHand(), true);
         event.setCancellationResult(InteractionResult.SUCCESS);
-        return true;
+        event.setCanceled(true);
     }
 
     private static boolean handleCushionBinding(Player player, net.minecraft.world.entity.Entity target, ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.world.InteractionHand hand) {
@@ -316,8 +330,7 @@ public class PetTamingEvents {
         if (!level.isClientSide()) {
             net.minecraft.core.GlobalPos globalPos = net.minecraft.core.GlobalPos.of(level.dimension(), pos);
             net.yigitguven.petting.data.CollarRespawnPoint point = new net.yigitguven.petting.data.CollarRespawnPoint(globalPos, true);
-            stack.set(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT.get(), point);
-            stack.set(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
+            stack.getOrCreateTag().put("petting:collar_respawn", point.toNbt());
 
             ServerLevel serverLevel = (ServerLevel) level;
             serverLevel.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 16, 0.4, 0.4, 0.4, 0.2);
@@ -328,7 +341,7 @@ public class PetTamingEvents {
             player.sendSystemMessage(Component.translatable("petting.action.collar_bound", targetType, pos.getX(), pos.getY(), pos.getZ()));
         }
 
-        player.swing(hand, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
+        player.swing(hand, true);
         return true;
     }
 }

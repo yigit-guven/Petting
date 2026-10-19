@@ -24,15 +24,15 @@ import java.util.List;
 public abstract class EnderDragonMixin {
 
     @Inject(method = "knockBack", at = @At("HEAD"))
-    private void petting$preventOwnerKnockBack(ServerLevel level, List<Entity> entities, CallbackInfo ci) {
+    private void petting$preventOwnerKnockBack(List<Entity> entities, CallbackInfo ci) {
         EnderDragon dragon = (EnderDragon) (Object) this;
         if (PetHelper.isTamed(dragon)) {
             entities.removeIf(e -> PetHelper.areEntitiesAllied(dragon, e));
         }
     }
 
-    @Inject(method = "hurt(Lnet/minecraft/server/level/ServerLevel;Ljava/util/List;)V", at = @At("HEAD"))
-    private void petting$preventOwnerHurt(ServerLevel level, List<Entity> entities, CallbackInfo ci) {
+    @Inject(method = "hurt(Ljava/util/List;)V", at = @At("HEAD"))
+    private void petting$preventOwnerHurt(List<Entity> entities, CallbackInfo ci) {
         EnderDragon dragon = (EnderDragon) (Object) this;
         if (PetHelper.isTamed(dragon)) {
             entities.removeIf(e -> PetHelper.areEntitiesAllied(dragon, e));
@@ -54,7 +54,7 @@ public abstract class EnderDragonMixin {
     }
 
     @Inject(method = "checkWalls", at = @At("HEAD"), cancellable = true)
-    private void petting$preventTamedBlockDestruction(ServerLevel level, AABB box, CallbackInfoReturnable<Boolean> cir) {
+    private void petting$preventTamedBlockDestruction(AABB box, CallbackInfoReturnable<Boolean> cir) {
         EnderDragon dragon = (EnderDragon) (Object) this;
         if (PetHelper.isTamed(dragon)) {
             cir.setReturnValue(false);

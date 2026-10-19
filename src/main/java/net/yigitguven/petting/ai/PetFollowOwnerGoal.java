@@ -152,7 +152,7 @@ public class PetFollowOwnerGoal extends Goal {
 
             BlockPos targetPos = ownerPos.offset(dx, dy, dz);
             if (isTeleportSafe(targetPos)) {
-                this.mob.snapTo(targetPos.getX() + 0.5D, targetPos.getY(), targetPos.getZ() + 0.5D, this.mob.getYRot(), this.mob.getXRot());
+                this.mob.moveTo(targetPos.getX() + 0.5D, targetPos.getY(), targetPos.getZ() + 0.5D, this.mob.getYRot(), this.mob.getXRot());
                 this.navigation.stop();
                 return;
             }

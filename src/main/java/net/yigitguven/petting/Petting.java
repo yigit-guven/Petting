@@ -1,7 +1,8 @@
 package net.yigitguven.petting;
 
 import com.mojang.logging.LogUtils;
-import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -9,7 +10,6 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.yigitguven.petting.client.PettingClient;
 import net.yigitguven.petting.config.PettingClientConfig;
 import net.yigitguven.petting.config.PettingServerConfig;
-import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModBlockEntities;
 import net.yigitguven.petting.init.PettingModBlocks;
 import net.yigitguven.petting.init.PettingModItems;
@@ -23,25 +23,24 @@ public class Petting {
     public static final String MODID = "petting";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public Petting(FMLJavaModLoadingContext context) {
-        var modBusGroup = context.getModBusGroup();
+    public Petting() {
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        PettingModBlocks.BLOCKS.register(modBusGroup);
-        PettingModBlockEntities.BLOCK_ENTITY_TYPES.register(modBusGroup);
-        PettingModItems.ITEMS.register(modBusGroup);
-        PettingDataComponents.DATA_COMPONENTS.register(modBusGroup);
-        PettingModMenus.MENUS.register(modBusGroup);
-        PettingModTabs.CREATIVE_MODE_TABS.register(modBusGroup);
+        PettingModBlocks.BLOCKS.register(modEventBus);
+        PettingModBlockEntities.BLOCK_ENTITY_TYPES.register(modEventBus);
+        PettingModItems.ITEMS.register(modEventBus);
+        PettingModMenus.MENUS.register(modEventBus);
+        PettingModTabs.CREATIVE_MODE_TABS.register(modEventBus);
 
         PettingNetwork.init();
 
-        EntityAttributeModificationEvent.BUS.addListener(Petting::onEntityAttributeModification);
+        modEventBus.addListener(Petting::onEntityAttributeModification);
 
-        context.registerConfig(ModConfig.Type.SERVER, PettingServerConfig.SPEC, "petting-synced.toml");
-        context.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC, "petting-client.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, PettingServerConfig.SPEC, "petting-synced.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC, "petting-client.toml");
 
         if (FMLEnvironment.dist.isClient()) {
-            PettingClient.registerClientExtensions(context);
+            PettingClient.registerClientExtensions(modEventBus);
         }
     }
 

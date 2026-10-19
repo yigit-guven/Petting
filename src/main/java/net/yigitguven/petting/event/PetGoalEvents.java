@@ -8,10 +8,11 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.data.CollarRespawnPoint;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.data.PetSavedData;
 import net.yigitguven.petting.util.PetHelper;
@@ -68,19 +69,20 @@ public class PetGoalEvents {
     }
 
     @SubscribeEvent
-    public static boolean onLivingDeath(LivingDeathEvent event) {
+    public static void onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             if (mob.level() instanceof ServerLevel serverLevel) {
                 boolean respawnFailedNotified = false;
                 if (PettingServerConfig.isPetInventoryEnabled() && PettingServerConfig.isCollarRespawnEnabled()) {
                     net.minecraft.world.item.ItemStack collar = PetHelper.getCollar(mob);
-                    if (!collar.isEmpty() && collar.has(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT.get())) {
-                        net.yigitguven.petting.data.CollarRespawnPoint respawnPoint = collar.get(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT.get());
+                    if (!collar.isEmpty() && collar.getTag() != null && collar.getTag().contains("petting:collar_respawn")) {
+                        CollarRespawnPoint respawnPoint = CollarRespawnPoint.fromNbt(collar.getTag().getCompound("petting:collar_respawn"));
                         if (respawnPoint != null) {
                             ServerLevel targetLevel = serverLevel.getServer().getLevel(respawnPoint.pos().dimension());
                             if (targetLevel != null && PetHelper.isRespawnPointValid(targetLevel, respawnPoint)) {
                                 if (PetHelper.respawnPetAtBoundPoint(mob, serverLevel, targetLevel, respawnPoint)) {
-                                    return true;
+                                    event.setCanceled(true);
+                                    return;
                                 }
                             } else {
                                 if (PettingServerConfig.isPetDeathMessagesEnabled()) {
@@ -105,19 +107,18 @@ public class PetGoalEvents {
 
                 net.minecraft.world.item.ItemStack collar = PetHelper.getCollar(mob);
                 if (!collar.isEmpty()) {
-                    mob.spawnAtLocation(serverLevel, collar);
+                    mob.spawnAtLocation(collar);
                     PetHelper.setCollar(mob, net.minecraft.world.item.ItemStack.EMPTY);
                 }
                 net.minecraft.world.item.ItemStack saddle = PetHelper.getSaddle(mob);
                 if (!saddle.isEmpty()) {
-                    mob.spawnAtLocation(serverLevel, saddle);
+                    mob.spawnAtLocation(saddle);
                     PetHelper.setSaddle(mob, net.minecraft.world.item.ItemStack.EMPTY);
                 }
                 PetSavedData.get(serverLevel).removePet(mob.getUUID());
                 PetHelper.updatePetBossBarVisibility(mob, true);
             }
         }
-        return false;
     }
 
     @SubscribeEvent

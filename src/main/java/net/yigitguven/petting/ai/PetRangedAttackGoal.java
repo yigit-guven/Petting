@@ -2,15 +2,14 @@ package net.yigitguven.petting.ai;
 
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
@@ -214,7 +213,7 @@ public class PetRangedAttackGoal extends Goal {
                 int useTicks = this.mob.getTicksUsingItem();
                 if (useTicks >= 20) {
                     this.mob.stopUsingItem();
-                    performBowAttack(weapon, target, BowItem.getPowerForTime(useTicks));
+                    performBowAttack(weapon, hand, target, BowItem.getPowerForTime(useTicks));
                     this.attackTime = this.attackIntervalMin;
                 }
             }
@@ -223,7 +222,7 @@ public class PetRangedAttackGoal extends Goal {
         }
     }
 
-    private void performBowAttack(ItemStack weapon, LivingEntity target, float power) {
+    private void performBowAttack(ItemStack weapon, InteractionHand hand, LivingEntity target, float power) {
         if (this.mob instanceof RangedAttackMob rangedMob) {
             rangedMob.performRangedAttack(target, power);
         } else {
@@ -231,7 +230,7 @@ public class PetRangedAttackGoal extends Goal {
             if (ammo.isEmpty()) {
                 ammo = new ItemStack(Items.ARROW);
             }
-            AbstractArrow arrow = ProjectileUtil.getMobArrow(this.mob, ammo, power, weapon);
+            AbstractArrow arrow = ProjectileUtil.getMobArrow(this.mob, ammo, power);
             double dx = target.getX() - this.mob.getX();
             double dy = target.getY(0.3333333333333333D) - arrow.getY();
             double dz = target.getZ() - this.mob.getZ();
@@ -239,18 +238,18 @@ public class PetRangedAttackGoal extends Goal {
             arrow.shoot(dx, dy + dist * 0.20000000298023224D, dz, 1.6F, 1.0F);
             this.mob.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.mob.getRandom().nextFloat() * 0.4F + 0.8F));
             this.mob.level().addFreshEntity(arrow);
-            weapon.hurtAndBreak(1, this.mob, EquipmentSlot.MAINHAND);
+            weapon.hurtAndBreak(1, this.mob, (m) -> m.broadcastBreakEvent(hand));
         }
     }
 
     private void tickCrossbow(CrossbowItem crossbow, ItemStack weapon, InteractionHand hand, LivingEntity target, boolean canSee) {
         if (CrossbowItem.isCharged(weapon)) {
             if (canSee && --this.attackTime <= 0) {
-                crossbow.performShooting(this.mob.level(), this.mob, hand, weapon, 1.6F, 1.0F, target);
+                CrossbowItem.performShooting(this.mob.level(), this.mob, hand, weapon, 1.6F, 1.0F);
                 this.attackTime = this.attackIntervalMin;
             }
         } else if (this.mob.isUsingItem()) {
-            int duration = CrossbowItem.getChargeDuration(weapon, this.mob);
+            int duration = CrossbowItem.getChargeDuration(weapon);
             if (this.mob.getTicksUsingItem() >= duration) {
                 this.mob.releaseUsingItem();
             }

@@ -1,0 +1,16 @@
+{
+    "type":  "minecraft:crafting_shapeless",
+    "category":  "equipment",
+    "ingredients":  [
+                        {
+                            "tag":  "petting:collars"
+                        },
+                        {
+                            "item":  "minecraft:lime_dye"
+                        }
+                    ],
+    "result":  {
+                   "item":  "petting:lime_collar",
+                   "count":  1
+               }
+}

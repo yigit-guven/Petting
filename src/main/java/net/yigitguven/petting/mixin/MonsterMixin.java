@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MonsterMixin {
 
     @Inject(method = "isPreventingPlayerRest", at = @At("HEAD"), cancellable = true)
-    private void petting$isPreventingPlayerRest(ServerLevel level, Player player, CallbackInfoReturnable<Boolean> cir) {
+    private void petting$isPreventingPlayerRest(Player player, CallbackInfoReturnable<Boolean> cir) {
         if (!PettingServerConfig.shouldTamedMonstersPreventSleep()) {
             Monster monster = (Monster) (Object) this;
             if (PetHelper.isTamed(monster) && monster.getTarget() != player) {

@@ -1,17 +1,12 @@
 package net.yigitguven.petting.block.entity;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.core.component.DataComponentGetter;
-import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
-import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModBlockEntities;
 
 import javax.annotation.Nullable;
@@ -44,43 +39,36 @@ public class GoldenDragonEggBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        super.saveAdditional(output);
-        output.storeNullable("OwnerUUID", UUIDUtil.CODEC, this.ownerUUID);
-        if (this.ownerName != null) {
-            output.putString("OwnerName", this.ownerName);
-        }
-    }
-
-    @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-        this.ownerUUID = input.read("OwnerUUID", UUIDUtil.CODEC).orElse(null);
-        this.ownerName = input.getStringOr("OwnerName", null);
-    }
-
-    @Override
-    protected void applyImplicitComponents(DataComponentGetter components) {
-        super.applyImplicitComponents(components);
-        java.util.UUID owner = components.get(PettingDataComponents.DRAGON_EGG_OWNER.get());
-        if (owner != null) {
-            this.ownerUUID = owner;
-        }
-        String name = components.get(PettingDataComponents.DRAGON_EGG_OWNER_NAME.get());
-        if (name != null) {
-            this.ownerName = name;
-        }
-    }
-
-    @Override
-    protected void collectImplicitComponents(DataComponentMap.Builder builder) {
-        super.collectImplicitComponents(builder);
+    protected void saveAdditional(CompoundTag tag) {
+        super.saveAdditional(tag);
         if (this.ownerUUID != null) {
-            builder.set(PettingDataComponents.DRAGON_EGG_OWNER.get(), this.ownerUUID);
+            tag.putUUID("OwnerUUID", this.ownerUUID);
         }
         if (this.ownerName != null) {
-            builder.set(PettingDataComponents.DRAGON_EGG_OWNER_NAME.get(), this.ownerName);
+            tag.putString("OwnerName", this.ownerName);
         }
+    }
+
+    @Override
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        if (tag.hasUUID("OwnerUUID")) {
+            this.ownerUUID = tag.getUUID("OwnerUUID");
+        } else {
+            this.ownerUUID = null;
+        }
+        if (tag.contains("OwnerName")) {
+            this.ownerName = tag.getString("OwnerName");
+        } else {
+            this.ownerName = null;
+        }
+    }
+
+    @Override
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag);
+        return tag;
     }
 
     @Override

@@ -17,6 +17,7 @@ public class PettingModTabs {
                     .title(Component.translatable("itemGroup.petting"))
                     .icon(() -> new ItemStack(PettingModItems.GOLDEN_PAW.get()))
                     .displayItems((parameters, output) -> {
+                        output.accept(PettingModItems.GOLDEN_PAW.get());
                         output.accept(PettingModItems.GOLDEN_WHEAT.get());
                         output.accept(PettingModItems.GOLDEN_STAR.get());
                         output.accept(PettingModItems.GOLDEN_FLESH.get());
@@ -26,6 +27,7 @@ public class PettingModTabs {
                         output.accept(PettingModItems.GOLDEN_FUNGUS.get());
                         output.accept(PettingModItems.GOLDEN_EYE.get());
                         output.accept(PettingModItems.GOLDEN_SLIME.get());
+                        output.accept(PettingModItems.GOLDEN_DRAGON_EGG.get());
                         output.accept(PettingModItems.COLLAR.get());
                         output.accept(PettingModItems.WHITE_COLLAR.get());
                         output.accept(PettingModItems.ORANGE_COLLAR.get());

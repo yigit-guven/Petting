@@ -5,7 +5,7 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.init.PettingModItems;
@@ -15,10 +15,10 @@ import java.util.List;
 
 @JeiPlugin
 public class PettingJeiPlugin implements IModPlugin {
-    public static final Identifier PLUGIN_UID = Identifier.fromNamespaceAndPath(Petting.MODID, "jei_plugin");
+    public static final ResourceLocation PLUGIN_UID = new ResourceLocation(Petting.MODID, "jei_plugin");
 
     @Override
-    public Identifier getPluginUid() {
+    public ResourceLocation getPluginUid() {
         return PLUGIN_UID;
     }
 
@@ -46,16 +46,14 @@ public class PettingJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addCraftingStation(PetTamingCategory.RECIPE_TYPE,
-                PettingModItems.GOLDEN_WHEAT.get(),
-                PettingModItems.GOLDEN_STAR.get(),
-                PettingModItems.GOLDEN_FLESH.get(),
-                PettingModItems.GOLDEN_BONE.get(),
-                PettingModItems.GOLDEN_FISH.get(),
-                PettingModItems.GOLDEN_KELP.get(),
-                PettingModItems.GOLDEN_FUNGUS.get(),
-                PettingModItems.GOLDEN_EYE.get(),
-                PettingModItems.GOLDEN_SLIME.get()
-        );
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_WHEAT.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_STAR.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_FLESH.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_BONE.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_FISH.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_KELP.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_FUNGUS.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_EYE.get()), PetTamingCategory.RECIPE_TYPE);
+        registration.addRecipeCatalyst(new ItemStack(PettingModItems.GOLDEN_SLIME.get()), PetTamingCategory.RECIPE_TYPE);
     }
 }

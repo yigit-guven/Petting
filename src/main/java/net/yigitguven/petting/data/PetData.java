@@ -1,54 +1,13 @@
 package net.yigitguven.petting.data;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.UUIDUtil;
-
-import io.netty.buffer.ByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public class PetData {
-    public static final MapCodec<PetData> MAP_CODEC = RecordCodecBuilder.mapCodec(instance ->
-            instance.group(
-                    UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(data -> Optional.ofNullable(data.ownerUUID)),
-                    Codec.BOOL.fieldOf("tamed").forGetter(PetData::isTamed),
-                    Codec.STRING.xmap(PetOrder::valueOf, PetOrder::name).fieldOf("order").forGetter(PetData::getOrder),
-                    Codec.STRING.xmap(CombatMode::valueOf, CombatMode::name).fieldOf("combat_mode").forGetter(PetData::getCombatMode),
-                    ItemStack.OPTIONAL_CODEC.optionalFieldOf("collar", ItemStack.EMPTY).forGetter(PetData::getCollar),
-                    ItemStack.OPTIONAL_CODEC.optionalFieldOf("saddle", ItemStack.EMPTY).forGetter(PetData::getSaddle),
-                    Codec.BOOL.optionalFieldOf("ride_attack_on_click", true).forGetter(PetData::isRideAttackOnClick),
-                    Codec.BOOL.optionalFieldOf("ride_auto_attack_hostiles", false).forGetter(PetData::isRideAutoAttackHostiles)
-            ).apply(instance, PetData::new)
-    );
-
-    public static final StreamCodec<RegistryFriendlyByteBuf, PetData> STREAM_CODEC = StreamCodec.composite(
-            ByteBufCodecs.optional(UUIDUtil.STREAM_CODEC),
-            data -> Optional.ofNullable(data.ownerUUID),
-            ByteBufCodecs.BOOL,
-            PetData::isTamed,
-            ByteBufCodecs.stringUtf8(32).map(PetOrder::valueOf, PetOrder::name),
-            PetData::getOrder,
-            ByteBufCodecs.stringUtf8(32).map(CombatMode::valueOf, CombatMode::name),
-            PetData::getCombatMode,
-            ItemStack.OPTIONAL_STREAM_CODEC,
-            PetData::getCollar,
-            ItemStack.OPTIONAL_STREAM_CODEC,
-            PetData::getSaddle,
-            ByteBufCodecs.BOOL,
-            PetData::isRideAttackOnClick,
-            ByteBufCodecs.BOOL,
-            PetData::isRideAutoAttackHostiles,
-            PetData::new
-    );
-
     private UUID ownerUUID;
     private boolean tamed;
     private PetOrder order;
@@ -78,6 +37,98 @@ public class PetData {
         this.saddle = saddle != null ? saddle : ItemStack.EMPTY;
         this.rideAttackOnClick = rideAttackOnClick;
         this.rideAutoAttackHostiles = rideAutoAttackHostiles;
+    }
+
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeBoolean(ownerUUID != null);
+        if (ownerUUID != null) {
+            buf.writeUUID(ownerUUID);
+        }
+        buf.writeBoolean(tamed);
+        buf.writeUtf(order != null ? order.name() : PetOrder.FOLLOW.name());
+        buf.writeUtf(combatMode != null ? combatMode.name() : CombatMode.DEFENSIVE.name());
+        buf.writeItem(getCollar());
+        buf.writeItem(getSaddle());
+        buf.writeBoolean(rideAttackOnClick);
+        buf.writeBoolean(rideAutoAttackHostiles);
+    }
+
+    public static PetData fromBytes(FriendlyByteBuf buf) {
+        PetData data = new PetData();
+        if (buf.readBoolean()) {
+            data.ownerUUID = buf.readUUID();
+        }
+        data.tamed = buf.readBoolean();
+        try {
+            data.order = PetOrder.valueOf(buf.readUtf(32));
+        } catch (Exception e) {
+            data.order = PetOrder.FOLLOW;
+        }
+        try {
+            data.combatMode = CombatMode.valueOf(buf.readUtf(32));
+        } catch (Exception e) {
+            data.combatMode = CombatMode.DEFENSIVE;
+        }
+        data.collar = buf.readItem();
+        data.saddle = buf.readItem();
+        data.rideAttackOnClick = buf.readBoolean();
+        data.rideAutoAttackHostiles = buf.readBoolean();
+        return data;
+    }
+
+    public CompoundTag toNbt() {
+        CompoundTag tag = new CompoundTag();
+        if (ownerUUID != null) {
+            tag.putUUID("owner", ownerUUID);
+        }
+        tag.putBoolean("tamed", tamed);
+        tag.putString("order", order != null ? order.name() : PetOrder.FOLLOW.name());
+        tag.putString("combat_mode", combatMode != null ? combatMode.name() : CombatMode.DEFENSIVE.name());
+        if (collar != null && !collar.isEmpty()) {
+            tag.put("collar", collar.save(new CompoundTag()));
+        }
+        if (saddle != null && !saddle.isEmpty()) {
+            tag.put("saddle", saddle.save(new CompoundTag()));
+        }
+        tag.putBoolean("ride_attack_on_click", rideAttackOnClick);
+        tag.putBoolean("ride_auto_attack_hostiles", rideAutoAttackHostiles);
+        return tag;
+    }
+
+    public void fromNbt(CompoundTag tag) {
+        if (tag == null) return;
+        if (tag.hasUUID("owner")) {
+            this.ownerUUID = tag.getUUID("owner");
+        } else {
+            this.ownerUUID = null;
+        }
+        this.tamed = tag.getBoolean("tamed");
+        if (tag.contains("order")) {
+            try {
+                this.order = PetOrder.valueOf(tag.getString("order"));
+            } catch (Exception e) {
+                this.order = PetOrder.FOLLOW;
+            }
+        }
+        if (tag.contains("combat_mode")) {
+            try {
+                this.combatMode = CombatMode.valueOf(tag.getString("combat_mode"));
+            } catch (Exception e) {
+                this.combatMode = CombatMode.DEFENSIVE;
+            }
+        }
+        if (tag.contains("collar")) {
+            this.collar = ItemStack.of(tag.getCompound("collar"));
+        } else {
+            this.collar = ItemStack.EMPTY;
+        }
+        if (tag.contains("saddle")) {
+            this.saddle = ItemStack.of(tag.getCompound("saddle"));
+        } else {
+            this.saddle = ItemStack.EMPTY;
+        }
+        this.rideAttackOnClick = !tag.contains("ride_attack_on_click") || tag.getBoolean("ride_attack_on_click");
+        this.rideAutoAttackHostiles = tag.getBoolean("ride_auto_attack_hostiles");
     }
 
     public ItemStack getCollar() {

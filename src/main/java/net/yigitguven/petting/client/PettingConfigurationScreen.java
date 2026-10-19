@@ -1,7 +1,8 @@
 package net.yigitguven.petting.client;
 
-import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -45,14 +46,14 @@ public class PettingConfigurationScreen extends Screen {
                 Component.literal("Open Config Folder"),
                 b -> {
                     Path configDir = this.minecraft.gameDirectory.toPath().resolve("config");
-                    Blaze3D.openPath(configDir);
+                    Util.getPlatform().openFile(configDir.toFile());
                 }
         ).bounds(centerX - 100, startY + 60, 200, 20).build());
 
         // Open Wiki Button
         this.addRenderableWidget(Button.builder(
                 Component.translatable("petting.configuration.wiki_link"),
-                b -> ConfirmLinkScreen.confirmLinkNow(this, WIKI_URI, true)
+                b -> ConfirmLinkScreen.confirmLinkNow(WIKI_URI.toString(), this, true)
         ).bounds(centerX - 100, startY + 85, 200, 20).build());
 
         // Done Button
@@ -63,7 +64,13 @@ public class PettingConfigurationScreen extends Screen {
     }
 
     @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        this.renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
     public void onClose() {
-        this.minecraft.gui.setScreen(this.parent);
+        this.minecraft.setScreen(this.parent);
     }
 }

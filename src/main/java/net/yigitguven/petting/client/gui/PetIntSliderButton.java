@@ -1,14 +1,9 @@
 package net.yigitguven.petting.client.gui;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractSliderButton;
-import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class PetIntSliderButton extends AbstractSliderButton {
@@ -64,32 +59,6 @@ public class PetIntSliderButton extends AbstractSliderButton {
             if (this.onApply != null) {
                 this.onApply.accept(current);
             }
-        }
-    }
-
-    private Tooltip customTooltip;
-
-    @Override
-    public void setTooltip(Tooltip tooltip) {
-        super.setTooltip(tooltip);
-        this.customTooltip = tooltip;
-    }
-
-    @Override
-    protected void extractTooltipForNextRenderPass(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
-        if (this.customTooltip != null && this.isHovered()) {
-            Minecraft mc = Minecraft.getInstance();
-            List<FormattedCharSequence> lines = this.customTooltip.toCharSequence(mc);
-            graphics.setTooltipForNextFrame(
-                    mc.font,
-                    lines,
-                    this.customTooltip.component(),
-                    ClampedTooltipPositioner.INSTANCE,
-                    mouseX,
-                    mouseY,
-                    false,
-                    this.customTooltip.style()
-            );
         }
     }
 }

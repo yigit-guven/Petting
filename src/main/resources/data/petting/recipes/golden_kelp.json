@@ -1,0 +1,21 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "misc",
+    "key":  {
+                "N":  {
+                          "item":  "minecraft:gold_nugget"
+                      },
+                "K":  {
+                          "item":  "minecraft:dried_kelp"
+                      }
+            },
+    "pattern":  [
+                    "NNN",
+                    "NKN",
+                    "NNN"
+                ],
+    "result":  {
+                   "item":  "petting:golden_kelp",
+                   "count":  1
+               }
+}

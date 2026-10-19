@@ -1,0 +1,24 @@
+{
+    "type":  "minecraft:crafting_shaped",
+    "category":  "misc",
+    "key":  {
+                "N":  {
+                          "item":  "minecraft:gold_nugget"
+                      },
+                "G":  {
+                          "item":  "minecraft:gold_ingot"
+                      },
+                "E":  {
+                          "item":  "minecraft:ender_eye"
+                      }
+            },
+    "pattern":  [
+                    "NGN",
+                    "GEG",
+                    "NGN"
+                ],
+    "result":  {
+                   "item":  "petting:golden_eye",
+                   "count":  1
+               }
+}

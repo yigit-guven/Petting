@@ -12,7 +12,7 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
@@ -69,21 +69,23 @@ public class PetSafetyEvents {
     }
 
     @SubscribeEvent
-    public static boolean onIncomingDamage(LivingAttackEvent event) {
+    public static void onIncomingDamage(LivingAttackEvent event) {
         LivingEntity victim = event.getEntity();
         Entity attacker = event.getSource().getEntity();
         Entity direct = event.getSource().getDirectEntity();
 
         // 0. Peaceful ritual protection: prevent explosion/crystal damage during Golden Dragon summon ritual
         if (event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && PetHelper.isGoldenDragonRitualActive(victim.level())) {
-            return true;
+            event.setCanceled(true);
+            return;
         }
 
         // 1. Owner protection: pets, minions, projectiles, and spells can never damage their owner
         if (victim instanceof Player player) {
             if ((attacker != null && PetHelper.isRootOwner(attacker, player))
                     || (direct != null && PetHelper.isRootOwner(direct, player))) {
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
 
@@ -94,23 +96,26 @@ public class PetSafetyEvents {
         }
         if (rootAttacker instanceof Player ownerPlayer && PetHelper.isRootOwner(victim, ownerPlayer)) {
             if (!PettingServerConfig.canOwnerAttackPets()) {
-                return true;
+                event.setCanceled(true);
+                return;
             }
-            return false;
+            return;
         }
 
         // 3. Configurable: friendly fire between pets/minions of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
             if ((attacker != null && PetHelper.arePetsOfSameOwner(victim, attacker))
                     || (direct != null && PetHelper.arePetsOfSameOwner(victim, direct))) {
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
 
         // 4. Passenger / vehicle relationship: prevent inadvertent collision/team damage
         if ((attacker != null && (victim.isPassengerOfSameVehicle(attacker) || victim.hasPassenger(attacker) || attacker.hasPassenger(victim)))
                 || (direct != null && (victim.isPassengerOfSameVehicle(direct) || victim.hasPassenger(direct) || direct.hasPassenger(victim)))) {
-            return true;
+            event.setCanceled(true);
+            return;
         }
 
         // 5. Notify tamed dragons of combat events immediately
@@ -120,15 +125,14 @@ public class PetSafetyEvents {
         if (attacker instanceof Player ownerPlayer && victim != ownerPlayer) {
             PetHelper.alertTamedDragonsOfTarget(ownerPlayer, victim);
         }
-        return false;
     }
 
     @SubscribeEvent
-    public static boolean onChangeTarget(LivingChangeTargetEvent event) {
+    public static void onChangeTarget(LivingChangeTargetEvent event) {
         LivingEntity pet = event.getEntity();
         LivingEntity newTarget = event.getNewTarget();
         if (newTarget == null) {
-            return false;
+            return;
         }
 
         // 1. Always: pets and minions can never target their owner
@@ -137,7 +141,8 @@ public class PetSafetyEvents {
             if (pet instanceof NeutralMob neutralMob) {
                 neutralMob.stopBeingAngry();
             }
-            return true;
+            event.setCanceled(true);
+            return;
         }
 
         // 2. Untamed entity with root owner targeting owner or fellow pet
@@ -152,10 +157,11 @@ public class PetSafetyEvents {
                     if (pet instanceof Mob mob) {
                         PetHelper.setTamed(mob, player);
                     }
-                    return true;
+                    event.setCanceled(true);
+                    return;
                 }
             }
-            return false;
+            return;
         }
 
         // 3. Prevent built-in hostile behaviors: pets only attack valid targets
@@ -165,7 +171,8 @@ public class PetSafetyEvents {
                 if (pet instanceof NeutralMob neutralMob) {
                     neutralMob.stopBeingAngry();
                 }
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
 
@@ -176,10 +183,10 @@ public class PetSafetyEvents {
                 if (pet instanceof NeutralMob neutralMob) {
                     neutralMob.stopBeingAngry();
                 }
-                return true;
+                event.setCanceled(true);
+                return;
             }
         }
-        return false;
     }
 
     @SubscribeEvent

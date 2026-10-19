@@ -1,7 +1,7 @@
 package net.yigitguven.petting.inventory;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleMenuProvider;
@@ -9,17 +9,19 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.animal.equine.AbstractChestedHorse;
+import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.network.NetworkHooks;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.init.PettingModMenus;
-import org.jspecify.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,7 +94,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return;
         }
-        player.openMenu(new SimpleMenuProvider(
+        NetworkHooks.openScreen(player, new SimpleMenuProvider(
                 (windowId, playerInv, p) -> new PetInventoryMenu(windowId, playerInv, pet),
                 pet.getDisplayName()
         ), buf -> buf.writeVarInt(pet.getId()));
@@ -198,7 +200,7 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             }
 
             if (slotStack.isEmpty()) {
-                slot.setByPlayer(ItemStack.EMPTY);
+                slot.set(ItemStack.EMPTY);
             } else {
                 slot.setChanged();
             }
@@ -238,8 +240,9 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         }
 
         @Override
-        public @Nullable Identifier getNoItemIcon() {
-            return this.slotType.getIcon(this.pet);
+        public @Nullable com.mojang.datafixers.util.Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+            ResourceLocation icon = this.slotType.getIcon(this.pet);
+            return icon != null ? com.mojang.datafixers.util.Pair.of(InventoryMenu.BLOCK_ATLAS, icon) : null;
         }
 
         public PetSlotType getSlotType() {

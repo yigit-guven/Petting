@@ -1,9 +1,11 @@
 package net.yigitguven.petting.init;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.item.Item;
 import net.yigitguven.petting.Petting;
 
 public class PettingModTags {
@@ -19,7 +21,11 @@ public class PettingModTags {
         public static final TagKey<EntityType<?>> GOLDEN_SLIME = tag("tames_with/golden_slime");
 
         private static TagKey<EntityType<?>> tag(String name) {
-            return TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(Petting.MODID, name));
+            return TagKey.create(Registries.ENTITY_TYPE, new ResourceLocation(Petting.MODID, name));
         }
+    }
+
+    public static class Items {
+        public static final TagKey<Item> COLLARS = ItemTags.create(new ResourceLocation(Petting.MODID, "collars"));
     }
 }

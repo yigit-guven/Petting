@@ -335,7 +335,7 @@ public class PettingServerConfig {
         if (!SPEC.isLoaded()) {
             return false;
         }
-        net.minecraft.resources.Identifier id = net.minecraft.world.entity.EntityType.getKey(entityType);
+        net.minecraft.resources.ResourceLocation id = net.minecraft.world.entity.EntityType.getKey(entityType);
         if (id == null) {
             return false;
         }
@@ -371,7 +371,7 @@ public class PettingServerConfig {
         if (!SPEC.isLoaded()) {
             return true;
         }
-        net.minecraft.resources.Identifier id = net.minecraft.world.entity.EntityType.getKey(entityType);
+        net.minecraft.resources.ResourceLocation id = net.minecraft.world.entity.EntityType.getKey(entityType);
         if (id == null) {
             return false;
         }
