@@ -36,7 +36,7 @@ public class PettingConfigurationScreen extends Screen {
 
         this.addRenderableWidget(new StringWidget(
                 centerX - 160, startY + 25, 320, 20,
-                Component.literal("Settings are configured in config/petting-common.toml and petting-client.toml").withStyle(ChatFormatting.GRAY),
+                Component.literal("Settings are configured in serverconfig/petting-synced.toml and config/petting-client.toml").withStyle(ChatFormatting.GRAY),
                 this.font
         ));
 

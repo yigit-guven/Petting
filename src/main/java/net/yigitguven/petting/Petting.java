@@ -37,8 +37,8 @@ public class Petting {
 
         EntityAttributeModificationEvent.BUS.addListener(Petting::onEntityAttributeModification);
 
-        context.registerConfig(ModConfig.Type.COMMON, PettingServerConfig.SPEC);
-        context.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC);
+        context.registerConfig(ModConfig.Type.SERVER, PettingServerConfig.SPEC, "petting-synced.toml");
+        context.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC, "petting-client.toml");
 
         if (FMLEnvironment.dist.isClient()) {
             PettingClient.registerClientExtensions(context);

@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.entity.state.ParrotRenderState;
 import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.client.event.SystemMessageReceivedEvent;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
@@ -201,13 +202,28 @@ public class PettingClientEvents {
         return false;
     }
 
+    @SubscribeEvent
+    public static boolean onSystemMessageReceived(SystemMessageReceivedEvent event) {
+        String key = getTranslatableKey(event.getMessage());
+        if (key != null && (POSITIVE_KEYS.contains(key) || NEGATIVE_KEYS.contains(key) || DEATH_KEYS.contains(key))) {
+            if (!PettingClientConfig.isFeedbackMessageEnabled(key)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static String getTranslatableKey(net.minecraft.network.chat.Component component) {
+        if (component == null) {
+            return null;
+        }
         if (component.getContents() instanceof TranslatableContents translatable) {
             return translatable.getKey();
         }
         for (net.minecraft.network.chat.Component sibling : component.getSiblings()) {
-            if (sibling.getContents() instanceof TranslatableContents translatable) {
-                return translatable.getKey();
+            String key = getTranslatableKey(sibling);
+            if (key != null) {
+                return key;
             }
         }
         return null;

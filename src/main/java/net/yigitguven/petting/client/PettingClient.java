@@ -59,6 +59,7 @@ public class PettingClient {
         RegisterKeyMappingsEvent.BUS.addListener(PettingClient::onRegisterKeyMappings);
         FMLClientSetupEvent.getBus(modBusGroup).addListener(PettingClient::onClientSetup);
         EntityRenderersEvent.AddLayers.BUS.addListener(PettingClientRender::onAddLayers);
+        net.minecraftforge.client.event.SystemMessageReceivedEvent.BUS.addListener((java.util.function.Predicate<net.minecraftforge.client.event.SystemMessageReceivedEvent>) PettingClientEvents::onSystemMessageReceived);
     }
 
     private static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
