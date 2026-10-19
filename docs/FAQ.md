@@ -54,7 +54,8 @@ Without an equipped saddle, you can mount the pet as a passive passenger (if `al
 ### Why isn't my pet attacking hostile monsters?
 1. **Check Combat Mode**: Open the pet inventory and check the Collar Tab. If the pet is set to **`PASSIVE`**, it will never attack.
 2. **Check Sitting State**: Sitting pets do not engage in combat. Command it to stand (`Right-Click` or sit toggle).
-3. **Defensive vs. Aggressive**: In `DEFENSIVE` mode, the pet only attacks mobs that strike its owner. If you want it to hunt down monsters proactively, switch it to **`AGGRESSIVE`** or **`GUARD`** mode.
+3. **Passive Mob Setting**: If your pet is a non-hostile passive animal (such as a sheep, cow, pig, or villager), it cannot attack unless `enablePassiveMobAttacks` is enabled in `petting-server.toml`.
+4. **Defensive vs. Aggressive**: In `DEFENSIVE` mode, the pet only attacks mobs that strike its owner. If you want it to hunt down monsters proactively, switch it to **`AGGRESSIVE`** or **`GUARD`** mode.
 
 ---
 

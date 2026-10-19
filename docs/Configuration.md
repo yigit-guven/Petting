@@ -43,6 +43,8 @@ Server settings govern gameplay rules, taming mechanics, combat AI, and physics 
 | `tamedMonstersPreventSleep` | boolean | `false` | When `false`, players can sleep peacefully near their friendly tamed monsters. When `true`, nearby monster pets prevent sleeping. |
 | `enablePetDeathMessages` | boolean | `true` | When `true`, the server dispatches chat notifications to owners when their pet dies or respawns. |
 | `enableEggConvertedFeedback` | boolean | `false` | Server-side toggle controlling whether the server announces Dragon Egg conversion. |
+| `enablePassiveMobAttacks` | boolean | `false` | When `true`, tamed passive mobs (such as sheep, cows, pigs, villagers) can engage in combat and attack targets. When `false` (default), passive mobs will never attack. |
+| `passiveMobAttackDamage` | int | `2` | Base melee attack damage dealt by passive mobs when `enablePassiveMobAttacks` is enabled (range `1` to `100`). |
 
 ### Riding Settings (`[riding]`)
 
