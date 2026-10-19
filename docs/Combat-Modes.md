@@ -75,11 +75,12 @@ In addition to the primary mode, each collar provides four tactical sub-toggles:
 
 Whenever a pet acquires an attack target, automatic safety checks protect you and your allies:
 
-1. **State check**: Dead, sitting, or passive pets will not attack.
-2. **Owner immunity**: Pets can **never** target their owner.
-3. **Friendly fire check**: Pets belonging to the same owner will not target each other (unless `petsCanAttackPets` is enabled on the server).
-4. **Allied passenger check**: Pets will not target entities riding them or the vehicle they are mounted on.
-5. **Leash check**: In Guard and Wander modes, pets will not pursue enemies beyond their patrol perimeter.
+1. **State check**: Dead, sitting, or passive combat mode pets will not attack.
+2. **Passive mob check**: Non-hostile pets (cows, sheep, pigs, etc.) will not attack unless `enablePassiveMobAttacks` is set to `true` on the server.
+3. **Owner immunity**: Pets can **never** target their owner.
+4. **Friendly fire check**: Pets belonging to the same owner will not target each other (unless `petsCanAttackPets` is enabled on the server).
+5. **Allied passenger check**: Pets will not target entities riding them or the vehicle they are mounted on.
+6. **Leash check**: In Guard and Wander modes, pets will not pursue enemies beyond their patrol perimeter.
 
 ---
 

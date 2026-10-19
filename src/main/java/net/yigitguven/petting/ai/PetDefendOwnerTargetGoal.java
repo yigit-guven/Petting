@@ -41,6 +41,9 @@ public class PetDefendOwnerTargetGoal extends TargetGoal {
         if (!PetHelper.isTamed(this.mob) || settings.combatMode() == CombatMode.PASSIVE) {
             return false;
         }
+        if (!(this.mob instanceof net.minecraft.world.entity.monster.Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
+            return false;
+        }
         if (PetHelper.getOrder(this.mob) == PetOrder.SIT) {
             return false;
         }

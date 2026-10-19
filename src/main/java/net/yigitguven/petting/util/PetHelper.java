@@ -739,6 +739,11 @@ public class PetHelper {
             return false;
         }
 
+        // Rule: Passive mobs cannot attack if passive mob attacks are disabled
+        if (!(pet instanceof net.minecraft.world.entity.monster.Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
+            return false;
+        }
+
         // Rule: Pets cannot target fellow pets of the same owner unless friendly fire is enabled
         if (!PettingServerConfig.canPetsAttackPets() && isRootOwner(target, owner)) {
             return false;
@@ -1592,11 +1597,26 @@ public class PetHelper {
     }
 
     public static boolean doPetHurtTarget(Mob mob, ServerLevel level, net.minecraft.world.entity.Entity target) {
+        boolean isPassive = !(mob instanceof net.minecraft.world.entity.monster.Enemy);
+        if (isPassive && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
+            return false;
+        }
+
+        if (isPassive) {
+            float damage = (float) PettingServerConfig.getPassiveMobAttackDamage();
+            DamageSource damageSource = mob.damageSources().mobAttack(mob);
+            boolean wasHurt = target.hurtServer(level, damageSource, damage);
+            if (wasHurt) {
+                mob.setLastHurtMob(target);
+            }
+            return wasHurt;
+        }
+
         if (mob.getAttributes().hasAttribute(Attributes.ATTACK_DAMAGE)) {
             return mob.doHurtTarget(level, target);
         }
         DamageSource damageSource = mob.damageSources().mobAttack(mob);
-        boolean wasHurt = target.hurtServer(level, damageSource, 2.0F);
+        boolean wasHurt = target.hurtServer(level, damageSource, (float) PettingServerConfig.getPassiveMobAttackDamage());
         if (wasHurt) {
             mob.setLastHurtMob(target);
         }

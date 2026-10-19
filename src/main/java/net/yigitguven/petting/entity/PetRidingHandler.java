@@ -481,7 +481,7 @@ public class PetRidingHandler {
                 if (mob instanceof Mob m) {
                     PetHelper.doPetHurtTarget(m, serverLevel, target);
                 } else {
-                    target.hurtServer(serverLevel, mob.damageSources().mobAttack(mob), 2.0F);
+                    target.hurtServer(serverLevel, mob.damageSources().mobAttack(mob), (float) net.yigitguven.petting.config.PettingServerConfig.getPassiveMobAttackDamage());
                 }
                 break;
             }
@@ -537,7 +537,7 @@ public class PetRidingHandler {
             if (mob instanceof Mob m) {
                 PetHelper.doPetHurtTarget(m, serverLevel, target);
             } else {
-                target.hurtServer(serverLevel, mob.damageSources().mobAttack(mob), 2.0F);
+                target.hurtServer(serverLevel, mob.damageSources().mobAttack(mob), (float) net.yigitguven.petting.config.PettingServerConfig.getPassiveMobAttackDamage());
             }
         }
     }

@@ -54,6 +54,9 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
         if (settings.combatMode() == CombatMode.PASSIVE) {
             return false;
         }
+        if (!(this.mob instanceof net.minecraft.world.entity.monster.Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
+            return false;
+        }
         if (settings.preferRangedAttack() && this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
             return false;
         }
@@ -70,6 +73,9 @@ public class PetMeleeAttackGoal extends MeleeAttackGoal {
         }
         CollarSettings settings = PetHelper.getCollarSettings(this.mob);
         if (PetHelper.getOrder(this.mob) == PetOrder.SIT || settings.combatMode() == CombatMode.PASSIVE) {
+            return false;
+        }
+        if (!(this.mob instanceof net.minecraft.world.entity.monster.Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
             return false;
         }
         if (settings.preferRangedAttack() && this.mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {

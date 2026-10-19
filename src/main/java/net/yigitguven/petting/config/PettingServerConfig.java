@@ -46,6 +46,8 @@ public class PettingServerConfig {
     public static final ForgeConfigSpec.BooleanValue ENABLE_COLLAR_RESPAWN;
     public static final ForgeConfigSpec.BooleanValue ENABLE_COLLAR_MODELS;
     public static final ForgeConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PASSIVE_MOB_ATTACKS;
+    public static final ForgeConfigSpec.IntValue PASSIVE_MOB_ATTACK_DAMAGE;
 
     static {
         ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
@@ -131,6 +133,14 @@ public class PettingServerConfig {
         ENABLE_EGG_CONVERTED_FEEDBACK = builder
                 .translation("petting.configuration.feedback.enableEggConvertedFeedback")
                 .define("enableEggConvertedFeedback", false);
+
+        ENABLE_PASSIVE_MOB_ATTACKS = builder
+                .translation("petting.configuration.behavior.enablePassiveMobAttacks")
+                .define("enablePassiveMobAttacks", false);
+
+        PASSIVE_MOB_ATTACK_DAMAGE = builder
+                .translation("petting.configuration.behavior.passiveMobAttackDamage")
+                .defineInRange("passiveMobAttackDamage", 2, 1, 100);
 
         builder.pop();
 
@@ -461,5 +471,13 @@ public class PettingServerConfig {
 
     public static boolean isEggConvertedFeedbackEnabled() {
         return SPEC.isLoaded() ? ENABLE_EGG_CONVERTED_FEEDBACK.get() : false;
+    }
+
+    public static boolean isPassiveMobAttacksEnabled() {
+        return SPEC.isLoaded() ? ENABLE_PASSIVE_MOB_ATTACKS.get() : false;
+    }
+
+    public static int getPassiveMobAttackDamage() {
+        return SPEC.isLoaded() ? PASSIVE_MOB_ATTACK_DAMAGE.get() : 2;
     }
 }
