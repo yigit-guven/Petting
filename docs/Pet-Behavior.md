@@ -46,6 +46,14 @@ When the server configuration `disableBuiltInHostility` is enabled (default `tru
 
 ---
 
+## Passive Mob Combat
+
+By default, non-hostile creatures (such as cows, sheep, pigs, chickens, and villagers) do not engage in combat even if tamed:
+- **`enablePassiveMobAttacks`** (default: `false`): Governs whether passive mobs are allowed to acquire combat targets or strike enemies. When `false`, passive pets act peacefully and will not fight.
+- **`passiveMobAttackDamage`** (default: `2`): Sets the base melee attack damage dealt by passive mobs when passive mob attacks are enabled.
+
+---
+
 ## Sitting & Standing
 
 Pets can be commanded to sit or stand using the configured keybind (default `Right Click`):
