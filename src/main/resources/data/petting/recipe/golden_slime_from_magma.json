@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:gold_nugget",
+    "G": "minecraft:gold_ingot",
+    "S": "minecraft:magma_cream"
+  },
+  "pattern": [
+    "NGN",
+    "GSG",
+    "NGN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "petting:golden_slime"
+  }
+}

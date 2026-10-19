@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "minecraft:leather",
+    "D": "minecraft:brown_dye",
+    "G": "minecraft:gold_nugget"
+  },
+  "pattern": [
+    "LLL",
+    "LDL",
+    " G "
+  ],
+  "result": {
+    "count": 1,
+    "id": "petting:brown_collar"
+  }
+}

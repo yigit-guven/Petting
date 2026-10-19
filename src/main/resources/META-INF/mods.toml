@@ -1,27 +1,31 @@
 modLoader="javafml"
 loaderVersion="${loader_version_range}"
 license="${mod_license}"
+issueTrackerURL="https://github.com/yigit-guven/Petting/issues"
 
 [[mods]]
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
+# updateJSONURL="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-Forge/update.json"
 displayURL="https://github.com/yigit-guven/Petting"
 logoFile="logo.png"
 credits="Special thanks to Anchor Studios & Ryukazan for their contributions."
 authors="${mod_authors}"
-description="${mod_description}"
-
-[[dependencies.${mod_id}]]
-    modId="minecraft"
-    mandatory=true
-    versionRange="${minecraft_version_range}"
-    ordering="AFTER"
-    side="BOTH"
+description='''
+${mod_description}
+'''
 
 [[dependencies.${mod_id}]]
     modId="forge"
     mandatory=true
     versionRange="${forge_version_range}"
-    ordering="AFTER"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
     side="BOTH"

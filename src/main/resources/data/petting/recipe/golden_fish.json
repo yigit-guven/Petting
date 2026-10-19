@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:gold_nugget",
+    "G": "minecraft:gold_ingot",
+    "F": "#minecraft:fishes"
+  },
+  "pattern": [
+    "NGN",
+    "GFG",
+    "NGN"
+  ],
+  "result": {
+    "count": 1,
+    "id": "petting:golden_fish"
+  }
+}

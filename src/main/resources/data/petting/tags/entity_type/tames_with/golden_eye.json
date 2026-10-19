@@ -1,0 +1,12 @@
+{
+  "replace": false,
+  "values": [
+    {"id": "#minecraft:arthropod", "required": false},
+    "minecraft:enderman",
+    "minecraft:endermite",
+    "minecraft:shulker",
+    "minecraft:bat",
+    "minecraft:allay",
+    "minecraft:vex"
+  ]
+}

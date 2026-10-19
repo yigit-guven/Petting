@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "package": "net.yigitguven.petting.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "DragonHoverPhaseMixin",
+    "EnderDragonFightMixin",
+    "EnderDragonMixin",
+    "EntityMixin",
+    "LivingEntityMixin",
+    "MonsterMixin"
+  ],
+  "client": [
+    "EnderDragonRendererMixin",
+    "LivingEntityRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

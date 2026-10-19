@@ -2,33 +2,60 @@
 .gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
 
-# IDEs
+# IDEs and Editors
 .idea/
 *.iws
 *.iml
 *.ipr
 out/
+!**/src/**/out/
+.vscode/
+.settings/
 .project
 .classpath
-.settings/
-.vscode/
-
-# Run directory
-run/
-run-data/
-logs/
-crash-reports/
-
-# OS specific
-.DS_Store
-Thumbs.db
-/jdk17
-
-# Scripts & IDE configurations
-*.py
+.factorypath
+.apt_generated
+.springBeans
+.sts4-cache
+.metadata/
 *.launch
 bin/
-.eclipse/
-.ide/
-.inverse/
+!**/src/**/bin/
+.run/
+
+# Run directory & Minecraft runtime data
+run/
+!**/src/**/run/
+run-data/
+runs/
+logs/
+crash-reports/
+usernamecache.json
+usercache.json
+options.txt
+
+# Generated cache
+**/src/generated/**/.cache/
+repo/
+!**/src/**/repo/
+
+# MCreator remnants
+petting.mcreator
+elements/
+
+# Logs and Temporary files
+errors*.txt
+*.log
+*.bak
+*.tmp
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Compiled Java bytecode
+*.class
