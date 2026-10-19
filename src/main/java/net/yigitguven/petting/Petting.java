@@ -1,6 +1,7 @@
 package net.yigitguven.petting;
 
 import com.mojang.logging.LogUtils;
+import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -34,11 +35,21 @@ public class Petting {
 
         PettingNetwork.init();
 
+        EntityAttributeModificationEvent.BUS.addListener(Petting::onEntityAttributeModification);
+
         context.registerConfig(ModConfig.Type.COMMON, PettingServerConfig.SPEC);
         context.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC);
 
         if (FMLEnvironment.dist.isClient()) {
             PettingClient.registerClientExtensions(context);
+        }
+    }
+
+    private static void onEntityAttributeModification(net.minecraftforge.event.entity.EntityAttributeModificationEvent event) {
+        for (net.minecraft.world.entity.EntityType<? extends net.minecraft.world.entity.LivingEntity> entityType : event.getTypes()) {
+            if (!event.has(entityType, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE)) {
+                event.add(entityType, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, 2.0D);
+            }
         }
     }
 }

@@ -36,6 +36,8 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.PetSavedData;
 
@@ -1587,5 +1589,17 @@ public class PetHelper {
             player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_standing", mob.getName()));
         }
         return true;
+    }
+
+    public static boolean doPetHurtTarget(Mob mob, ServerLevel level, net.minecraft.world.entity.Entity target) {
+        if (mob.getAttributes().hasAttribute(Attributes.ATTACK_DAMAGE)) {
+            return mob.doHurtTarget(level, target);
+        }
+        DamageSource damageSource = mob.damageSources().mobAttack(mob);
+        boolean wasHurt = target.hurtServer(level, damageSource, 2.0F);
+        if (wasHurt) {
+            mob.setLastHurtMob(target);
+        }
+        return wasHurt;
     }
 }
