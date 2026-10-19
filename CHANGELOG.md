@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [5.0.3]
+### Added
+- **Passive Mob Attack Configurations**:
+  - Added `enablePassiveMobAttacks` under `[behavior]` in server configuration (`petting-server.toml`), allowing server owners to enable or disable whether tamed passive mobs (such as sheep, cows, pigs, villagers) can engage in combat and attack targets. Defaults to `false` (passive mobs will not attack).
+  - Added `passiveMobAttackDamage` under `[behavior]` in server configuration (`petting-server.toml`), allowing administrators to configure the base melee damage dealt by passive mobs when passive attacks are enabled (defaults to `2`, range `1` - `100`).
+
 ## [5.0.2]
 ### Added
 - **Collar Model Visibility Configurations**:
