@@ -8,6 +8,14 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraft.client.model.animal.parrot.ParrotModel;
+import net.minecraft.client.renderer.entity.state.FelineRenderState;
+import net.minecraft.client.renderer.entity.state.FoxRenderState;
+import net.minecraft.client.renderer.entity.state.HumanoidRenderState;
+import net.minecraft.client.renderer.entity.state.IllagerRenderState;
+import net.minecraft.client.renderer.entity.state.PandaRenderState;
+import net.minecraft.client.renderer.entity.state.ParrotRenderState;
+import net.minecraft.client.renderer.entity.state.WolfRenderState;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.client.settings.KeyModifier;
@@ -217,9 +225,34 @@ public class PettingClientEvents {
 
     @SubscribeEvent
     public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?, ?> event) {
-        PetRenderStateData data = PettingClientRender.getRenderData(event.getState());
-        if (data != null && data.sitGroundOffset() > 0.0F) {
-            event.getPoseStack().translate(0.0D, -data.sitGroundOffset(), 0.0D);
+        var state = event.getState();
+        PetRenderStateData data = PettingClientRender.getRenderData(state);
+        if (data != null) {
+            if (data.isSittingPet()) {
+                if (state instanceof HumanoidRenderState humanoidState) {
+                    humanoidState.isPassenger = true;
+                } else if (state instanceof IllagerRenderState illagerState) {
+                    illagerState.isRiding = true;
+                } else if (state instanceof FoxRenderState foxState) {
+                    foxState.isSitting = true;
+                } else if (state instanceof PandaRenderState pandaState) {
+                    pandaState.isSitting = true;
+                } else if (state instanceof WolfRenderState wolfState) {
+                    wolfState.isSitting = true;
+                } else if (state instanceof FelineRenderState felineState) {
+                    felineState.isSitting = true;
+                } else if (state instanceof ParrotRenderState parrotState) {
+                    parrotState.pose = ParrotModel.Pose.SITTING;
+                }
+
+                state.walkAnimationPos = 0.0F;
+                state.walkAnimationSpeed = 0.0F;
+                state.isDiscrete = true;
+            }
+
+            if (data.sitGroundOffset() > 0.0F) {
+                event.getPoseStack().translate(0.0D, -data.sitGroundOffset(), 0.0D);
+            }
         }
     }
 }

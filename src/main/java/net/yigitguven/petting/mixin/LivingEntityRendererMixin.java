@@ -50,7 +50,9 @@ public abstract class LivingEntityRendererMixin {
         }
 
         float sitGroundOffset = 0.0F;
+        boolean isSittingPet = false;
         if (PetHelper.isSitting(entity) && !entity.isPassenger()) {
+            isSittingPet = true;
             boolean isHumanoid = (renderState instanceof HumanoidRenderState);
             boolean isIllager = (renderState instanceof IllagerRenderState);
             boolean isFox = (renderState instanceof FoxRenderState);
@@ -87,6 +89,6 @@ public abstract class LivingEntityRendererMixin {
             }
         }
 
-        PettingClientRender.putRenderData(renderState, new PetRenderStateData(collarColor, isEnchanted, sitGroundOffset));
+        PettingClientRender.putRenderData(renderState, new PetRenderStateData(collarColor, isEnchanted, sitGroundOffset, isSittingPet));
     }
 }

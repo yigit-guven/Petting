@@ -6,5 +6,6 @@ import org.jetbrains.annotations.Nullable;
 public record PetRenderStateData(
         @Nullable DyeColor collarColor,
         boolean collarEnchanted,
-        float sitGroundOffset
+        float sitGroundOffset,
+        boolean isSittingPet
 ) {}
