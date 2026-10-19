@@ -8,20 +8,19 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
+import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.util.PetHelper;
 
 import java.lang.reflect.Field;
-import java.util.Optional;
-import java.util.UUID;
 
-@EventBusSubscriber(modid = Petting.MODID)
+@Mod.EventBusSubscriber(modid = Petting.MODID)
 public class PetSafetyEvents {
 
     private static Field witherIdleHeadUpdatesField = null;
@@ -53,7 +52,7 @@ public class PetSafetyEvents {
     }
 
     @SubscribeEvent
-    public static void onEntityJoinLevel(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
+    public static void onEntityJoinLevel(EntityJoinLevelEvent event) {
         if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Mob mob)) {
             return;
         }
@@ -70,23 +69,21 @@ public class PetSafetyEvents {
     }
 
     @SubscribeEvent
-    public static void onIncomingDamage(LivingIncomingDamageEvent event) {
+    public static boolean onIncomingDamage(LivingAttackEvent event) {
         LivingEntity victim = event.getEntity();
         Entity attacker = event.getSource().getEntity();
         Entity direct = event.getSource().getDirectEntity();
 
         // 0. Peaceful ritual protection: prevent explosion/crystal damage during Golden Dragon summon ritual
         if (event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && PetHelper.isGoldenDragonRitualActive(victim.level())) {
-            event.setCanceled(true);
-            return;
+            return true;
         }
 
         // 1. Owner protection: pets, minions, projectiles, and spells can never damage their owner
         if (victim instanceof Player player) {
             if ((attacker != null && PetHelper.isRootOwner(attacker, player))
                     || (direct != null && PetHelper.isRootOwner(direct, player))) {
-                event.setCanceled(true);
-                return;
+                return true;
             }
         }
 
@@ -97,54 +94,50 @@ public class PetSafetyEvents {
         }
         if (rootAttacker instanceof Player ownerPlayer && PetHelper.isRootOwner(victim, ownerPlayer)) {
             if (!PettingServerConfig.canOwnerAttackPets()) {
-                event.setCanceled(true);
+                return true;
             }
-            return;
+            return false;
         }
 
         // 3. Configurable: friendly fire between pets/minions of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
             if ((attacker != null && PetHelper.arePetsOfSameOwner(victim, attacker))
                     || (direct != null && PetHelper.arePetsOfSameOwner(victim, direct))) {
-                event.setCanceled(true);
-                return;
+                return true;
             }
         }
 
         // 4. Passenger / vehicle relationship: prevent inadvertent collision/team damage
         if ((attacker != null && (victim.isPassengerOfSameVehicle(attacker) || victim.hasPassenger(attacker) || attacker.hasPassenger(victim)))
                 || (direct != null && (victim.isPassengerOfSameVehicle(direct) || victim.hasPassenger(direct) || direct.hasPassenger(victim)))) {
-            event.setCanceled(true);
-            return;
+            return true;
         }
 
         // 5. Notify tamed dragons of combat events immediately
-        if (!event.isCanceled()) {
-            if (victim instanceof Player player && attacker instanceof LivingEntity threat) {
-                PetHelper.alertTamedDragonsOfThreat(player, threat);
-            }
-            if (attacker instanceof Player ownerPlayer && victim != ownerPlayer) {
-                PetHelper.alertTamedDragonsOfTarget(ownerPlayer, victim);
-            }
+        if (victim instanceof Player player && attacker instanceof LivingEntity threat) {
+            PetHelper.alertTamedDragonsOfThreat(player, threat);
         }
+        if (attacker instanceof Player ownerPlayer && victim != ownerPlayer) {
+            PetHelper.alertTamedDragonsOfTarget(ownerPlayer, victim);
+        }
+        return false;
     }
 
     @SubscribeEvent
-    public static void onChangeTarget(LivingChangeTargetEvent event) {
+    public static boolean onChangeTarget(LivingChangeTargetEvent event) {
         LivingEntity pet = event.getEntity();
-        LivingEntity newTarget = event.getNewAboutToBeSetTarget();
+        LivingEntity newTarget = event.getNewTarget();
         if (newTarget == null) {
-            return;
+            return false;
         }
 
         // 1. Always: pets and minions can never target their owner
         if (newTarget instanceof Player player && PetHelper.isRootOwner(pet, player)) {
-            event.setCanceled(true);
-            event.setNewAboutToBeSetTarget(null);
+            event.setNewTarget(null);
             if (pet instanceof NeutralMob neutralMob) {
                 neutralMob.stopBeingAngry();
             }
-            return;
+            return true;
         }
 
         // 2. Untamed entity with root owner targeting owner or fellow pet
@@ -152,45 +145,45 @@ public class PetSafetyEvents {
             LivingEntity rootOwner = PetHelper.getRootOwner(pet);
             if (rootOwner instanceof Player player) {
                 if (newTarget == player || (!PettingServerConfig.canPetsAttackPets() && PetHelper.arePetsOfSameOwner(pet, newTarget))) {
-                    event.setCanceled(true);
-                    event.setNewAboutToBeSetTarget(null);
+                    event.setNewTarget(null);
                     if (pet instanceof NeutralMob neutralMob) {
                         neutralMob.stopBeingAngry();
                     }
                     if (pet instanceof Mob mob) {
                         PetHelper.setTamed(mob, player);
                     }
+                    return true;
                 }
             }
-            return;
+            return false;
         }
 
         // 3. Prevent built-in hostile behaviors: pets only attack valid targets
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
             if (!PetHelper.isValidPetTarget(pet, newTarget)) {
-                event.setCanceled(true);
-                event.setNewAboutToBeSetTarget(null);
+                event.setNewTarget(null);
                 if (pet instanceof NeutralMob neutralMob) {
                     neutralMob.stopBeingAngry();
                 }
-                return;
+                return true;
             }
         }
 
         // 4. Configurable: pets targeting fellow pets of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
             if (PetHelper.arePetsOfSameOwner(pet, newTarget)) {
-                event.setCanceled(true);
-                event.setNewAboutToBeSetTarget(null);
+                event.setNewTarget(null);
                 if (pet instanceof NeutralMob neutralMob) {
                     neutralMob.stopBeingAngry();
                 }
+                return true;
             }
         }
+        return false;
     }
 
     @SubscribeEvent
-    public static void onEntityTick(EntityTickEvent.Pre event) {
+    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         if (!(event.getEntity() instanceof Mob mob)) {
             return;
         }

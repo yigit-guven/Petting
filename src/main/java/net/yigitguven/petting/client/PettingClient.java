@@ -2,19 +2,19 @@ package net.yigitguven.petting.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyModifier;
-
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.Identifier;
+import net.minecraftforge.client.ConfigScreenHandler;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.settings.KeyConflictContext;
+import net.minecraftforge.client.settings.KeyModifier;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.yigitguven.petting.Petting;
-
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.yigitguven.petting.client.gui.PetInventoryScreen;
+import net.yigitguven.petting.client.render.PettingClientRender;
 import net.yigitguven.petting.init.PettingModMenus;
 
 public class PettingClient {
@@ -26,7 +26,8 @@ public class PettingClient {
             KeyModifier.SHIFT,
             InputConstants.Type.MOUSE,
             InputConstants.MOUSE_BUTTON_RIGHT,
-            PETTING_CATEGORY
+            PETTING_CATEGORY,
+            0
     );
 
     public static final KeyMapping TOGGLE_PET_SIT = new KeyMapping(
@@ -35,7 +36,8 @@ public class PettingClient {
             KeyModifier.NONE,
             InputConstants.Type.MOUSE,
             InputConstants.MOUSE_BUTTON_RIGHT,
-            PETTING_CATEGORY
+            PETTING_CATEGORY,
+            0
     );
 
     public static final KeyMapping RIDE_PET = new KeyMapping(
@@ -44,27 +46,28 @@ public class PettingClient {
             KeyModifier.NONE,
             InputConstants.Type.KEYBOARD,
             InputConstants.KEY_R,
-            PETTING_CATEGORY
+            PETTING_CATEGORY,
+            0
     );
 
-    public static void registerClientExtensions(ModContainer modContainer, IEventBus modEventBus) {
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, PettingConfigurationScreen::new);
-        modEventBus.addListener(RegisterKeyMappingsEvent.class, PettingClient::onRegisterKeyMappings);
-        modEventBus.addListener(RegisterMenuScreensEvent.class, PettingClient::onRegisterMenuScreens);
-        modEventBus.addListener(net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent.class,
-                net.yigitguven.petting.client.render.PettingClientRender::onRegisterRenderStateModifiers);
-        modEventBus.addListener(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers.class,
-                net.yigitguven.petting.client.render.PettingClientRender::onAddLayers);
+    public static void registerClientExtensions(FMLJavaModLoadingContext context) {
+        var modBusGroup = context.getModBusGroup();
+        context.registerExtensionPoint(
+                ConfigScreenHandler.ConfigScreenFactory.class,
+                () -> new ConfigScreenHandler.ConfigScreenFactory((mc, parent) -> new PettingConfigurationScreen(parent))
+        );
+        RegisterKeyMappingsEvent.BUS.addListener(PettingClient::onRegisterKeyMappings);
+        FMLClientSetupEvent.getBus(modBusGroup).addListener(PettingClient::onClientSetup);
+        EntityRenderersEvent.AddLayers.BUS.addListener(PettingClientRender::onAddLayers);
     }
 
     private static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.registerCategory(PETTING_CATEGORY);
         event.register(OPEN_PET_INVENTORY);
         event.register(TOGGLE_PET_SIT);
         event.register(RIDE_PET);
     }
 
-    private static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
-        event.register(PettingModMenus.PET_MENU.get(), PetInventoryScreen::new);
+    private static void onClientSetup(FMLClientSetupEvent event) {
+        event.enqueueWork(() -> MenuScreens.register(PettingModMenus.PET_MENU.get(), PetInventoryScreen::new));
     }
 }

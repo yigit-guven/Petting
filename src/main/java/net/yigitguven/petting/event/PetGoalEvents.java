@@ -4,44 +4,23 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.data.PetSavedData;
 import net.yigitguven.petting.util.PetHelper;
 
-@EventBusSubscriber(modid = Petting.MODID)
+@Mod.EventBusSubscriber(modid = Petting.MODID)
 public class PetGoalEvents {
 
     @SubscribeEvent
-    public static void onEntityTickPre(EntityTickEvent.Pre event) {
-        if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
-            if (PetHelper.getOrder(mob) == PetOrder.SIT) {
-                boolean hoverFlying = PettingServerConfig.isFlyingPetsHoverWhenSitting() && PetHelper.isFlyingPet(mob);
-                boolean stillSwimming = PettingServerConfig.isSwimmingPetsStayStillWhenSitting() && PetHelper.isSwimmingPet(mob);
-
-                if (hoverFlying || stillSwimming) {
-                    mob.setNoGravity(true);
-                    mob.setDeltaMovement(Vec3.ZERO);
-                    mob.fallDistance = 0.0F;
-                    if (mob instanceof net.minecraft.world.entity.boss.wither.WitherBoss wither) {
-                        wither.setAlternativeTarget(0, 0);
-                        wither.setAlternativeTarget(1, 0);
-                        wither.setAlternativeTarget(2, 0);
-                    }
-                }
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onEntityTickPost(EntityTickEvent.Post event) {
+    public static void onLivingTick(LivingEvent.LivingTickEvent event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             if (PetHelper.getOrder(mob) == PetOrder.SIT) {
                 if (!mob.isShiftKeyDown()) {
@@ -89,20 +68,19 @@ public class PetGoalEvents {
     }
 
     @SubscribeEvent
-    public static void onLivingDeath(LivingDeathEvent event) {
+    public static boolean onLivingDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof Mob mob && PetHelper.isTamed(mob)) {
             if (mob.level() instanceof ServerLevel serverLevel) {
                 boolean respawnFailedNotified = false;
                 if (PettingServerConfig.isPetInventoryEnabled() && PettingServerConfig.isCollarRespawnEnabled()) {
                     net.minecraft.world.item.ItemStack collar = PetHelper.getCollar(mob);
-                    if (!collar.isEmpty() && collar.has(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT)) {
-                        net.yigitguven.petting.data.CollarRespawnPoint respawnPoint = collar.get(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT);
+                    if (!collar.isEmpty() && collar.has(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT.get())) {
+                        net.yigitguven.petting.data.CollarRespawnPoint respawnPoint = collar.get(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT.get());
                         if (respawnPoint != null) {
                             ServerLevel targetLevel = serverLevel.getServer().getLevel(respawnPoint.pos().dimension());
                             if (targetLevel != null && PetHelper.isRespawnPointValid(targetLevel, respawnPoint)) {
                                 if (PetHelper.respawnPetAtBoundPoint(mob, serverLevel, targetLevel, respawnPoint)) {
-                                    event.setCanceled(true);
-                                    return;
+                                    return true;
                                 }
                             } else {
                                 if (PettingServerConfig.isPetDeathMessagesEnabled()) {
@@ -139,6 +117,7 @@ public class PetGoalEvents {
                 PetHelper.updatePetBossBarVisibility(mob, true);
             }
         }
+        return false;
     }
 
     @SubscribeEvent

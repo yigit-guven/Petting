@@ -8,7 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.util.PetHelper;
 
@@ -32,14 +32,15 @@ public record UpdateRidingSettingsPayload(int entityId, boolean attackOnClick, b
         return TYPE;
     }
 
-    public static void handle(UpdateRidingSettingsPayload payload, IPayloadContext context) {
+    public static void handle(UpdateRidingSettingsPayload payload, CustomPayloadEvent.Context context) {
         context.enqueueWork(() -> {
             if (!net.yigitguven.petting.config.PettingServerConfig.isPetInventoryEnabled()) {
                 return;
             }
-            if (context.player() instanceof ServerPlayer player) {
+            ServerPlayer player = context.getSender();
+            if (player != null) {
                 Entity entity = player.level().getEntity(payload.entityId());
-                if (entity instanceof Mob mob && mob.isAlive()) {
+                if (entity instanceof net.minecraft.world.entity.LivingEntity mob && mob.isAlive()) {
                     if (PetHelper.isTamed(mob) && PetHelper.isOwner(mob, player)) {
                         PetHelper.setRideAttackOnClick(mob, payload.attackOnClick());
                         PetHelper.setRideAutoAttackHostiles(mob, payload.autoAttackHostiles());
@@ -47,5 +48,6 @@ public record UpdateRidingSettingsPayload(int entityId, boolean attackOnClick, b
                 }
             }
         });
+        context.setPacketHandled(true);
     }
 }

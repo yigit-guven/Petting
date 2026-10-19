@@ -1,27 +1,35 @@
 package net.yigitguven.petting.client;
 
-import net.minecraft.network.chat.contents.TranslatableContents;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientChatReceivedEvent;
-import net.yigitguven.petting.Petting;
-import net.yigitguven.petting.config.PettingClientConfig;
-import net.yigitguven.petting.config.PettingServerConfig;
-
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.EntityHitResult;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.RenderNameTagEvent;
+import net.minecraftforge.client.settings.KeyModifier;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.yigitguven.petting.Petting;
+import net.yigitguven.petting.client.render.PetRenderStateData;
+import net.yigitguven.petting.client.render.PettingClientRender;
+import net.yigitguven.petting.config.PettingClientConfig;
+import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.entity.PetRidingHandler;
+import net.yigitguven.petting.network.MountPetPayload;
 import net.yigitguven.petting.network.OpenPetInventoryPayload;
+import net.yigitguven.petting.network.PettingNetwork;
+import net.yigitguven.petting.network.RiddenPetAttackPayload;
+import net.yigitguven.petting.network.TogglePetSitPayload;
 import net.yigitguven.petting.util.PetHelper;
 
 import java.util.Set;
 
-@EventBusSubscriber(modid = Petting.MODID, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = Petting.MODID, value = Dist.CLIENT)
 public class PettingClientEvents {
 
     private static final Set<String> POSITIVE_KEYS = Set.of(
@@ -86,7 +94,7 @@ public class PettingClientEvents {
     }
 
     @SubscribeEvent
-    public static void onClientTick(ClientTickEvent.Post event) {
+    public static void onClientTick(TickEvent.ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player != null && mc.player.getVehicle() instanceof net.minecraft.world.entity.LivingEntity mob && PetHelper.isTamed(mob) && PetHelper.hasSaddle(mob)) {
             float yaw = (mob instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon)
@@ -113,7 +121,7 @@ public class PettingClientEvents {
                     mob = vehicle;
                 }
                 if (mob != null && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
-                    ClientPacketDistributor.sendToServer(new OpenPetInventoryPayload(mob.getId()));
+                    PettingNetwork.sendToServer(new OpenPetInventoryPayload(mob.getId()));
                 }
             }
         }
@@ -128,12 +136,12 @@ public class PettingClientEvents {
                     net.minecraft.world.item.ItemStack mainStack = mc.player.getMainHandItem();
                     boolean isRightClick = PettingClient.TOGGLE_PET_SIT.getKey().getType() == com.mojang.blaze3d.platform.InputConstants.Type.MOUSE
                             && PettingClient.TOGGLE_PET_SIT.getKey().getValue() == com.mojang.blaze3d.platform.InputConstants.MOUSE_BUTTON_RIGHT
-                            && PettingClient.TOGGLE_PET_SIT.getKeyModifier() == net.neoforged.neoforge.client.settings.KeyModifier.NONE;
+                            && PettingClient.TOGGLE_PET_SIT.getKeyModifier() == KeyModifier.NONE;
                     if (isRightClick && PetHelper.isInteractionItem(mob, mainStack)) {
                         continue;
                     }
                     mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT, false);
-                    ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.TogglePetSitPayload(mob.getId()));
+                    PettingNetwork.sendToServer(new TogglePetSitPayload(mob.getId()));
                 }
             }
         }
@@ -147,40 +155,42 @@ public class PettingClientEvents {
                     PetRidingHandler.allowForcedDismount(mc.player);
                     mc.player.stopRiding();
                     mc.player.setPose(net.minecraft.world.entity.Pose.STANDING);
-                    ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.MountPetPayload(mob.getId()));
+                    PettingNetwork.sendToServer(new MountPetPayload(mob.getId()));
                     continue;
                 }
 
                 net.minecraft.world.entity.LivingEntity mob = getTargetLivingEntity(mc);
                 if (mob != null && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
-                    ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.MountPetPayload(mob.getId()));
+                    PettingNetwork.sendToServer(new MountPetPayload(mob.getId()));
                 }
             }
         }
     }
 
     @SubscribeEvent
-    public static void onInteractionKeyMappingTriggered(net.neoforged.neoforge.client.event.InputEvent.InteractionKeyMappingTriggered event) {
+    public static boolean onInteractionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered.Attack event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player != null && event.isAttack()) {
+        if (mc.player != null) {
             if (mc.player.getVehicle() instanceof net.minecraft.world.entity.LivingEntity mob && PetHelper.isTamed(mob) && PetHelper.isOwner(mob, mc.player)) {
-                if (PetHelper.isRideAttackOnClick(mob) && net.yigitguven.petting.config.PettingServerConfig.isRiddenPetsAttackOnClick()) {
-                    event.setCanceled(true);
+                if (PetHelper.isRideAttackOnClick(mob) && PettingServerConfig.isRiddenPetsAttackOnClick()) {
                     event.setSwingHand(false);
-                    ClientPacketDistributor.sendToServer(new net.yigitguven.petting.network.RiddenPetAttackPayload(mob.getId()));
+                    PettingNetwork.sendToServer(new RiddenPetAttackPayload(mob.getId()));
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     @SubscribeEvent
-    public static void onClientChatReceived(ClientChatReceivedEvent.System event) {
+    public static boolean onClientChatReceived(ClientChatReceivedEvent event) {
         String key = getTranslatableKey(event.getMessage());
         if (key != null && (POSITIVE_KEYS.contains(key) || NEGATIVE_KEYS.contains(key) || DEATH_KEYS.contains(key))) {
             if (!PettingClientConfig.isFeedbackMessageEnabled(key)) {
-                event.setCanceled(true);
+                return true;
             }
         }
+        return false;
     }
 
     private static String getTranslatableKey(net.minecraft.network.chat.Component component) {
@@ -196,19 +206,20 @@ public class PettingClientEvents {
     }
 
     @SubscribeEvent
-    public static void onRenderNameTag(net.neoforged.neoforge.client.event.RenderNameTagEvent.CanRender event) {
-        if (event.getEntity() instanceof net.minecraft.world.entity.LivingEntity mob && PetHelper.isTamed(mob)) {
-            if (PetHelper.isSitting(mob)) {
-                event.getEntityRenderState().isDiscrete = true;
+    public static void onRenderNameTag(RenderNameTagEvent event) {
+        if (event.getState() instanceof net.minecraft.client.renderer.entity.state.LivingEntityRenderState livingState) {
+            PetRenderStateData data = PettingClientRender.getRenderData(livingState);
+            if (data != null && data.sitGroundOffset() > 0.0F) {
+                livingState.isDiscrete = true;
             }
         }
     }
 
     @SubscribeEvent
-    public static void onRenderLivingPre(net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?, ?> event) {
-        Float offset = event.getRenderState().getRenderData(net.yigitguven.petting.client.render.PettingClientRender.PET_SIT_GROUND_OFFSET_KEY);
-        if (offset != null && offset > 0.0F) {
-            event.getPoseStack().translate(0.0D, -offset.doubleValue(), 0.0D);
+    public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?, ?> event) {
+        PetRenderStateData data = PettingClientRender.getRenderData(event.getState());
+        if (data != null && data.sitGroundOffset() > 0.0F) {
+            event.getPoseStack().translate(0.0D, -data.sitGroundOffset(), 0.0D);
         }
     }
 }

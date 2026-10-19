@@ -1,37 +1,36 @@
 package net.yigitguven.petting.client.render;
 
-import com.google.common.reflect.TypeToken;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.resources.Identifier;
-import net.minecraft.util.context.ContextKey;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelType;
-import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent;
+import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.yigitguven.petting.Petting;
-import net.yigitguven.petting.item.CollarItem;
-import net.yigitguven.petting.util.PetHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class PettingClientRender {
-    public static final ContextKey<DyeColor> COLLAR_COLOR_KEY =
-            new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "collar_color"));
 
-    public static final ContextKey<Boolean> COLLAR_ENCHANTED_KEY =
-            new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "collar_enchanted"));
+    private static final Map<LivingEntityRenderState, PetRenderStateData> RENDER_DATA =
+            Collections.synchronizedMap(new WeakHashMap<>());
 
-    public static final ContextKey<Float> PET_SIT_GROUND_OFFSET_KEY =
-            new ContextKey<>(Identifier.fromNamespaceAndPath(Petting.MODID, "pet_sit_ground_offset"));
+    public static @Nullable PetRenderStateData getRenderData(LivingEntityRenderState state) {
+        return RENDER_DATA.get(state);
+    }
+
+    public static void putRenderData(LivingEntityRenderState state, PetRenderStateData data) {
+        RENDER_DATA.put(state, data);
+    }
 
     private static final MethodHandle ADD_LAYER_HANDLE;
 
@@ -55,83 +54,25 @@ public class PettingClientRender {
         ADD_LAYER_HANDLE = handle;
     }
 
-    public static void onRegisterRenderStateModifiers(RegisterRenderStateModifiersEvent event) {
-        event.registerEntityModifier(
-                new TypeToken<LivingEntityRenderer<LivingEntity, LivingEntityRenderState, ?>>() {},
-                (entity, renderState) -> {
-                    if (PetHelper.isTamed(entity)) {
-                        ItemStack collar = PetHelper.getCollar(entity);
-                        if (!collar.isEmpty() && collar.getItem() instanceof CollarItem collarItem) {
-                            renderState.setRenderData(COLLAR_COLOR_KEY, collarItem.getColor());
-                            boolean isEnchanted = collar.has(net.yigitguven.petting.init.PettingDataComponents.COLLAR_RESPAWN_POINT)
-                                    || collar.has(net.minecraft.core.component.DataComponents.ENCHANTMENT_GLINT_OVERRIDE);
-                            renderState.setRenderData(COLLAR_ENCHANTED_KEY, isEnchanted);
-                        }
-
-                        // Strict rotation lock when ridden with saddle
-                        if (entity instanceof net.minecraft.world.entity.Mob mob && mob.getFirstPassenger() instanceof net.minecraft.world.entity.player.Player rider && PetHelper.hasSaddle(mob)) {
-                            renderState.bodyRot = rider.getYRot();
-                            renderState.yRot = 0.0F;
-                            renderState.xRot = rider.getXRot();
-                        }
-
-                        if (PetHelper.isSitting(entity) && !entity.isPassenger()) {
-                            boolean isHumanoid = (renderState instanceof net.minecraft.client.renderer.entity.state.HumanoidRenderState);
-                            boolean isIllager = (renderState instanceof net.minecraft.client.renderer.entity.state.IllagerRenderState);
-                            boolean isFox = (renderState instanceof net.minecraft.client.renderer.entity.state.FoxRenderState);
-                            boolean isPanda = (renderState instanceof net.minecraft.client.renderer.entity.state.PandaRenderState);
-                            boolean isWolf = (renderState instanceof net.minecraft.client.renderer.entity.state.WolfRenderState);
-                            boolean isFeline = (renderState instanceof net.minecraft.client.renderer.entity.state.FelineRenderState);
-
-                            if (isHumanoid) {
-                                ((net.minecraft.client.renderer.entity.state.HumanoidRenderState) renderState).isPassenger = true;
-                            } else if (isIllager) {
-                                ((net.minecraft.client.renderer.entity.state.IllagerRenderState) renderState).isRiding = true;
-                            } else if (isFox) {
-                                ((net.minecraft.client.renderer.entity.state.FoxRenderState) renderState).isSitting = true;
-                            } else if (isPanda) {
-                                ((net.minecraft.client.renderer.entity.state.PandaRenderState) renderState).isSitting = true;
-                            } else if (isWolf) {
-                                ((net.minecraft.client.renderer.entity.state.WolfRenderState) renderState).isSitting = true;
-                            } else if (isFeline) {
-                                ((net.minecraft.client.renderer.entity.state.FelineRenderState) renderState).isSitting = true;
-                            }
-
-                            renderState.walkAnimationPos = 0.0F;
-                            renderState.walkAnimationSpeed = 0.0F;
-
-                            if (entity.onGround() && (isHumanoid || isIllager)) {
-                                float baseOffset = (renderState instanceof net.minecraft.client.renderer.entity.state.EndermanRenderState) ? 0.3F : 0.5F;
-                                float scale = renderState.scale > 0.0F ? renderState.scale : 1.0F;
-                                float finalOffset = baseOffset * (renderState.isBaby ? 0.5F : 1.0F) * scale;
-                                renderState.setRenderData(PET_SIT_GROUND_OFFSET_KEY, finalOffset);
-
-                                if (renderState.nameTagAttachment != null) {
-                                    renderState.nameTagAttachment = renderState.nameTagAttachment.subtract(0.0D, finalOffset, 0.0D);
-                                }
-                            }
-                        }
-                    }
-                }
-        );
-    }
-
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public static void onAddLayers(EntityRenderersEvent.AddLayers event) {
-        for (EntityType<?> type : event.getEntityTypes()) {
-            EntityRenderer<?, ?> renderer = event.getRenderer(type);
-            if (renderer instanceof LivingEntityRenderer livingRenderer) {
-                attachLayer(livingRenderer);
-            }
+        for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
+            try {
+                EntityRenderer<?, ?> renderer = event.getEntityRenderer((EntityType) type);
+                if (renderer instanceof LivingEntityRenderer livingRenderer) {
+                    attachLayer(livingRenderer);
+                }
+            } catch (Exception ignored) {}
         }
 
-        for (PlayerModelType skin : event.getSkins()) {
-            AvatarRenderer<?> playerRenderer = event.getPlayerRenderer(skin);
-            if (playerRenderer != null) {
-                attachLayer(playerRenderer);
+        for (PlayerModelType skin : event.getModelTypes()) {
+            EntityRenderer<?, ?> playerRenderer = event.getPlayerRenderer(skin);
+            if (playerRenderer instanceof LivingEntityRenderer livingRenderer) {
+                attachLayer(livingRenderer);
             }
-            AvatarRenderer<?> mannequinRenderer = event.getMannequinRenderer(skin);
-            if (mannequinRenderer != null) {
-                attachLayer(mannequinRenderer);
+            EntityRenderer<?, ?> mannequinRenderer = event.getMannequinRenderer(skin);
+            if (mannequinRenderer instanceof LivingEntityRenderer livingRenderer) {
+                attachLayer(livingRenderer);
             }
         }
     }

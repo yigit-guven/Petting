@@ -31,8 +31,8 @@ public class CollarItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> tooltipAdder, TooltipFlag flag) {
         super.appendHoverText(stack, context, display, tooltipAdder, flag);
-        if (stack.has(PettingDataComponents.COLLAR_SETTINGS)) {
-            CollarSettings settings = stack.get(PettingDataComponents.COLLAR_SETTINGS);
+        if (stack.has(PettingDataComponents.COLLAR_SETTINGS.get())) {
+            CollarSettings settings = stack.get(PettingDataComponents.COLLAR_SETTINGS.get());
             if (settings != null) {
                 tooltipAdder.accept(Component.translatable("petting.collar.tooltip.header").withStyle(ChatFormatting.GOLD));
 
@@ -86,8 +86,8 @@ public class CollarItem extends Item {
             }
         }
 
-        if (stack.has(PettingDataComponents.COLLAR_RESPAWN_POINT)) {
-            net.yigitguven.petting.data.CollarRespawnPoint respawn = stack.get(PettingDataComponents.COLLAR_RESPAWN_POINT);
+        if (stack.has(PettingDataComponents.COLLAR_RESPAWN_POINT.get())) {
+            net.yigitguven.petting.data.CollarRespawnPoint respawn = stack.get(PettingDataComponents.COLLAR_RESPAWN_POINT.get());
             if (respawn != null) {
                 Component targetType = Component.translatable(respawn.isCushion() ? "petting.term.cushion" : "petting.term.bed");
                 net.minecraft.core.BlockPos pos = respawn.pos().pos();
@@ -100,6 +100,6 @@ public class CollarItem extends Item {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return stack.has(PettingDataComponents.COLLAR_RESPAWN_POINT) || super.isFoil(stack);
+        return stack.has(PettingDataComponents.COLLAR_RESPAWN_POINT.get()) || super.isFoil(stack);
     }
 }

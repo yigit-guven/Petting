@@ -143,4 +143,18 @@ public class PetData {
     public void setCombatMode(CombatMode combatMode) {
         this.combatMode = combatMode != null ? combatMode : CombatMode.DEFENSIVE;
     }
+
+    public void copyFrom(PetData other) {
+        if (other == null) {
+            return;
+        }
+        this.ownerUUID = other.ownerUUID;
+        this.tamed = other.tamed;
+        this.order = other.order;
+        this.combatMode = other.combatMode;
+        this.collar = other.collar != null ? other.collar.copy() : ItemStack.EMPTY;
+        this.saddle = other.saddle != null ? other.saddle.copy() : ItemStack.EMPTY;
+        this.rideAttackOnClick = other.rideAttackOnClick;
+        this.rideAutoAttackHostiles = other.rideAutoAttackHostiles;
+    }
 }

@@ -9,7 +9,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.PetOrder;
@@ -31,9 +31,10 @@ public record TogglePetSitPayload(int entityId) implements CustomPacketPayload {
         return TYPE;
     }
 
-    public static void handle(TogglePetSitPayload payload, IPayloadContext context) {
+    public static void handle(TogglePetSitPayload payload, CustomPayloadEvent.Context context) {
         context.enqueueWork(() -> {
-            if (context.player() instanceof ServerPlayer player) {
+            ServerPlayer player = context.getSender();
+            if (player != null) {
                 Entity entity = player.level().getEntity(payload.entityId());
                 if (entity instanceof net.minecraft.world.entity.LivingEntity mob && mob.isAlive()) {
                     if (player.getVehicle() == mob || mob.hasPassenger(player) || mob.isVehicle() || mob.isPassenger()) {
@@ -45,5 +46,6 @@ public record TogglePetSitPayload(int entityId) implements CustomPacketPayload {
                 }
             }
         });
+        context.setPacketHandled(true);
     }
 }

@@ -34,9 +34,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.network.DismountPetPayload;
+import net.yigitguven.petting.network.PettingNetwork;
 import net.yigitguven.petting.util.PetHelper;
 
 import java.util.Collections;
@@ -240,7 +240,7 @@ public class PetRidingHandler {
 
     public static void dismountPlayer(ServerPlayer player, LivingEntity mob) {
         allowForcedDismount(player);
-        PacketDistributor.sendToPlayer(player, new DismountPetPayload(mob.getId()));
+        PettingNetwork.sendToPlayer(player, new DismountPetPayload(mob.getId()));
 
         player.stopRiding();
         mob.ejectPassengers();

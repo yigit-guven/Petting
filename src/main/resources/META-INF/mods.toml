@@ -1,4 +1,5 @@
 modLoader="javafml"
+loaderVersion="${loader_version_range}"
 license="${mod_license}"
 issueTrackerURL="https://github.com/yigit-guven/Petting/issues"
 
@@ -6,32 +7,25 @@ issueTrackerURL="https://github.com/yigit-guven/Petting/issues"
 modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
-updateJSONURL="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-NeoForge/update.json"
+# updateJSONURL="https://raw.githubusercontent.com/yigit-guven/Petting/26.3-Forge/update.json"
 displayURL="https://github.com/yigit-guven/Petting"
-iconFile="logo.png"
-logoFile="banner_ingame.png"
+logoFile="logo.png"
 credits="Special thanks to Anchor Studios & Ryukazan for their contributions."
 authors="${mod_authors}"
 description='''
 ${mod_description}
 '''
 
-[[mixins]]
-config="${mod_id}.mixins.json"
-
-#[[accessTransformers]]
-#file="META-INF/accesstransformer.cfg"
-
 [[dependencies.${mod_id}]]
-    modId="neoforge"
-    type="required"
-    versionRange="[${neo_version},)"
+    modId="forge"
+    mandatory=true
+    versionRange="${forge_version_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.${mod_id}]]
     modId="minecraft"
-    type="required"
+    mandatory=true
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"

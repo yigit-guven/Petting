@@ -1,100 +1,69 @@
 package net.yigitguven.petting.client;
 
+import com.mojang.blaze3d.Blaze3D;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.config.ModConfigs;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
 import java.net.URI;
-import java.util.Locale;
+import java.nio.file.Path;
 
-public class PettingConfigurationScreen extends OptionsSubScreen {
+public class PettingConfigurationScreen extends Screen {
     private static final URI WIKI_URI = URI.create("https://github.com/yigit-guven/Petting/wiki/Configuration");
-    private final ModContainer mod;
+    private final Screen parent;
 
-    public PettingConfigurationScreen(ModContainer mod, Screen parent) {
-        super(parent, Minecraft.getInstance().options, Component.translatable(mod.getModId() + ".configuration.title", mod.getModInfo().getDisplayName()));
-        this.mod = mod;
+    public PettingConfigurationScreen(Screen parent) {
+        super(Component.translatable("petting.configuration.title", "Petting"));
+        this.parent = parent;
     }
-
-    private static final String LANG_PREFIX = "neoforge.configuration.uitext.";
-    private static final String SECTION = LANG_PREFIX + "section";
-
-    @Override
-    protected void addOptions() {
-
-        for (ModConfig.Type type : ModConfig.Type.values()) {
-            boolean headerAdded = false;
-            for (ModConfig modConfig : ModConfigs.getConfigSet(type)) {
-                if (modConfig.getModId().equals(mod.getModId())) {
-                    String typeName = type.name().toLowerCase(Locale.ROOT);
-                    if (!headerAdded) {
-                        list.addSmall(new StringWidget(310, Button.DEFAULT_HEIGHT,
-                                Component.translatable(LANG_PREFIX + typeName).withStyle(ChatFormatting.UNDERLINE), font), null);
-                        headerAdded = true;
-                    }
-
-                    Component label = Component.translatable(LANG_PREFIX + "type." + typeName);
-                    Component buttonText = Component.translatable(SECTION, label);
-                    Component screenTitle = Component.translatable(LANG_PREFIX + "title." + typeName, mod.getModInfo().getDisplayName());
-
-                    Button btn = Button.builder(buttonText, button ->
-                            minecraft.gui.setScreen(new ConfigurationScreen.ConfigurationSectionScreen(this, type, modConfig, screenTitle))
-                    ).width(310).build();
-
-                    net.minecraft.network.chat.MutableComponent tooltip = Component.empty();
-                    if (!((net.neoforged.neoforge.common.ModConfigSpec) modConfig.getSpec()).isLoaded()) {
-                        tooltip.append(ConfigurationScreen.TOOLTIP_CANNOT_EDIT_NOT_LOADED).append(Component.literal("\n\n"));
-                        btn.active = false;
-                    } else if (type == ModConfig.Type.SYNCED && minecraft.getCurrentServer() != null && (!minecraft.hasSingleplayerServer() || !minecraft.getSingleplayerServer().isPublished())) {
-                        tooltip.append(ConfigurationScreen.TOOLTIP_CANNOT_EDIT_THIS_WHILE_ONLINE).append(Component.literal("\n\n"));
-                        btn.active = false;
-                    } else if (type == ModConfig.Type.SYNCED && minecraft.hasSingleplayerServer() && minecraft.getSingleplayerServer().isPublished()) {
-                        tooltip.append(ConfigurationScreen.TOOLTIP_CANNOT_EDIT_THIS_WHILE_OPEN_TO_LAN).append(Component.literal("\n\n"));
-                        btn.active = false;
-                    }
-                    tooltip.append(Component.translatable("neoforge.configuration.uitext.filenametooltip", modConfig.getFileName()).withStyle(ChatFormatting.GRAY));
-                    btn.setTooltip(net.minecraft.client.gui.components.Tooltip.create(tooltip));
-                    list.addSmall(btn, null);
-                }
-            }
-        }
-    }
-
-    private Button wikiBtn;
 
     @Override
     protected void init() {
         super.init();
-        int lineY = this.height - this.layout.getFooterHeight();
-        Component text = Component.translatable("petting.configuration.wiki_link").withStyle(ChatFormatting.UNDERLINE);
-        this.wikiBtn = Button.builder(text, ConfirmLinkScreen.confirmLink(this, WIKI_URI))
-                .bounds(this.width / 2 - 155, lineY - 20 - 4, 310, 20)
-                .build(builder -> new Button.Plain(builder) {
-                    @Override
-                    protected void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
-                        this.extractDefaultLabel(graphics.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE));
-                    }
-                });
-        this.addRenderableOnly(this.wikiBtn);
-        ((java.util.List<net.minecraft.client.gui.components.events.GuiEventListener>) this.children()).add(0, this.wikiBtn);
+
+        int centerX = this.width / 2;
+        int startY = this.height / 4;
+
+        this.addRenderableWidget(new StringWidget(
+                centerX - 160, startY, 320, 20,
+                Component.translatable("petting.configuration.title", "Petting").withStyle(ChatFormatting.BOLD),
+                this.font
+        ));
+
+        this.addRenderableWidget(new StringWidget(
+                centerX - 160, startY + 25, 320, 20,
+                Component.literal("Settings are configured in config/petting-common.toml and petting-client.toml").withStyle(ChatFormatting.GRAY),
+                this.font
+        ));
+
+        // Open Config Folder Button
+        this.addRenderableWidget(Button.builder(
+                Component.literal("Open Config Folder"),
+                b -> {
+                    Path configDir = this.minecraft.gameDirectory.toPath().resolve("config");
+                    Blaze3D.openPath(configDir);
+                }
+        ).bounds(centerX - 100, startY + 60, 200, 20).build());
+
+        // Open Wiki Button
+        this.addRenderableWidget(Button.builder(
+                Component.translatable("petting.configuration.wiki_link"),
+                b -> ConfirmLinkScreen.confirmLinkNow(this, WIKI_URI, true)
+        ).bounds(centerX - 100, startY + 85, 200, 20).build());
+
+        // Done Button
+        this.addRenderableWidget(Button.builder(
+                CommonComponents.GUI_DONE,
+                b -> this.onClose()
+        ).bounds(centerX - 100, startY + 120, 200, 20).build());
     }
 
     @Override
-    protected void repositionElements() {
-        super.repositionElements();
-        if (this.wikiBtn != null) {
-            int lineY = this.height - this.layout.getFooterHeight();
-            this.wikiBtn.setPosition(this.width / 2 - 155, lineY - 20 - 4);
-        }
+    public void onClose() {
+        this.minecraft.gui.setScreen(this.parent);
     }
 }

@@ -25,8 +25,10 @@ import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetData;
 import net.yigitguven.petting.data.PetOrder;
 import net.minecraft.world.item.ItemStack;
+import net.yigitguven.petting.capability.PetDataProvider;
 import net.yigitguven.petting.init.PettingDataComponents;
-import net.yigitguven.petting.init.PettingModAttachments;
+import net.yigitguven.petting.network.PettingNetwork;
+import net.yigitguven.petting.network.SyncPetDataPayload;
 
 import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
 import javax.annotation.Nullable;
@@ -38,6 +40,36 @@ import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.PetSavedData;
 
 public class PetHelper {
+
+    public static @Nullable PetData getPetData(@Nullable net.minecraft.world.entity.Entity entity) {
+        if (entity == null) {
+            return null;
+        }
+        return entity.getCapability(PetDataProvider.PET_DATA_CAPABILITY).orElse(null);
+    }
+
+    public static boolean hasPetData(@Nullable net.minecraft.world.entity.Entity entity) {
+        PetData data = getPetData(entity);
+        return data != null && data.isTamed();
+    }
+
+    public static void setPetData(LivingEntity entity, PetData data) {
+        if (entity == null) return;
+        PetData current = getPetData(entity);
+        if (current != null && data != null && current != data) {
+            current.copyFrom(data);
+        }
+        syncPetData(entity);
+    }
+
+    public static void syncPetData(LivingEntity entity) {
+        if (entity != null && !entity.level().isClientSide()) {
+            PetData data = getPetData(entity);
+            if (data != null) {
+                PettingNetwork.sendToTrackingAndSelf(entity, new SyncPetDataPayload(entity.getId(), data));
+            }
+        }
+    }
 
     public static boolean isVanillaTamed(LivingEntity entity) {
         if (entity instanceof TamableAnimal tamable && tamable.isTame()) {
@@ -58,7 +90,8 @@ public class PetHelper {
     }
 
     public static boolean isTamed(LivingEntity entity) {
-        if (entity.hasData(PettingModAttachments.PET_DATA) && entity.getData(PettingModAttachments.PET_DATA).isTamed()) {
+        PetData data = getPetData(entity);
+        if (data != null && data.isTamed()) {
             return true;
         }
         return isVanillaTamed(entity);
@@ -104,14 +137,12 @@ public class PetHelper {
                 return player;
             }
 
-            // 1. Direct Petting Data Attachment
-            if (current instanceof LivingEntity living && living.hasData(PettingModAttachments.PET_DATA)) {
-                PetData data = living.getData(PettingModAttachments.PET_DATA);
-                if (data.isTamed() && data.getOwnerUUID() != null) {
-                    Player player = current.level().getPlayerByUUID(data.getOwnerUUID());
-                    if (player != null) {
-                        return player;
-                    }
+            // 1. Direct Petting Data Capability
+            PetData data = getPetData(current);
+            if (data != null && data.isTamed() && data.getOwnerUUID() != null) {
+                Player player = current.level().getPlayerByUUID(data.getOwnerUUID());
+                if (player != null) {
+                    return player;
                 }
             }
 
@@ -218,11 +249,9 @@ public class PetHelper {
     }
 
     public static Optional<UUID> getOwnerUUID(LivingEntity entity) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
-            if (data.isTamed() && data.getOwnerUUID() != null) {
-                return Optional.of(data.getOwnerUUID());
-            }
+        PetData data = getPetData(entity);
+        if (data != null && data.isTamed() && data.getOwnerUUID() != null) {
+            return Optional.of(data.getOwnerUUID());
         }
         if (entity instanceof OwnableEntity ownable) {
             if (ownable.getOwnerReference() != null && ownable.getOwnerReference().getUUID() != null) {
@@ -268,15 +297,16 @@ public class PetHelper {
     }
 
     public static PetOrder getOrder(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        PetData data = getPetData(entity);
+        if (data == null) {
             return PetOrder.FOLLOW;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).getOrder();
+        return data.getOrder();
     }
 
     public static boolean isSitting(LivingEntity entity) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)
-                && entity.getData(PettingModAttachments.PET_DATA).getOrder() == PetOrder.SIT) {
+        PetData data = getPetData(entity);
+        if (data != null && data.getOrder() == PetOrder.SIT) {
             return true;
         }
         if (entity instanceof TamableAnimal tamable && tamable.isInSittingPose()) {
@@ -286,10 +316,10 @@ public class PetHelper {
     }
 
     public static void setOrder(LivingEntity entity, PetOrder order) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        PetData data = getPetData(entity);
+        if (data != null) {
             data.setOrder(order);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            syncPetData(entity);
         }
         if (entity instanceof TamableAnimal tamable) {
             boolean sit = (order == PetOrder.SIT);
@@ -310,26 +340,27 @@ public class PetHelper {
             return PettingServerConfig.getDefaultCombatMode();
         }
         ItemStack collar = getCollar(entity);
-        if (!collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
-            return collar.get(PettingDataComponents.COLLAR_SETTINGS).combatMode();
+        if (!collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS.get())) {
+            return collar.get(PettingDataComponents.COLLAR_SETTINGS.get()).combatMode();
         }
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        PetData data = getPetData(entity);
+        if (data == null) {
             return PettingServerConfig.getDefaultCombatMode();
         }
-        return entity.getData(PettingModAttachments.PET_DATA).getCombatMode();
+        return data.getCombatMode();
     }
 
     public static void setCombatMode(LivingEntity entity, CombatMode mode) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        PetData data = getPetData(entity);
+        if (data != null) {
             data.setCombatMode(mode);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            syncPetData(entity);
         }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
             CollarSettings current = getCollarSettings(entity);
             if (current.combatMode() != mode) {
-                collar.set(PettingDataComponents.COLLAR_SETTINGS, current.withCombatMode(mode));
+                collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), current.withCombatMode(mode));
                 setCollar(entity, collar);
             }
         }
@@ -340,22 +371,25 @@ public class PetHelper {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return ItemStack.EMPTY;
         }
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        PetData data = getPetData(entity);
+        if (data == null) {
             return ItemStack.EMPTY;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).getCollar();
+        return data.getCollar();
     }
 
     public static void setCollar(LivingEntity entity, ItemStack collar) {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return;
         }
-        PetData data = entity.getData(PettingModAttachments.PET_DATA);
-        data.setCollar(collar != null ? collar : ItemStack.EMPTY);
-        if (collar != null && !collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
-            data.setCombatMode(collar.get(PettingDataComponents.COLLAR_SETTINGS).combatMode());
+        PetData data = getPetData(entity);
+        if (data != null) {
+            data.setCollar(collar != null ? collar : ItemStack.EMPTY);
+            if (collar != null && !collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS.get())) {
+                data.setCombatMode(collar.get(PettingDataComponents.COLLAR_SETTINGS.get()).combatMode());
+            }
+            syncPetData(entity);
         }
-        entity.setData(PettingModAttachments.PET_DATA, data);
     }
 
     public static ItemStack getSaddle(LivingEntity entity) {
@@ -368,8 +402,9 @@ public class PetHelper {
                 return horseSaddle;
             }
         }
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            return entity.getData(PettingModAttachments.PET_DATA).getSaddle();
+        PetData data = getPetData(entity);
+        if (data != null) {
+            return data.getSaddle();
         }
         return ItemStack.EMPTY;
     }
@@ -383,10 +418,10 @@ public class PetHelper {
             horse.setItemSlot(EquipmentSlot.SADDLE, item);
             horse.setDropChance(EquipmentSlot.SADDLE, 1.0F);
         }
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        PetData data = getPetData(entity);
+        if (data != null) {
             data.setSaddle(item);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            syncPetData(entity);
         }
     }
 
@@ -395,32 +430,34 @@ public class PetHelper {
     }
 
     public static boolean isRideAttackOnClick(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        PetData data = getPetData(entity);
+        if (data == null) {
             return true;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).isRideAttackOnClick();
+        return data.isRideAttackOnClick();
     }
 
     public static void setRideAttackOnClick(LivingEntity entity, boolean enabled) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        PetData data = getPetData(entity);
+        if (data != null) {
             data.setRideAttackOnClick(enabled);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            syncPetData(entity);
         }
     }
 
     public static boolean isRideAutoAttackHostiles(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        PetData data = getPetData(entity);
+        if (data == null) {
             return false;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).isRideAutoAttackHostiles();
+        return data.isRideAutoAttackHostiles();
     }
 
     public static void setRideAutoAttackHostiles(LivingEntity entity, boolean enabled) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        PetData data = getPetData(entity);
+        if (data != null) {
             data.setRideAutoAttackHostiles(enabled);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            syncPetData(entity);
         }
     }
 
@@ -430,14 +467,15 @@ public class PetHelper {
         }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
-            if (collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
-                return collar.get(PettingDataComponents.COLLAR_SETTINGS);
+            if (collar.has(PettingDataComponents.COLLAR_SETTINGS.get())) {
+                return collar.get(PettingDataComponents.COLLAR_SETTINGS.get());
             }
             CollarSettings defaults = CollarSettings.fromConfig();
-            if (entity.hasData(PettingModAttachments.PET_DATA)) {
-                defaults = defaults.withCombatMode(entity.getData(PettingModAttachments.PET_DATA).getCombatMode());
+            PetData data = getPetData(entity);
+            if (data != null) {
+                defaults = defaults.withCombatMode(data.getCombatMode());
             }
-            collar.set(PettingDataComponents.COLLAR_SETTINGS, defaults);
+            collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), defaults);
             setCollar(entity, collar);
             return defaults;
         }
@@ -450,7 +488,7 @@ public class PetHelper {
         }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
-            collar.set(PettingDataComponents.COLLAR_SETTINGS, settings);
+            collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), settings);
             setCollar(entity, collar);
         }
         setCombatMode(entity, settings.combatMode());
@@ -503,16 +541,18 @@ public class PetHelper {
     }
 
     public static void setTamed(LivingEntity entity, UUID ownerUUID, @Nullable Player owner) {
-        PetData data = entity.getData(PettingModAttachments.PET_DATA);
-        data.setTamed(true);
-        data.setOwnerUUID(ownerUUID);
-        data.setOrder(PetOrder.FOLLOW);
-        data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
-        if (!PettingServerConfig.isPetInventoryEnabled()) {
-            data.setCollar(ItemStack.EMPTY);
-            data.setSaddle(ItemStack.EMPTY);
+        PetData data = getPetData(entity);
+        if (data != null) {
+            data.setTamed(true);
+            data.setOwnerUUID(ownerUUID);
+            data.setOrder(PetOrder.FOLLOW);
+            data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
+            if (!PettingServerConfig.isPetInventoryEnabled()) {
+                data.setCollar(ItemStack.EMPTY);
+                data.setSaddle(ItemStack.EMPTY);
+            }
+            syncPetData(entity);
         }
-        entity.setData(PettingModAttachments.PET_DATA, data);
 
         if (entity instanceof Mob mob) {
             mob.setPersistenceRequired();
@@ -622,8 +662,8 @@ public class PetHelper {
         if (mob.hasHome()) {
             mob.clearHome();
         }
-        if (mob.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = mob.getData(PettingModAttachments.PET_DATA);
+        PetData data = getPetData(mob);
+        if (data != null) {
             ItemStack collar = data.getCollar();
             if (!collar.isEmpty()) {
                 if (mob.level() instanceof ServerLevel serverLevel) {
@@ -642,7 +682,7 @@ public class PetHelper {
             data.setOwnerUUID(null);
             data.setOrder(PetOrder.FOLLOW);
             data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
-            mob.setData(PettingModAttachments.PET_DATA, data);
+            syncPetData(mob);
         }
         if (mob instanceof AbstractHorse horse) {
             horse.setTamed(false);

@@ -1,29 +1,47 @@
 package net.yigitguven.petting.init;
 
+import com.mojang.serialization.Codec;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.RegistryObject;
 import net.yigitguven.petting.Petting;
+import net.yigitguven.petting.data.CollarRespawnPoint;
 import net.yigitguven.petting.data.CollarSettings;
 
+import java.util.UUID;
+
 public class PettingDataComponents {
-    public static final DeferredRegister.DataComponents DATA_COMPONENTS =
-            DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Petting.MODID);
+    public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS =
+            DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, Petting.MODID);
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<CollarSettings>> COLLAR_SETTINGS =
-            DATA_COMPONENTS.registerComponentType("collar_settings",
-                    builder -> builder.persistent(CollarSettings.CODEC).networkSynchronized(CollarSettings.STREAM_CODEC));
+    public static final RegistryObject<DataComponentType<CollarSettings>> COLLAR_SETTINGS =
+            DATA_COMPONENTS.register("collar_settings", () ->
+                    DataComponentType.<CollarSettings>builder()
+                            .persistent(CollarSettings.CODEC)
+                            .networkSynchronized(CollarSettings.STREAM_CODEC)
+                            .build());
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<net.yigitguven.petting.data.CollarRespawnPoint>> COLLAR_RESPAWN_POINT =
-            DATA_COMPONENTS.registerComponentType("collar_respawn_point",
-                    builder -> builder.persistent(net.yigitguven.petting.data.CollarRespawnPoint.CODEC).networkSynchronized(net.yigitguven.petting.data.CollarRespawnPoint.STREAM_CODEC));
+    public static final RegistryObject<DataComponentType<CollarRespawnPoint>> COLLAR_RESPAWN_POINT =
+            DATA_COMPONENTS.register("collar_respawn_point", () ->
+                    DataComponentType.<CollarRespawnPoint>builder()
+                            .persistent(CollarRespawnPoint.CODEC)
+                            .networkSynchronized(CollarRespawnPoint.STREAM_CODEC)
+                            .build());
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<java.util.UUID>> DRAGON_EGG_OWNER =
-            DATA_COMPONENTS.registerComponentType("dragon_egg_owner",
-                    builder -> builder.persistent(net.minecraft.core.UUIDUtil.CODEC).networkSynchronized(net.minecraft.core.UUIDUtil.STREAM_CODEC));
+    public static final RegistryObject<DataComponentType<UUID>> DRAGON_EGG_OWNER =
+            DATA_COMPONENTS.register("dragon_egg_owner", () ->
+                    DataComponentType.<UUID>builder()
+                            .persistent(UUIDUtil.CODEC)
+                            .networkSynchronized(UUIDUtil.STREAM_CODEC)
+                            .build());
 
-    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> DRAGON_EGG_OWNER_NAME =
-            DATA_COMPONENTS.registerComponentType("dragon_egg_owner_name",
-                    builder -> builder.persistent(com.mojang.serialization.Codec.STRING).networkSynchronized(net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8));
+    public static final RegistryObject<DataComponentType<String>> DRAGON_EGG_OWNER_NAME =
+            DATA_COMPONENTS.register("dragon_egg_owner_name", () ->
+                    DataComponentType.<String>builder()
+                            .persistent(Codec.STRING)
+                            .networkSynchronized(ByteBufCodecs.STRING_UTF8)
+                            .build());
 }

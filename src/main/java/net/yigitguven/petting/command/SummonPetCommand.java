@@ -21,13 +21,13 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.util.PetHelper;
 
-@EventBusSubscriber(modid = Petting.MODID)
+@Mod.EventBusSubscriber(modid = Petting.MODID)
 public class SummonPetCommand {
 
     private static final SimpleCommandExceptionType ERROR_NOT_A_MOB =

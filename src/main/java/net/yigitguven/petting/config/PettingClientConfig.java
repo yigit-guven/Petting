@@ -1,40 +1,40 @@
 package net.yigitguven.petting.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public class PettingClientConfig {
-    public static final ModConfigSpec SPEC;
+    public static final ForgeConfigSpec SPEC;
 
     // Detailed positive feedback toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_TAMED_SUCCESS_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_HEALED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_SITTING_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_STANDING_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_BOUND_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_MOUNT_CONTROLLED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_TAMED_SUCCESS_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_HEALED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_SITTING_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_STANDING_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_COLLAR_BOUND_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_MOUNT_CONTROLLED_FEEDBACK;
 
     // Detailed negative feedback toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_TAMING_FAILED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_TOO_HEALTHY_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_ALREADY_VANILLA_TAMED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_ALREADY_TAMED_OTHER_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_FULL_HEALTH_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_LIMIT_REACHED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_SADDLE_REQUIRED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_MOUNT_UNCONTROLLED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_TAMING_FAILED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_TOO_HEALTHY_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_ALREADY_VANILLA_TAMED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_ALREADY_TAMED_OTHER_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_FULL_HEALTH_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_LIMIT_REACHED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_SADDLE_REQUIRED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_MOUNT_UNCONTROLLED_FEEDBACK;
 
     // Pet death feedback toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_DEATH_MESSAGES;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_DIED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_RESPAWNED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_RESPAWN_FAILED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_DEATH_MESSAGES;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_DIED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_RESPAWNED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_RESPAWN_FAILED_FEEDBACK;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
 
     // Visual toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_MODELS;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_COLLAR_MODELS;
 
     static {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
         builder.push("feedback");
 

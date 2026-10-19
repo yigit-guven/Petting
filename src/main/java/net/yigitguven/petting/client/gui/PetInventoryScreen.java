@@ -18,11 +18,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.CollarSettings;
 import net.yigitguven.petting.data.CombatMode;
+import net.yigitguven.petting.network.PettingNetwork;
 import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.inventory.PetInventoryMenu;
@@ -233,7 +233,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                     if (p != null) {
                         boolean next = !PetHelper.isRideAttackOnClick(p);
                         PetHelper.setRideAttackOnClick(p, next);
-                        ClientPacketDistributor.sendToServer(new UpdateRidingSettingsPayload(p.getId(), next, PetHelper.isRideAutoAttackHostiles(p)));
+                        PettingNetwork.sendToServer(new UpdateRidingSettingsPayload(p.getId(), next, PetHelper.isRideAutoAttackHostiles(p)));
                         this.refreshRidingWidgetStates();
                     }
                 }
@@ -248,7 +248,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                     if (p != null) {
                         boolean next = !PetHelper.isRideAutoAttackHostiles(p);
                         PetHelper.setRideAutoAttackHostiles(p, next);
-                        ClientPacketDistributor.sendToServer(new UpdateRidingSettingsPayload(p.getId(), PetHelper.isRideAttackOnClick(p), next));
+                        PettingNetwork.sendToServer(new UpdateRidingSettingsPayload(p.getId(), PetHelper.isRideAttackOnClick(p), next));
                         this.refreshRidingWidgetStates();
                     }
                 }
@@ -298,10 +298,10 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         if (pet != null) {
             ItemStack collar = PetHelper.getCollar(pet);
             if (!collar.isEmpty()) {
-                collar.set(PettingDataComponents.COLLAR_SETTINGS, newSettings);
+                collar.set(PettingDataComponents.COLLAR_SETTINGS.get(), newSettings);
                 PetHelper.setCollarSettings(pet, newSettings);
             }
-            ClientPacketDistributor.sendToServer(new UpdateCollarSettingsPayload(pet.getId(), newSettings));
+            PettingNetwork.sendToServer(new UpdateCollarSettingsPayload(pet.getId(), newSettings));
         }
         this.refreshCollarWidgetStates(newSettings);
     }

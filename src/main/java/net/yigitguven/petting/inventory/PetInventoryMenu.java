@@ -1,6 +1,6 @@
 package net.yigitguven.petting.inventory;
 
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
@@ -31,11 +31,11 @@ public class PetInventoryMenu extends AbstractContainerMenu {
     private boolean isRidingTab = false;
     private boolean isCollarTab = false;
 
-    public PetInventoryMenu(int windowId, Inventory playerInv, RegistryFriendlyByteBuf extraData) {
+    public PetInventoryMenu(int windowId, Inventory playerInv, FriendlyByteBuf extraData) {
         this(windowId, playerInv, getPetFromBuf(playerInv.player, extraData));
     }
 
-    private static @Nullable LivingEntity getPetFromBuf(Player player, RegistryFriendlyByteBuf extraData) {
+    private static @Nullable LivingEntity getPetFromBuf(Player player, FriendlyByteBuf extraData) {
         int entityId = extraData.readVarInt();
         Entity entity = player.level().getEntity(entityId);
         return entity instanceof LivingEntity living ? living : null;

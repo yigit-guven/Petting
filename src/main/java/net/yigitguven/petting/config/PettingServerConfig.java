@@ -1,54 +1,54 @@
 package net.yigitguven.petting.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec;
 
 public class PettingServerConfig {
-    public static final ModConfigSpec SPEC;
-    public static final ModConfigSpec.DoubleValue MAX_HEALTH_PERCENTAGE;
-    public static final ModConfigSpec.BooleanValue HOSTILE_MOBS_ONLY;
-    public static final ModConfigSpec.DoubleValue UNSUCCESSFUL_TAMING_CHANCE;
-    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> UNTAMEABLE_ENTITIES;
-    public static final ModConfigSpec.IntValue MAX_PET_COUNT;
-    public static final ModConfigSpec.BooleanValue OWNER_CAN_ATTACK_PETS;
-    public static final ModConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
-    public static final ModConfigSpec.BooleanValue DISABLE_BUILT_IN_HOSTILITY;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_INVENTORY;
-    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_SLOT;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_SITTING;
-    public static final ModConfigSpec.BooleanValue FORGIVE_ATTACKS_ON_SIT;
-    public static final ModConfigSpec.BooleanValue FLYING_PETS_HOVER_WHEN_SITTING;
-    public static final ModConfigSpec.BooleanValue SWIMMING_PETS_STAY_STILL_WHEN_SITTING;
-    public static final ModConfigSpec.BooleanValue HIDE_TAMED_BOSS_BARS;
-    public static final ModConfigSpec.BooleanValue TAMED_MONSTERS_PREVENT_SLEEP;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_DEATH_MESSAGES;
-    public static final ModConfigSpec.EnumValue<net.yigitguven.petting.data.CombatMode> DEFAULT_COMBAT_MODE;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_RIDING;
-    public static final ModConfigSpec.BooleanValue RIDING_USE_WHITELIST;
-    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_WHITELIST;
-    public static final ModConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_BLACKLIST;
-    public static final ModConfigSpec.BooleanValue ALLOW_RIDING_WITHOUT_SADDLE;
-    public static final ModConfigSpec.BooleanValue RIDDEN_PETS_ATTACK_ON_CLICK;
-    public static final ModConfigSpec.DoubleValue FLYING_PET_ASCENT_SPEED;
-    public static final ModConfigSpec.DoubleValue FLYING_PET_DESCENT_SPEED;
-    public static final ModConfigSpec.DoubleValue FLYING_PET_SPEED_MULTIPLIER;
-    public static final ModConfigSpec.DoubleValue SWIMMING_PET_SPEED_MULTIPLIER;
-    public static final ModConfigSpec.IntValue RIDDEN_ATTACK_COOLDOWN_TICKS;
-    public static final ModConfigSpec.IntValue DEFAULT_FOLLOW_DISTANCE;
-    public static final ModConfigSpec.IntValue MIN_FOLLOW_DISTANCE;
-    public static final ModConfigSpec.IntValue MAX_FOLLOW_DISTANCE;
-    public static final ModConfigSpec.IntValue DEFAULT_TELEPORT_DISTANCE;
-    public static final ModConfigSpec.IntValue MIN_TELEPORT_DISTANCE;
-    public static final ModConfigSpec.IntValue MAX_TELEPORT_DISTANCE;
-    public static final ModConfigSpec.BooleanValue DEFAULT_TELEPORT_ENABLED;
-    public static final ModConfigSpec.BooleanValue DEFAULT_PREFER_RANGED_ATTACK;
-    public static final ModConfigSpec.BooleanValue DEFAULT_DEFEND_OTHER_PETS;
-    public static final ModConfigSpec.BooleanValue DEFAULT_RETALIATE_WHEN_HURT;
-    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_RESPAWN;
-    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_MODELS;
-    public static final ModConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
+    public static final ForgeConfigSpec SPEC;
+    public static final ForgeConfigSpec.DoubleValue MAX_HEALTH_PERCENTAGE;
+    public static final ForgeConfigSpec.BooleanValue HOSTILE_MOBS_ONLY;
+    public static final ForgeConfigSpec.DoubleValue UNSUCCESSFUL_TAMING_CHANCE;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> UNTAMEABLE_ENTITIES;
+    public static final ForgeConfigSpec.IntValue MAX_PET_COUNT;
+    public static final ForgeConfigSpec.BooleanValue OWNER_CAN_ATTACK_PETS;
+    public static final ForgeConfigSpec.BooleanValue PETS_CAN_ATTACK_PETS;
+    public static final ForgeConfigSpec.BooleanValue DISABLE_BUILT_IN_HOSTILITY;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_INVENTORY;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_COLLAR_SLOT;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_SITTING;
+    public static final ForgeConfigSpec.BooleanValue FORGIVE_ATTACKS_ON_SIT;
+    public static final ForgeConfigSpec.BooleanValue FLYING_PETS_HOVER_WHEN_SITTING;
+    public static final ForgeConfigSpec.BooleanValue SWIMMING_PETS_STAY_STILL_WHEN_SITTING;
+    public static final ForgeConfigSpec.BooleanValue HIDE_TAMED_BOSS_BARS;
+    public static final ForgeConfigSpec.BooleanValue TAMED_MONSTERS_PREVENT_SLEEP;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_DEATH_MESSAGES;
+    public static final ForgeConfigSpec.EnumValue<net.yigitguven.petting.data.CombatMode> DEFAULT_COMBAT_MODE;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_PET_RIDING;
+    public static final ForgeConfigSpec.BooleanValue RIDING_USE_WHITELIST;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_WHITELIST;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> RIDING_BLACKLIST;
+    public static final ForgeConfigSpec.BooleanValue ALLOW_RIDING_WITHOUT_SADDLE;
+    public static final ForgeConfigSpec.BooleanValue RIDDEN_PETS_ATTACK_ON_CLICK;
+    public static final ForgeConfigSpec.DoubleValue FLYING_PET_ASCENT_SPEED;
+    public static final ForgeConfigSpec.DoubleValue FLYING_PET_DESCENT_SPEED;
+    public static final ForgeConfigSpec.DoubleValue FLYING_PET_SPEED_MULTIPLIER;
+    public static final ForgeConfigSpec.DoubleValue SWIMMING_PET_SPEED_MULTIPLIER;
+    public static final ForgeConfigSpec.IntValue RIDDEN_ATTACK_COOLDOWN_TICKS;
+    public static final ForgeConfigSpec.IntValue DEFAULT_FOLLOW_DISTANCE;
+    public static final ForgeConfigSpec.IntValue MIN_FOLLOW_DISTANCE;
+    public static final ForgeConfigSpec.IntValue MAX_FOLLOW_DISTANCE;
+    public static final ForgeConfigSpec.IntValue DEFAULT_TELEPORT_DISTANCE;
+    public static final ForgeConfigSpec.IntValue MIN_TELEPORT_DISTANCE;
+    public static final ForgeConfigSpec.IntValue MAX_TELEPORT_DISTANCE;
+    public static final ForgeConfigSpec.BooleanValue DEFAULT_TELEPORT_ENABLED;
+    public static final ForgeConfigSpec.BooleanValue DEFAULT_PREFER_RANGED_ATTACK;
+    public static final ForgeConfigSpec.BooleanValue DEFAULT_DEFEND_OTHER_PETS;
+    public static final ForgeConfigSpec.BooleanValue DEFAULT_RETALIATE_WHEN_HURT;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_COLLAR_RESPAWN;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_COLLAR_MODELS;
+    public static final ForgeConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
 
     static {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
 
         builder.push("taming");
 
@@ -66,7 +66,7 @@ public class PettingServerConfig {
 
         UNTAMEABLE_ENTITIES = builder
                 .translation("petting.configuration.taming.untameableEntities")
-                .defineListAllowEmpty("untameableEntities", java.util.List.of(), () -> "", obj -> obj instanceof String);
+                .defineListAllowEmpty("untameableEntities", java.util.List.<String>of(), obj -> obj instanceof String);
 
         MAX_PET_COUNT = builder
                 .translation("petting.configuration.taming.maxPetCount")
@@ -146,11 +146,11 @@ public class PettingServerConfig {
 
         RIDING_WHITELIST = builder
                 .translation("petting.configuration.riding.whitelist")
-                .defineListAllowEmpty("whitelist", java.util.List.of(), () -> "", obj -> obj instanceof String);
+                .defineListAllowEmpty("whitelist", java.util.List.<String>of(), obj -> obj instanceof String);
 
         RIDING_BLACKLIST = builder
                 .translation("petting.configuration.riding.blacklist")
-                .defineListAllowEmpty("blacklist", java.util.List.of(), () -> "", obj -> obj instanceof String);
+                .defineListAllowEmpty("blacklist", java.util.List.<String>of(), obj -> obj instanceof String);
 
         ALLOW_RIDING_WITHOUT_SADDLE = builder
                 .translation("petting.configuration.riding.allowRidingWithoutSaddle")
