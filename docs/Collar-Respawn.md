@@ -5,7 +5,7 @@
 By binding a [Collar](Collars) to a bed or cushion, any pet wearing that collar will instantly resurrect at that location upon death.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/collar(red).png" width="48" height="48" alt="Red Collar">
+  <img src="https://raw.githubusercontent.com/yigit-guven/Petting/HEAD/src/main/resources/assets/petting/textures/item/collar.png" width="48" height="48" alt="Red Collar">
 </p>
 
 ---
