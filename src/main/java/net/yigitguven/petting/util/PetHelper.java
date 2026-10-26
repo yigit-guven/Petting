@@ -907,6 +907,7 @@ public class PetHelper {
             mob.goalSelector.addGoal(4, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
             mob.goalSelector.addGoal(5, new PetWanderGoal(pathfinderMob, 1.0D));
         } else {
+            mob.goalSelector.addGoal(4, new PetFollowOwnerGoal(mob, 1.25D, 4.0F, 2.0F, 20.0F));
             mob.goalSelector.addGoal(5, new PetWanderGoal(mob, 1.0D));
         }
 
