@@ -12,6 +12,7 @@
     "MonsterMixin"
   ],
   "client": [
+    "EnderDragonRendererAccessor",
     "EnderDragonRendererMixin"
   ],
   "injectors": {

@@ -2,6 +2,7 @@ package net.yigitguven.petting.mixin;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EnderDragonRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -18,8 +19,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class EnderDragonRendererMixin {
 
     @Unique
-    private static final ResourceLocation GREEN_EYES_TEXTURE =
-            new ResourceLocation(Petting.MODID, "textures/entity/enderdragon/dragon_eyes_green.png");
+    private static final RenderType GREEN_EYES_RENDER_TYPE =
+            RenderType.eyes(new ResourceLocation(Petting.MODID, "textures/entity/enderdragon/dragon_eyes_green.png"));
 
     @Unique
     private static final ThreadLocal<EnderDragon> petting$currentDragon = new ThreadLocal<>();
@@ -31,13 +32,13 @@ public abstract class EnderDragonRendererMixin {
 
     @ModifyArg(
             method = "render(Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/RenderType;eyes(Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/client/renderer/RenderType;"),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/MultiBufferSource;getBuffer(Lnet/minecraft/client/renderer/RenderType;)Lcom/mojang/blaze3d/vertex/VertexConsumer;"),
             index = 0
     )
-    private ResourceLocation petting$modifyDragonEyesTexture(ResourceLocation original) {
+    private RenderType petting$modifyDragonEyesRenderType(RenderType original) {
         EnderDragon dragon = petting$currentDragon.get();
-        if (dragon != null && PetHelper.isTamed(dragon)) {
-            return GREEN_EYES_TEXTURE;
+        if (dragon != null && PetHelper.isTamed(dragon) && original == EnderDragonRendererAccessor.getEyes()) {
+            return GREEN_EYES_RENDER_TYPE;
         }
         return original;
     }
