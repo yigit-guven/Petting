@@ -36,9 +36,12 @@ public enum PetSlotType {
     BODY(null, null),
     MAINHAND(EquipmentSlot.MAINHAND, null),
     OFFHAND(EquipmentSlot.OFFHAND, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD),
-    SADDLE(null, null),
+    SADDLE(null, new ResourceLocation(Petting.MODID, "item/empty_slot_saddle")),
     CHEST_STORAGE(null, null),
-    COLLAR(null, null);
+    COLLAR(null, new ResourceLocation(Petting.MODID, "item/empty_slot_collar"));
+
+    public static final ResourceLocation EMPTY_SLOT_SADDLE = new ResourceLocation(Petting.MODID, "item/empty_slot_saddle");
+    public static final ResourceLocation EMPTY_SLOT_COLLAR = new ResourceLocation(Petting.MODID, "item/empty_slot_collar");
 
     private final @Nullable EquipmentSlot slot;
     private final @Nullable ResourceLocation defaultIcon;
