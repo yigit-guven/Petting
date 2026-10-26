@@ -478,7 +478,11 @@ public class PetRidingHandler {
             List<LivingEntity> targets = serverLevel.getEntitiesOfClass(LivingEntity.class, attackBox,
                     e -> e != mob && e != player && !PetHelper.isOwner(e, player) && e.isAlive());
             for (LivingEntity target : targets) {
-                mob.doHurtTarget(serverLevel, target);
+                if (mob instanceof Mob m) {
+                    PetHelper.doPetHurtTarget(m, serverLevel, target);
+                } else {
+                    target.hurtServer(serverLevel, mob.damageSources().mobAttack(mob), (float) net.yigitguven.petting.config.PettingServerConfig.getPassiveMobAttackDamage());
+                }
                 break;
             }
         }
@@ -530,7 +534,11 @@ public class PetRidingHandler {
             serverLevel.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F);
         } else if (mob.distanceTo(target) <= 3.5D) {
             mob.swing(InteractionHand.MAIN_HAND, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
-            mob.doHurtTarget(serverLevel, target);
+            if (mob instanceof Mob m) {
+                PetHelper.doPetHurtTarget(m, serverLevel, target);
+            } else {
+                target.hurtServer(serverLevel, mob.damageSources().mobAttack(mob), (float) net.yigitguven.petting.config.PettingServerConfig.getPassiveMobAttackDamage());
+            }
         }
     }
 }

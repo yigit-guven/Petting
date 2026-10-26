@@ -59,6 +59,9 @@ public class PetGuardTargetGoal extends TargetGoal {
         if (settings.combatMode() != CombatMode.GUARD) {
             return false;
         }
+        if (!(this.mob instanceof Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
+            return false;
+        }
         if (!this.mob.hasHome()) {
             this.mob.setHomeTo(this.mob.blockPosition(), (int) PetHelper.getFollowDistance(this.mob));
         }

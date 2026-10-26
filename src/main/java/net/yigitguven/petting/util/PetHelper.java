@@ -34,6 +34,8 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.PetSavedData;
 
@@ -694,6 +696,11 @@ public class PetHelper {
 
         // Rule: Pets can never target their owner
         if (target == owner) {
+            return false;
+        }
+
+        // Rule: Passive mobs cannot attack if passive mob attacks are disabled
+        if (!(pet instanceof net.minecraft.world.entity.monster.Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
             return false;
         }
 
@@ -1547,5 +1554,32 @@ public class PetHelper {
             player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("petting.action.pet_standing", mob.getName()));
         }
         return true;
+    }
+
+    public static boolean doPetHurtTarget(Mob mob, ServerLevel level, net.minecraft.world.entity.Entity target) {
+        boolean isPassive = !(mob instanceof net.minecraft.world.entity.monster.Enemy);
+        if (isPassive && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
+            return false;
+        }
+
+        if (isPassive) {
+            float damage = (float) PettingServerConfig.getPassiveMobAttackDamage();
+            DamageSource damageSource = mob.damageSources().mobAttack(mob);
+            boolean wasHurt = target.hurtServer(level, damageSource, damage);
+            if (wasHurt) {
+                mob.setLastHurtMob(target);
+            }
+            return wasHurt;
+        }
+
+        if (mob.getAttributes().hasAttribute(Attributes.ATTACK_DAMAGE)) {
+            return mob.doHurtTarget(level, target);
+        }
+        DamageSource damageSource = mob.damageSources().mobAttack(mob);
+        boolean wasHurt = target.hurtServer(level, damageSource, (float) PettingServerConfig.getPassiveMobAttackDamage());
+        if (wasHurt) {
+            mob.setLastHurtMob(target);
+        }
+        return wasHurt;
     }
 }
