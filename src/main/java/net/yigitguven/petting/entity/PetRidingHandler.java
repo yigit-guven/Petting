@@ -451,9 +451,7 @@ public class PetRidingHandler {
             serverLevel.addFreshEntity(skull);
             serverLevel.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F);
         } else if (mob instanceof AbstractSkeleton
-                || mob.getMainHandItem().is(Items.BOW)
-                || mob.getMainHandItem().is(Items.CROSSBOW)
-                || PetHelper.getCollarSettings(mob).preferRangedAttack()) {
+                || mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
             Arrow arrow = new Arrow(serverLevel, mob);
             arrow.setPos(mob.getX() + look.x * 1.2D, mob.getEyeY(), mob.getZ() + look.z * 1.2D);
             arrow.shoot(look.x, look.y, look.z, 2.5F, 1.0F);
@@ -511,9 +509,7 @@ public class PetRidingHandler {
             serverLevel.addFreshEntity(skull);
             serverLevel.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.WITHER_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F);
         } else if (mob instanceof AbstractSkeleton
-                || mob.getMainHandItem().is(Items.BOW)
-                || mob.getMainHandItem().is(Items.CROSSBOW)
-                || PetHelper.getCollarSettings(mob).preferRangedAttack()) {
+                || mob.isHolding(stack -> stack.getItem() instanceof net.minecraft.world.item.ProjectileWeaponItem)) {
             Arrow arrow = new Arrow(serverLevel, mob);
             arrow.setPos(mob.getX() + dir.x * 1.2D, mob.getEyeY(), mob.getZ() + dir.z * 1.2D);
             arrow.shoot(dir.x, dir.y, dir.z, 2.5F, 1.0F);
