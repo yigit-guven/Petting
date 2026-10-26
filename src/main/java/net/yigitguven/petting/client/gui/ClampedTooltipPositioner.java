@@ -18,7 +18,6 @@ public class ClampedTooltipPositioner implements ClientTooltipPositioner {
             y = mouseY - 12 - tooltipHeight;
         }
 
-        // Clamp securely inside visible viewport with 4px padding so tooltips never go off-screen
         int maxX = Math.max(4, screenWidth - tooltipWidth - 4);
         int maxY = Math.max(4, screenHeight - tooltipHeight - 4);
         int clampedX = Math.max(4, Math.min(x, maxX));

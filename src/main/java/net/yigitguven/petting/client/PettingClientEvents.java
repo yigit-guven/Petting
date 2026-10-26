@@ -224,9 +224,10 @@ public class PettingClientEvents {
 
     @SubscribeEvent
     public static void onRenderNameTag(RenderNameTagEvent event) {
-        if (event.getEntity() instanceof LivingEntity entity && PetHelper.isTamed(entity) && PetHelper.getOrder(entity) == PetOrder.SIT) {
-            if (entity instanceof net.minecraft.world.entity.monster.Zombie || entity instanceof net.minecraft.world.entity.monster.Skeleton) {
-                event.getPoseStack().translate(0.0D, -0.35D, 0.0D);
+        if (event.getEntity() instanceof LivingEntity entity) {
+            float drop = SittingPoseRenderer.getNameTagDrop(entity);
+            if (drop != 0.0F) {
+                event.getPoseStack().translate(0.0D, -drop, 0.0D);
             }
         }
     }
@@ -234,14 +235,8 @@ public class PettingClientEvents {
     @SubscribeEvent
     public static void onRenderLivingPre(RenderLivingEvent.Pre<?, ?> event) {
         LivingEntity entity = event.getEntity();
-        if (entity != null && PetHelper.isTamed(entity) && PetHelper.getOrder(entity) == PetOrder.SIT) {
-            if (event.getRenderer().getModel() instanceof HumanoidModel<?> humanoidModel) {
-                humanoidModel.riding = true;
-            }
+        if (entity != null && SittingPoseRenderer.shouldSit(entity, event.getRenderer().getModel())) {
             entity.walkAnimation.setSpeed(0.0F);
-            if (entity instanceof net.minecraft.world.entity.monster.Zombie || entity instanceof net.minecraft.world.entity.monster.Skeleton) {
-                event.getPoseStack().translate(0.0D, -0.35D, 0.0D);
-            }
         }
     }
 }

@@ -169,16 +169,13 @@ public class PetRidingHandler {
             return true;
         }
         AABB box = mob.getBoundingBox();
-        // 1. Direct downward collision check: if moving 0.2 down collides, mob cannot descend
         if (!mob.level().noCollision(mob, box.move(0, -0.2D, 0))) {
             return true;
         }
-        // 2. Downward reach check within 2.5 blocks beneath base of mob
         AABB groundBox = new AABB(box.minX, box.minY - 2.5D, box.minZ, box.maxX, box.minY, box.maxZ);
         if (!mob.level().noCollision(mob, groundBox)) {
             return true;
         }
-        // 3. Scan block footprint beneath mob within 2.5 blocks
         int minX = net.minecraft.util.Mth.floor(box.minX);
         int maxX = net.minecraft.util.Mth.floor(box.maxX);
         int minZ = net.minecraft.util.Mth.floor(box.minZ);
@@ -228,7 +225,6 @@ public class PetRidingHandler {
             int blockX = net.minecraft.util.Mth.floor(cx);
             int blockZ = net.minecraft.util.Mth.floor(cz);
 
-            // Search downwards up to 5 blocks beneath mob for a solid standing surface
             for (int dy = 1; dy >= -5; dy--) {
                 int testY = baseBlockY + dy;
                 pos.set(blockX, testY, blockZ);
@@ -271,12 +267,10 @@ public class PetRidingHandler {
             return;
         }
 
-        // Ensure ridden mob is never in SIT state; normalize to FOLLOW
         if (PetHelper.getOrder(mob) == net.yigitguven.petting.data.PetOrder.SIT) {
             PetHelper.setOrder(mob, net.yigitguven.petting.data.PetOrder.FOLLOW);
         }
 
-        // Without a saddle, player cannot steer the pet; pet acts autonomously
         if (!PetHelper.hasSaddle(mob)) {
             if (RIDDEN_PETS_NO_AI.remove(mob.getUUID())) {
                 if (mob instanceof Mob m && !(mob instanceof EnderDragon)) {
@@ -290,14 +284,12 @@ public class PetRidingHandler {
             return;
         }
 
-        // Enforce NoAI and complete AI suppression for controlled ride
         RIDDEN_PETS_NO_AI.add(mob.getUUID());
         if (mob instanceof Mob m && !m.isNoAi() && !(mob instanceof EnderDragon)) {
             m.setNoAi(true);
         }
         suppressMobAi(mob, player);
 
-        // Strictly synchronize rotation with rider
         lockRotations(mob, player);
 
         float forward = player.zza;
@@ -313,13 +305,11 @@ public class PetRidingHandler {
             wishDir = wishDir.normalize();
         }
 
-        // Auto-attack check every 20 ticks
         if (PetHelper.isRideAutoAttackHostiles(mob) && mob.tickCount % 20 == 0) {
             checkAndPerformAutoAttack(serverPlayer, mob);
         }
 
         if (PetHelper.isFlyingPet(mob)) {
-            // Flying mob controls: WASD horizontal, Jump ascends, Sneak descends, neutral hovers
             if (shift) {
                 if (isGroundedOrCannotDescend(mob)) {
                     dismountPlayer(serverPlayer, mob);
@@ -343,13 +333,11 @@ public class PetRidingHandler {
             player.resetFallDistance();
             mob.setNoGravity(true);
 
-            // If mob reached ground after descending, dismount immediately if shift is held
             if (shift && isGroundedOrCannotDescend(mob)) {
                 dismountPlayer(serverPlayer, mob);
                 return;
             }
         } else if (PetHelper.isSwimmingPet(mob)) {
-            // Swimming mob controls: 3D swim in water, slow crawl on land
             if (mob.isInWater()) {
                 player.addEffect(new MobEffectInstance(MobEffects.WATER_BREATHING, 60, 0, false, false, true));
                 if (shift) {
@@ -374,13 +362,11 @@ public class PetRidingHandler {
                 mob.resetFallDistance();
                 player.resetFallDistance();
 
-                // If mob reached floor after diving, dismount immediately if shift is held
                 if (shift && isGroundedOrCannotDescend(mob)) {
                     dismountPlayer(serverPlayer, mob);
                     return;
                 }
             } else {
-                // Out of water: cannot fly; sneak dismounts immediately
                 if (shift) {
                     dismountPlayer(serverPlayer, mob);
                     return;
@@ -402,7 +388,6 @@ public class PetRidingHandler {
                 mob.move(MoverType.SELF, mob.getDeltaMovement());
             }
         } else {
-            // Walking mob controls: WASD horizontal, Jump jumps, Sneak dismounts
             if (shift) {
                 dismountPlayer(serverPlayer, mob);
                 return;
@@ -475,7 +460,6 @@ public class PetRidingHandler {
             serverLevel.addFreshEntity(arrow);
             serverLevel.playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F);
         } else {
-            // Melee mob attack
             mob.swing(InteractionHand.MAIN_HAND);
             AABB attackBox = mob.getBoundingBox().inflate(2.5D).expandTowards(look.scale(2.0D));
             List<LivingEntity> targets = serverLevel.getEntitiesOfClass(LivingEntity.class, attackBox,

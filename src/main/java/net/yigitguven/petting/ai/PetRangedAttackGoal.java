@@ -67,6 +67,13 @@ public class PetRangedAttackGoal extends Goal {
                 return false;
             }
         }
+        CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        if ((settings.combatMode() == CombatMode.GUARD || settings.combatMode() == CombatMode.WANDER) && this.mob.hasRestriction()) {
+            double leashDist = this.mob.getRestrictRadius() + 10.0D;
+            if (target.distanceToSqr(net.minecraft.world.phys.Vec3.atBottomCenterOf(this.mob.getRestrictCenter())) > leashDist * leashDist) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -133,6 +140,10 @@ public class PetRangedAttackGoal extends Goal {
         this.seeTime = 0;
         this.attackTime = -1;
         this.mob.stopUsingItem();
+        LivingEntity target = this.mob.getTarget();
+        if (target != null && (!target.isAlive() || !isValidTarget(target))) {
+            this.mob.setTarget(null);
+        }
     }
 
     @Override
@@ -156,7 +167,6 @@ public class PetRangedAttackGoal extends Goal {
             this.seeTime = 0;
         }
 
-        // Positioning & Strafing AI
         if (distSqr <= (double) this.attackRadiusSqr && this.seeTime >= 20) {
             this.navigation.stop();
             this.strafingTime++;

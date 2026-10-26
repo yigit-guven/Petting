@@ -4,12 +4,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.target.TargetGoal;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.data.CollarSettings;
 import net.yigitguven.petting.data.CombatMode;
 import net.yigitguven.petting.data.PetOrder;
 import net.yigitguven.petting.util.PetHelper;
@@ -21,6 +21,7 @@ import java.util.List;
 public class PetGuardTargetGoal extends TargetGoal {
     private final Mob mob;
     private LivingEntity target;
+    private int nextSearchDelay = 0;
 
     public PetGuardTargetGoal(Mob mob) {
         super(mob, false);
@@ -29,7 +30,10 @@ public class PetGuardTargetGoal extends TargetGoal {
     }
 
     private boolean isValidGuardTarget(LivingEntity candidate, Player owner, BlockPos homePos, double maxDistSqr) {
-        if (candidate == null || !candidate.isAlive() || candidate == this.mob || candidate == owner) {
+        if (candidate == null || !candidate.isAlive() || candidate == this.mob) {
+            return false;
+        }
+        if (owner != null && candidate == owner) {
             return false;
         }
         if (!(candidate instanceof Enemy)) {
@@ -47,7 +51,10 @@ public class PetGuardTargetGoal extends TargetGoal {
         if (candidate.distanceToSqr(Vec3.atBottomCenterOf(homePos)) > maxDistSqr) {
             return false;
         }
-        return this.canAttack(candidate, TargetingConditions.forCombat().ignoreLineOfSight());
+        if (!candidate.canBeSeenAsEnemy()) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -55,23 +62,39 @@ public class PetGuardTargetGoal extends TargetGoal {
         if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT) {
             return false;
         }
-        net.yigitguven.petting.data.CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        CollarSettings settings = PetHelper.getCollarSettings(this.mob);
         if (settings.combatMode() != CombatMode.GUARD) {
             return false;
         }
         if (!(this.mob instanceof Enemy) && !PettingServerConfig.isPassiveMobAttacksEnabled()) {
             return false;
         }
+
         if (!this.mob.hasRestriction()) {
             this.mob.restrictTo(this.mob.blockPosition(), (int) PetHelper.getFollowDistance(this.mob));
         }
 
         BlockPos homePos = this.mob.getRestrictCenter();
+        double leashDist = this.mob.getRestrictRadius() + 10.0D;
+
+        LivingEntity current = this.mob.getTarget();
+        if (current != null && current.isAlive()) {
+            if (current.distanceToSqr(Vec3.atBottomCenterOf(homePos)) <= leashDist * leashDist) {
+                return false;
+            }
+        }
+
+        if (this.nextSearchDelay > 0) {
+            this.nextSearchDelay--;
+            return false;
+        }
+        this.nextSearchDelay = 4 + this.mob.getRandom().nextInt(5);
+
         int radius = Math.max(2, (int) this.mob.getRestrictRadius());
         double radiusSqr = (double) radius * radius;
 
         Player owner = PetHelper.getOwner(this.mob);
-        AABB patrolArea = new AABB(homePos).inflate(radius);
+        AABB patrolArea = new AABB(homePos).inflate(radius, 4.0D, radius);
 
         List<LivingEntity> enemies = this.mob.level().getEntitiesOfClass(
                 LivingEntity.class,
@@ -91,6 +114,7 @@ public class PetGuardTargetGoal extends TargetGoal {
     @Override
     public void start() {
         this.mob.setTarget(this.target);
+        this.targetMob = this.target;
         super.start();
     }
 
@@ -99,7 +123,7 @@ public class PetGuardTargetGoal extends TargetGoal {
         if (!PetHelper.isTamed(this.mob) || PetHelper.getOrder(this.mob) == PetOrder.SIT) {
             return false;
         }
-        net.yigitguven.petting.data.CollarSettings settings = PetHelper.getCollarSettings(this.mob);
+        CollarSettings settings = PetHelper.getCollarSettings(this.mob);
         if (settings.combatMode() != CombatMode.GUARD) {
             return false;
         }
@@ -108,13 +132,10 @@ public class PetGuardTargetGoal extends TargetGoal {
             return false;
         }
         Player owner = PetHelper.getOwner(this.mob);
-        if (currentTarget == owner) {
+        if (owner != null && currentTarget == owner) {
             return false;
         }
-        if (currentTarget.isAlliedTo(this.mob)) {
-            return false;
-        }
-        if (PetHelper.isTamed(currentTarget)) {
+        if (currentTarget.isAlliedTo(this.mob) || PetHelper.isTamed(currentTarget)) {
             return false;
         }
         if (owner != null && !PettingServerConfig.canPetsAttackPets() && PetHelper.isOwner(currentTarget, owner)) {
@@ -123,19 +144,32 @@ public class PetGuardTargetGoal extends TargetGoal {
 
         if (this.mob.hasRestriction()) {
             BlockPos homePos = this.mob.getRestrictCenter();
-            double leashDist = this.mob.getRestrictRadius() + 8.0D;
+            double leashDist = this.mob.getRestrictRadius() + 10.0D;
             if (currentTarget.distanceToSqr(Vec3.atBottomCenterOf(homePos)) > leashDist * leashDist) {
                 return false;
             }
         }
 
-        return super.canContinueToUse();
+        return true;
     }
 
     @Override
     public void stop() {
-        this.target = null;
-        this.mob.setTarget(null);
-        super.stop();
+        LivingEntity currentTarget = this.mob.getTarget();
+        BlockPos homePos = this.mob.hasRestriction() ? this.mob.getRestrictCenter() : this.mob.blockPosition();
+        double leashDist = (this.mob.hasRestriction() ? this.mob.getRestrictRadius() : 16.0F) + 10.0D;
+
+        if (currentTarget == null || !currentTarget.isAlive()
+                || currentTarget.distanceToSqr(Vec3.atBottomCenterOf(homePos)) > leashDist * leashDist
+                || PetHelper.getOrder(this.mob) == PetOrder.SIT
+                || PetHelper.getCombatMode(this.mob) != CombatMode.GUARD) {
+            this.mob.setTarget(null);
+            this.target = null;
+            this.targetMob = null;
+            this.mob.getNavigation().stop();
+            if (this.mob.hasRestriction() && !this.mob.isWithinRestriction()) {
+                this.mob.getNavigation().moveTo(homePos.getX() + 0.5D, homePos.getY(), homePos.getZ() + 0.5D, 1.0D);
+            }
+        }
     }
 }

@@ -70,7 +70,6 @@ public class PetWanderGoal extends Goal {
             this.mob.restrictTo(this.mob.blockPosition(), radius);
         }
 
-        // If mob has an active target, let combat goals handle it
         if (this.mob.getTarget() != null && this.mob.getTarget().isAlive()) {
             return false;
         }
@@ -79,7 +78,6 @@ public class PetWanderGoal extends Goal {
             return false;
         }
 
-        // If outside restriction radius, return back towards restriction center
         if (!this.mob.isWithinRestriction()) {
             BlockPos home = this.mob.getRestrictCenter();
             if (this.mob.distanceToSqr(Vec3.atBottomCenterOf(home)) > 64.0D * 64.0D) {
@@ -94,7 +92,6 @@ public class PetWanderGoal extends Goal {
             return true;
         }
 
-        // Inside restriction, randomly wander around restriction center
         Vec3 pos = findWanderPosition();
         if (pos == null) {
             this.cooldown = 40;
@@ -152,7 +149,6 @@ public class PetWanderGoal extends Goal {
             }
         }
 
-        // Flying mobs or fallback
         for (int i = 0; i < 10; i++) {
             double rx = (this.mob.getRandom().nextDouble() * 2 - 1) * radius;
             double rz = (this.mob.getRandom().nextDouble() * 2 - 1) * radius;

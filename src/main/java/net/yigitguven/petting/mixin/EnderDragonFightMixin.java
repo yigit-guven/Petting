@@ -46,7 +46,6 @@ public abstract class EnderDragonFightMixin {
 
         int portalY = this.portalLocation != null ? this.portalLocation.getY() : 65;
 
-        // Search for Golden Dragon Egg on or near the exit portal structure
         BlockPos foundEggPos = null;
         UUID ownerUUID = null;
         String ownerName = null;
@@ -71,17 +70,14 @@ public abstract class EnderDragonFightMixin {
         }
 
         if (foundEggPos != null) {
-            // Hatch the egg safely and peacefully
             this.level.destroyBlock(foundEggPos, false);
             PetHelper.recordGoldenDragonSummon();
 
-            // Hatching particles and audio (peaceful magic: totem, end rod, amethyst)
             this.level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, foundEggPos.getX() + 0.5, foundEggPos.getY() + 0.5, foundEggPos.getZ() + 0.5, 100, 0.6, 0.6, 0.6, 0.3);
             this.level.sendParticles(ParticleTypes.END_ROD, foundEggPos.getX() + 0.5, foundEggPos.getY() + 0.5, foundEggPos.getZ() + 0.5, 60, 0.4, 0.4, 0.4, 0.15);
             this.level.playSound(null, foundEggPos, SoundEvents.TOTEM_USE, SoundSource.BLOCKS, 1.5F, 1.0F);
             this.level.playSound(null, foundEggPos, SoundEvents.ENDER_DRAGON_GROWL, SoundSource.HOSTILE, 1.5F, 1.2F);
 
-            // Position the dragon descending right above the portal at reachable height
             float yaw = this.level.getRandom().nextFloat() * 360.0F;
             dragon.setPos(0.0, portalY + 2.5, 0.0);
             dragon.setYRot(yaw);
@@ -89,7 +85,6 @@ public abstract class EnderDragonFightMixin {
             dragon.yBodyRot = yaw;
             dragon.yHeadRot = yaw;
 
-            // Resolve the owner player
             Player ownerPlayer = null;
             if (ownerUUID != null) {
                 ownerPlayer = this.level.getServer().getPlayerList().getPlayer(ownerUUID);
@@ -102,20 +97,16 @@ public abstract class EnderDragonFightMixin {
                 }
             }
 
-            // Tame the dragon
             PetHelper.setTamed(dragon, ownerUUID, ownerPlayer);
 
-            // Clear EnderDragonFight boss management so dragon doesn't circle crystals or act as arena boss
             this.dragonUUID = null;
             if (this.dragonEvent != null) {
                 this.dragonEvent.setVisible(false);
                 this.dragonEvent.removeAllPlayers();
             }
 
-            // Set dragon phase directly to hovering near owner
             dragon.getPhaseManager().setPhase(net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase.HOVERING);
 
-            // Send notification
             if (ownerPlayer != null) {
                 ownerPlayer.sendSystemMessage(Component.translatable("petting.action.golden_dragon_hatched"));
             }

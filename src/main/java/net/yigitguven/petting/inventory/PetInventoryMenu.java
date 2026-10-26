@@ -58,7 +58,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
 
         Container petContainer = new PetSlotContainer(pet, this.petSlots);
 
-        // Pet left slots: centered on Y between 18 and 90 (height = 72)
         int leftCount = left.size();
         int leftStartY = 18 + (72 - leftCount * 18) / 2;
         int slotIndex = 0;
@@ -68,7 +67,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             this.addSlot(new DynamicPetSlot(petContainer, slotIndex++, 8, y, type, pet));
         }
 
-        // Pet right slots: centered on Y between 18 and 90 (height = 72)
         int rightCount = right.size();
         int rightStartY = 18 + (72 - rightCount * 18) / 2;
         for (int i = 0; i < rightCount; i++) {
@@ -77,14 +75,12 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             this.addSlot(new DynamicPetSlot(petContainer, slotIndex++, 152, y, type, pet));
         }
 
-        // Player standard inventory (27 slots: 3 rows of 9 at x = 8, y = 103)
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
                 this.addSlot(new TabAwarePlayerSlot(playerInv, col + row * 9 + 9, 8 + col * 18, 103 + row * 18));
             }
         }
 
-        // Player hotbar (9 slots at x = 8, y = 161)
         for (int col = 0; col < 9; ++col) {
             this.addSlot(new TabAwarePlayerSlot(playerInv, col, 8 + col * 18, 161));
         }
@@ -144,15 +140,12 @@ public class PetInventoryMenu extends AbstractContainerMenu {
             int playerEnd = playerStart + 36;
 
             if (slotIndex < this.petSlotCount) {
-                // From pet equipment slot to player inventory
                 if (!this.moveItemStackTo(slotStack, playerStart, playerEnd, true)) {
                     return ItemStack.EMPTY;
                 }
             } else {
-                // From player inventory to pet slots
                 boolean moved = false;
 
-                // First pass: try equipment slots other than hands (including Collar and Saddle)
                 for (int i = 0; i < this.petSlotCount; i++) {
                     PetSlotType type = this.petSlots.get(i);
                     if (type != PetSlotType.MAINHAND && type != PetSlotType.OFFHAND) {
@@ -166,7 +159,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     }
                 }
 
-                // Second pass: try empty hand slots
                 if (!moved) {
                     for (int i = 0; i < this.petSlotCount; i++) {
                         PetSlotType type = this.petSlots.get(i);
@@ -182,7 +174,6 @@ public class PetInventoryMenu extends AbstractContainerMenu {
                     }
                 }
 
-                // Fallback: move between player main storage and hotbar
                 if (!moved) {
                     int playerMainStart = playerStart;
                     int playerMainEnd = playerStart + 27;

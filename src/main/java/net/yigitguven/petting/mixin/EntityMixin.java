@@ -26,7 +26,6 @@ public abstract class EntityMixin {
     private void petting$isAlliedTo(Entity other, CallbackInfoReturnable<Boolean> cir) {
         Entity self = (Entity) (Object) this;
 
-        // If self is owner and other is pet:
         if (self instanceof Player player && PetHelper.isRootOwner(other, player)) {
             if (!PettingServerConfig.canOwnerAttackPets()) {
                 cir.setReturnValue(true);
@@ -34,7 +33,6 @@ public abstract class EntityMixin {
             return;
         }
 
-        // If other is owner and self is pet:
         if (other instanceof Player player && PetHelper.isRootOwner(self, player)) {
             if (!PettingServerConfig.canOwnerAttackPets()) {
                 cir.setReturnValue(true);
@@ -42,7 +40,6 @@ public abstract class EntityMixin {
             return;
         }
 
-        // Fellow pets/minions of the same owner
         if (PetHelper.arePetsOfSameOwner(self, other)) {
             if (!PettingServerConfig.canPetsAttackPets()) {
                 cir.setReturnValue(true);
@@ -50,7 +47,6 @@ public abstract class EntityMixin {
             return;
         }
 
-        // Vehicle / passenger relationship
         if (self.isPassengerOfSameVehicle(other) || self.hasPassenger(other) || other.hasPassenger(self)) {
             cir.setReturnValue(true);
         }

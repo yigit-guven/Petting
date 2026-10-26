@@ -41,7 +41,6 @@ public class PettingConfigurationScreen extends Screen {
                 this.font
         ));
 
-        // Open Config Folder Button
         this.addRenderableWidget(Button.builder(
                 Component.literal("Open Config Folder"),
                 b -> {
@@ -50,13 +49,11 @@ public class PettingConfigurationScreen extends Screen {
                 }
         ).bounds(centerX - 100, startY + 60, 200, 20).build());
 
-        // Open Wiki Button
         this.addRenderableWidget(Button.builder(
                 Component.translatable("petting.configuration.wiki_link"),
                 b -> ConfirmLinkScreen.confirmLinkNow(WIKI_URI.toString(), this, true)
         ).bounds(centerX - 100, startY + 85, 200, 20).build());
 
-        // Done Button
         this.addRenderableWidget(Button.builder(
                 CommonComponents.GUI_DONE,
                 b -> this.onClose()

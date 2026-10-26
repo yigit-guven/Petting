@@ -255,7 +255,6 @@ public class PetTamingEvents {
         ItemStack stack = event.getItemStack();
         Player player = event.getEntity();
 
-        // 1. Convert Dragon Egg with Golden Star
         if (state.is(net.minecraft.world.level.block.Blocks.DRAGON_EGG) && stack.is(PettingModItems.GOLDEN_STAR.get())) {
             event.setCancellationResult(InteractionResult.SUCCESS);
 

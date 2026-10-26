@@ -74,13 +74,11 @@ public class PetSafetyEvents {
         Entity attacker = event.getSource().getEntity();
         Entity direct = event.getSource().getDirectEntity();
 
-        // 0. Peaceful ritual protection: prevent explosion/crystal damage during Golden Dragon summon ritual
         if (event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && PetHelper.isGoldenDragonRitualActive(victim.level())) {
             event.setCanceled(true);
             return;
         }
 
-        // 1. Owner protection: pets, minions, projectiles, and spells can never damage their owner
         if (victim instanceof Player player) {
             if ((attacker != null && PetHelper.isRootOwner(attacker, player))
                     || (direct != null && PetHelper.isRootOwner(direct, player))) {
@@ -89,7 +87,6 @@ public class PetSafetyEvents {
             }
         }
 
-        // 2. Configurable: owner attacking their own pets/minions (melee, projectile, or spell)
         LivingEntity rootAttacker = attacker instanceof LivingEntity livingAttacker ? PetHelper.getRootOwner(livingAttacker) : null;
         if (rootAttacker == null && direct instanceof LivingEntity livingDirect) {
             rootAttacker = PetHelper.getRootOwner(livingDirect);
@@ -102,7 +99,6 @@ public class PetSafetyEvents {
             return;
         }
 
-        // 3. Configurable: friendly fire between pets/minions of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
             if ((attacker != null && PetHelper.arePetsOfSameOwner(victim, attacker))
                     || (direct != null && PetHelper.arePetsOfSameOwner(victim, direct))) {
@@ -111,14 +107,12 @@ public class PetSafetyEvents {
             }
         }
 
-        // 4. Passenger / vehicle relationship: prevent inadvertent collision/team damage
         if ((attacker != null && (victim.isPassengerOfSameVehicle(attacker) || victim.hasPassenger(attacker) || attacker.hasPassenger(victim)))
                 || (direct != null && (victim.isPassengerOfSameVehicle(direct) || victim.hasPassenger(direct) || direct.hasPassenger(victim)))) {
             event.setCanceled(true);
             return;
         }
 
-        // 5. Notify tamed dragons of combat events immediately
         if (victim instanceof Player player && attacker instanceof LivingEntity threat) {
             PetHelper.alertTamedDragonsOfThreat(player, threat);
         }
@@ -135,7 +129,6 @@ public class PetSafetyEvents {
             return;
         }
 
-        // 1. Always: pets and minions can never target their owner
         if (newTarget instanceof Player player && PetHelper.isRootOwner(pet, player)) {
             event.setNewTarget(null);
             if (pet instanceof NeutralMob neutralMob) {
@@ -145,7 +138,6 @@ public class PetSafetyEvents {
             return;
         }
 
-        // 2. Untamed entity with root owner targeting owner or fellow pet
         if (!PetHelper.isTamed(pet)) {
             LivingEntity rootOwner = PetHelper.getRootOwner(pet);
             if (rootOwner instanceof Player player) {
@@ -164,7 +156,6 @@ public class PetSafetyEvents {
             return;
         }
 
-        // 3. Prevent built-in hostile behaviors: pets only attack valid targets
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
             if (!PetHelper.isValidPetTarget(pet, newTarget)) {
                 event.setNewTarget(null);
@@ -176,7 +167,6 @@ public class PetSafetyEvents {
             }
         }
 
-        // 4. Configurable: pets targeting fellow pets of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
             if (PetHelper.arePetsOfSameOwner(pet, newTarget)) {
                 event.setNewTarget(null);
@@ -208,14 +198,12 @@ public class PetSafetyEvents {
             return;
         }
 
-        // Manage boss bar visibility for tamed pets
         PetHelper.updatePetBossBarVisibility(mob, !PettingServerConfig.shouldHideTamedBossBars());
 
         if (!PettingServerConfig.shouldDisableBuiltInHostility()) {
             return;
         }
 
-        // Special handling for Wither Boss (side heads and random idle attacks)
         if (mob instanceof WitherBoss wither) {
             LivingEntity target = wither.getTarget();
             if (target == null || !PetHelper.isValidPetTarget(wither, target)) {
@@ -232,7 +220,6 @@ public class PetSafetyEvents {
             suppressWitherIdleHeads(wither);
         }
 
-        // Special handling for Brain-based mobs (Warden, Piglin, etc.)
         if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)) {
             LivingEntity brainTarget = mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null);
             if (brainTarget != null && !PetHelper.isValidPetTarget(mob, brainTarget)) {
@@ -243,7 +230,6 @@ public class PetSafetyEvents {
             }
         }
 
-        // Verify current target is valid
         LivingEntity currentTarget = mob.getTarget();
         if (currentTarget != null) {
             if (!PetHelper.isValidPetTarget(mob, currentTarget)) {

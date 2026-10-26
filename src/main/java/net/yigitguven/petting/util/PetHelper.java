@@ -331,7 +331,7 @@ public class PetHelper {
         }
         if (entity instanceof Mob mob) {
             mob.setShiftKeyDown(order == PetOrder.SIT);
-            if (order != PetOrder.SIT && isFlyingPet(mob)) {
+            if (order != PetOrder.SIT) {
                 mob.setNoGravity(false);
             }
         }
@@ -733,12 +733,9 @@ public class PetHelper {
             return false;
         }
         Player owner = getOwner(pet);
-        if (owner == null) {
-            return false;
-        }
 
         // Rule: Pets can never target their owner
-        if (target == owner) {
+        if (owner != null && target == owner) {
             return false;
         }
 
@@ -756,7 +753,7 @@ public class PetHelper {
         if (pet instanceof Mob mob) {
             if (mob.getTarget() == target) {
                 CollarSettings cs = getCollarSettings(pet);
-                if (cs.combatMode() == CombatMode.GUARD && mob.hasRestriction()) {
+                if ((cs.combatMode() == CombatMode.GUARD || cs.combatMode() == CombatMode.WANDER) && mob.hasRestriction()) {
                     double leashDist = mob.getRestrictRadius() + 10.0D;
                     if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getRestrictCenter())) > leashDist * leashDist) {
                         return false;
@@ -767,7 +764,7 @@ public class PetHelper {
             if (mob.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                     && mob.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElse(null) == target) {
                 CollarSettings cs = getCollarSettings(pet);
-                if (cs.combatMode() == CombatMode.GUARD && mob.hasRestriction()) {
+                if ((cs.combatMode() == CombatMode.GUARD || cs.combatMode() == CombatMode.WANDER) && mob.hasRestriction()) {
                     double leashDist = mob.getRestrictRadius() + 10.0D;
                     if (target.distanceToSqr(Vec3.atBottomCenterOf(mob.getRestrictCenter())) > leashDist * leashDist) {
                         return false;
@@ -780,12 +777,12 @@ public class PetHelper {
         CollarSettings settings = getCollarSettings(pet);
 
         // 1. Protect owner: target attacked the owner
-        if (target == owner.getLastHurtByMob()) {
+        if (owner != null && target == owner.getLastHurtByMob()) {
             return true;
         }
 
         // 2. Attack for owner: owner attacked the target (Aggressive mode only)
-        if (settings.combatMode() == CombatMode.AGGRESSIVE && target == owner.getLastHurtMob()) {
+        if (owner != null && settings.combatMode() == CombatMode.AGGRESSIVE && target == owner.getLastHurtMob()) {
             return true;
         }
 
@@ -795,7 +792,7 @@ public class PetHelper {
         }
 
         // 4. Defend fellow pets
-        if (settings.defendOtherPets()) {
+        if (owner != null && settings.defendOtherPets()) {
             for (LivingEntity otherPet : pet.level().getEntitiesOfClass(LivingEntity.class, pet.getBoundingBox().inflate(16.0D))) {
                 if (otherPet != pet && isTamed(otherPet) && isOwner(otherPet, owner) && target == otherPet.getLastHurtByMob()) {
                     return true;
@@ -823,7 +820,7 @@ public class PetHelper {
     }
 
     public static boolean isFlyingPet(LivingEntity entity) {
-        if (entity.isNoGravity()) {
+        if (entity.isNoGravity() && getOrder(entity) != PetOrder.SIT) {
             return true;
         }
         if (entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon) {

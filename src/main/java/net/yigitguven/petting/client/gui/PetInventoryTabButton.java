@@ -52,7 +52,6 @@ public class PetInventoryTabButton extends AbstractWidget {
 
     @Override
     protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Tab background and icons are rendered during PetInventoryScreen render passes for proper layer ordering
     }
 
     public void renderTabBackground(GuiGraphics graphics) {
@@ -60,8 +59,8 @@ public class PetInventoryTabButton extends AbstractWidget {
             return;
         }
         boolean selected = this.screen.getCurrentTab() == this.tab;
-        int u = 153;
-        int v = selected ? 29 : 2;
+        int u = selected ? 188 : 153;
+        int v = 2;
         graphics.blit(RECIPE_BOOK_LOCATION, this.getX(), this.getY(), u, v, this.width, this.height, 256, 256);
     }
 

@@ -24,6 +24,7 @@ public class PetFollowOwnerGoal extends Goal {
     private final PathNavigation navigation;
     private Player owner;
     private int timeToRecalcPath;
+    private float oldWaterCost;
 
     public PetFollowOwnerGoal(PathfinderMob mob, double speedModifier, float startDistance, float stopDistance, float teleportDistance) {
         this.mob = mob;
@@ -90,9 +91,6 @@ public class PetFollowOwnerGoal extends Goal {
         if (this.mob.isVehicle()) {
             return false;
         }
-        if (this.navigation.isDone()) {
-            return false;
-        }
         if (PetHelper.getOrder(this.mob) != PetOrder.FOLLOW) {
             return false;
         }
@@ -114,12 +112,15 @@ public class PetFollowOwnerGoal extends Goal {
     @Override
     public void start() {
         this.timeToRecalcPath = 0;
+        this.oldWaterCost = this.mob.getPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.WATER);
+        this.mob.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.WATER, 0.0F);
     }
 
     @Override
     public void stop() {
         this.owner = null;
         this.navigation.stop();
+        this.mob.setPathfindingMalus(net.minecraft.world.level.pathfinder.BlockPathTypes.WATER, this.oldWaterCost);
     }
 
     @Override
@@ -137,7 +138,12 @@ public class PetFollowOwnerGoal extends Goal {
             if (distSqr >= getTeleportDistanceSqr()) {
                 tryTeleportToOwner();
             } else {
-                this.navigation.moveTo(this.owner, this.speedModifier);
+                boolean hasPath = this.navigation.moveTo(this.owner, this.speedModifier);
+                if (!hasPath && distSqr > 144.0D) {
+                    tryTeleportToOwner();
+                } else if (!hasPath) {
+                    this.timeToRecalcPath = 5;
+                }
             }
         }
     }

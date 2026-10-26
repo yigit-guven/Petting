@@ -79,7 +79,6 @@ public abstract class EnderDragonMixin {
             return;
         }
 
-        // When ridden, PetRidingHandler handles movement
         if (dragon.isVehicle()) {
             return;
         }

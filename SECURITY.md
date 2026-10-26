@@ -6,7 +6,7 @@ We take the security and integrity of the **Petting** mod seriously, especially 
 
 ## Supported Versions
 
-Security and critical bug fixes are prioritized for the latest release branch, with limited support for active LTS versions:
+Security and critical bug fixes are prioritized for the latest release branch:
 
 | Mod Version | Minecraft Version | Mod Loader | Supported |
 | :--- | :--- | :--- | :---: |

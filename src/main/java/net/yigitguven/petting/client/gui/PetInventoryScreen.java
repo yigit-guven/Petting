@@ -38,7 +38,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     private PetInventoryTabButton collarTabButton;
     private PetInventoryTabButton ridingTabButton;
 
-    // Collar tab widgets
     private PetButton combatModeButton;
     private PetIntSliderButton followDistanceSlider;
     private PetIntSliderButton teleportDistanceSlider;
@@ -48,7 +47,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
     private PetButton retaliateButton;
     private PetButton resetDefaultsButton;
 
-    // Riding tab widgets
     private PetButton rideAttackOnClickButton;
     private PetButton rideAutoAttackButton;
 
@@ -127,19 +125,16 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.addRenderableWidget(this.collarTabButton);
         this.addRenderableWidget(this.ridingTabButton);
 
-        // Collar tab widgets
         CollarSettings initialSettings = this.getCurrentCollarSettings();
         int xo = this.leftPos;
         int yo = this.topPos;
 
-        // 1. Combat mode cycle button
         this.combatModeButton = PetButton.petBuilder(getCombatModeText(initialSettings.combatMode()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             CombatMode nextMode = cur.combatMode().next();
             applyCollarSettings(cur.withCombatMode(nextMode));
         }).bounds(xo + 10, yo + 41, 156, 18).tooltip(Tooltip.create(getCombatModeTooltip(initialSettings))).build();
 
-        // 2. Follow / Wander / Guard distance slider
         String distKey = initialSettings.combatMode() == CombatMode.WANDER
                 ? "petting.gui.collar.wander_radius"
                 : (initialSettings.combatMode() == CombatMode.GUARD ? "petting.gui.collar.guard_radius" : "petting.gui.collar.follow_distance");
@@ -161,7 +156,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         );
         this.followDistanceSlider.setTooltip(Tooltip.create(Component.translatable(distTooltipKey)));
 
-        // 3. Teleport distance slider
         this.teleportDistanceSlider = new PetIntSliderButton(
                 xo + 10, yo + 83, 156, 18,
                 "petting.gui.collar.teleport_distance",
@@ -176,7 +170,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         );
         this.teleportDistanceSlider.setTooltip(Tooltip.create(Component.translatable("petting.gui.collar.teleport_distance.tooltip")));
 
-        // 4. Teleport enabled toggle
         this.teleportEnabledButton = PetButton.petBuilder(getToggleText("petting.gui.collar.teleport", initialSettings.teleportEnabled()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withTeleportEnabled(!cur.teleportEnabled()));
@@ -184,7 +177,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 ? Component.translatable("petting.gui.collar.teleport.on.tooltip", initialSettings.teleportDistance())
                 : Component.translatable("petting.gui.collar.teleport.off.tooltip"))).build();
 
-        // 5. Prefer ranged attack toggle
         this.preferRangedButton = PetButton.petBuilder(getToggleText("petting.gui.collar.ranged", initialSettings.preferRangedAttack()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withPreferRangedAttack(!cur.preferRangedAttack()));
@@ -192,7 +184,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 ? Component.translatable("petting.gui.collar.ranged.on.tooltip")
                 : Component.translatable("petting.gui.collar.ranged.off.tooltip"))).build();
 
-        // 6. Defend other pets toggle
         this.defendOtherPetsButton = PetButton.petBuilder(getToggleText("petting.gui.collar.defend_pets", initialSettings.defendOtherPets()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withDefendOtherPets(!cur.defendOtherPets()));
@@ -200,7 +191,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 ? Component.translatable("petting.gui.collar.defend_pets.on.tooltip")
                 : Component.translatable("petting.gui.collar.defend_pets.off.tooltip"))).build();
 
-        // 7. Retaliate when hurt toggle
         this.retaliateButton = PetButton.petBuilder(getToggleText("petting.gui.collar.retaliate", initialSettings.retaliateWhenHurt()), b -> {
             CollarSettings cur = getCurrentCollarSettings();
             applyCollarSettings(cur.withRetaliateWhenHurt(!cur.retaliateWhenHurt()));
@@ -208,7 +198,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 ? Component.translatable("petting.gui.collar.retaliate.on.tooltip")
                 : Component.translatable("petting.gui.collar.retaliate.off.tooltip"))).build();
 
-        // 8. Reset defaults button
         this.resetDefaultsButton = PetButton.petBuilder(Component.translatable("petting.gui.collar.reset"), b -> {
             CollarSettings defaults = CollarSettings.fromConfig();
             applyCollarSettings(defaults);
@@ -223,7 +212,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         this.addRenderableWidget(this.retaliateButton);
         this.addRenderableWidget(this.resetDefaultsButton);
 
-        // Riding tab widgets
         LivingEntity pet = this.menu.getPet();
         boolean attackOnClick = pet != null && PetHelper.isRideAttackOnClick(pet);
         boolean autoAttack = pet != null && PetHelper.isRideAutoAttackHostiles(pet);
@@ -463,7 +451,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             buttonY += 27;
         }
 
-        // Return to HOME if current tab becomes unavailable
         if (this.currentTab == PetInventoryTab.COLLAR && !collarWorn) {
             this.setCurrentTab(PetInventoryTab.HOME);
         } else if (this.currentTab == PetInventoryTab.RIDING && !saddleWorn) {
@@ -495,14 +482,11 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
         int xo = this.leftPos;
         int yo = this.topPos;
 
-        // 1. Draw UNSELECTED tabs background FIRST (behind the main container frame)
         this.renderTabBackgrounds(graphics, false);
 
-        // 2. Draw Main container background
         if (this.currentTab == PetInventoryTab.HOME) {
             graphics.blit(TEXTURE, xo, yo, 0, 0, this.imageWidth, this.imageHeight);
 
-            // Dynamically draw slot background box for each active pet slot
             for (int i = 0; i < this.menu.getPetSlotCount(); i++) {
                 Slot slot = this.menu.slots.get(i);
                 graphics.blit(SLOT_TEXTURE, xo + slot.x - 1, yo + slot.y - 1, 0, 166, 18, 18);
@@ -533,7 +517,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             graphics.fill(xo + 168, yo + 18, xo + 169, yo + 179, 0xFFFFFFFF);
             graphics.fill(xo + 8, yo + 178, xo + 169, yo + 179, 0xFFFFFFFF);
 
-            // Collar header banner
             graphics.fill(xo + 10, yo + 19, xo + 166, yo + 37, 0xFFB0B0B0);
             graphics.fill(xo + 10, yo + 19, xo + 166, yo + 20, 0xFF8F8F8F);
             graphics.fill(xo + 10, yo + 19, xo + 11, yo + 37, 0xFF8F8F8F);
@@ -550,7 +533,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             Component collarName = collar.getHoverName();
             graphics.drawString(this.font, collarName, xo + 32, yo + 24, 0xFF202020, false);
         } else {
-            // Riding tab
             graphics.blit(TEXTURE, xo, yo, 0, 0, this.imageWidth, this.imageHeight);
 
             graphics.fill(xo + 7, yo + 17, xo + 169, yo + 179, 0xFFC6C6C6);
@@ -559,7 +541,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             graphics.fill(xo + 168, yo + 18, xo + 169, yo + 179, 0xFFFFFFFF);
             graphics.fill(xo + 8, yo + 178, xo + 169, yo + 179, 0xFFFFFFFF);
 
-            // Header status banner
             graphics.fill(xo + 10, yo + 19, xo + 166, yo + 37, 0xFFB0B0B0);
             graphics.fill(xo + 10, yo + 19, xo + 166, yo + 20, 0xFF8F8F8F);
             graphics.fill(xo + 10, yo + 19, xo + 11, yo + 37, 0xFF8F8F8F);
@@ -576,7 +557,6 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             Component petTitle = pet != null ? pet.getDisplayName() : Component.translatable("petting.gui.scene.riding_settings");
             graphics.drawString(this.font, petTitle, xo + 32, yo + 24, 0xFF202020, false);
 
-            // Controls & Guide recessed box
             graphics.fill(xo + 10, yo + 84, xo + 166, yo + 175, 0xFFB0B0B0);
             graphics.fill(xo + 10, yo + 84, xo + 166, yo + 85, 0xFF8F8F8F);
             graphics.fill(xo + 10, yo + 84, xo + 11, yo + 175, 0xFF8F8F8F);
@@ -606,10 +586,8 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
             }
         }
 
-        // 3. Draw SELECTED tab background
         this.renderTabBackgrounds(graphics, true);
 
-        // 4. Draw tab item icons
         this.renderTabIcons(graphics);
     }
 

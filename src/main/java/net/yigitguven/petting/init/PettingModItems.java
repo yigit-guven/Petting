@@ -55,11 +55,9 @@ public class PettingModItems {
                     () -> new net.yigitguven.petting.item.GoldenDragonEggItem(PettingModBlocks.GOLDEN_DRAGON_EGG.get(),
                             props().rarity(Rarity.EPIC)));
 
-    // Default Collar (Red)
     public static final RegistryObject<CollarItem> COLLAR =
             ITEMS.register("collar", () -> new CollarItem(props()));
 
-    // Dye Color Variants
     public static final RegistryObject<CollarItem> WHITE_COLLAR =
             ITEMS.register("white_collar", () -> new CollarItem(DyeColor.WHITE, props()));
 
