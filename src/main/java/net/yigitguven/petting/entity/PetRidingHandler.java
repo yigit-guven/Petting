@@ -53,7 +53,7 @@ public class PetRidingHandler {
     private static final Set<UUID> RIDDEN_PETS_NO_AI = Collections.synchronizedSet(new HashSet<>());
     private static final Map<UUID, Long> COOLDOWNS = new ConcurrentHashMap<>();
 
-    private static final Field JUMPING_FIELD = ObfuscationReflectionHelper.findField(LivingEntity.class, "f_20898_");
+    private static final Field JUMPING_FIELD = ObfuscationReflectionHelper.findField(LivingEntity.class, "f_20899_");
     static {
         JUMPING_FIELD.setAccessible(true);
     }
