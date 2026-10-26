@@ -10,10 +10,8 @@ Security and critical bug fixes are prioritized for the latest release branch, w
 
 | Mod Version | Minecraft Version | Mod Loader | Supported |
 | :--- | :--- | :--- | :---: |
-| **5.0.x** | 26.3 | NeoForge | :white_check_mark: |
-| **4.2.x** | 1.21.1 | NeoForge | :white_check_mark: |
-| **4.2.x** | 1.20.1 | Forge / Fabric | :warning: *(Critical only)* |
-| **< 4.2.0** | Older versions | Any | :x: |
+| **5.0.x** | Any | Any | :white_check_mark: |
+| **< 5.0.0** | Any | Any | :x: |
 
 ---
 
