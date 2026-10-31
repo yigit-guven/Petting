@@ -1,5 +1,6 @@
 package net.yigitguven.petting.event;
 
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -8,20 +9,11 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.util.PetHelper;
 
 import java.lang.reflect.Field;
-import java.util.Optional;
-import java.util.UUID;
 
-@EventBusSubscriber(modid = Petting.MODID)
 public class PetSafetyEvents {
 
     private static Field witherIdleHeadUpdatesField = null;
@@ -52,9 +44,8 @@ public class PetSafetyEvents {
         }
     }
 
-    @SubscribeEvent
-    public static void onEntityJoinLevel(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide() || !(event.getEntity() instanceof Mob mob)) {
+    public static void onEntityJoinLevel(Entity entity) {
+        if (!(entity instanceof Mob mob) || mob.level().isClientSide()) {
             return;
         }
         if (!PetHelper.isTamed(mob)) {
@@ -69,24 +60,20 @@ public class PetSafetyEvents {
         }
     }
 
-    @SubscribeEvent
-    public static void onIncomingDamage(LivingIncomingDamageEvent event) {
-        LivingEntity victim = event.getEntity();
-        Entity attacker = event.getSource().getEntity();
-        Entity direct = event.getSource().getDirectEntity();
+    public static boolean allowDamage(LivingEntity victim, DamageSource source, float amount) {
+        Entity attacker = source.getEntity();
+        Entity direct = source.getDirectEntity();
 
         // 0. Peaceful ritual protection: prevent explosion/crystal damage during Golden Dragon summon ritual
-        if (event.getSource().is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && PetHelper.isGoldenDragonRitualActive(victim.level())) {
-            event.setCanceled(true);
-            return;
+        if (source.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION) && PetHelper.isGoldenDragonRitualActive(victim.level())) {
+            return false;
         }
 
         // 1. Owner protection: pets, minions, projectiles, and spells can never damage their owner
         if (victim instanceof Player player) {
             if ((attacker != null && PetHelper.isRootOwner(attacker, player))
                     || (direct != null && PetHelper.isRootOwner(direct, player))) {
-                event.setCanceled(true);
-                return;
+                return false;
             }
         }
 
@@ -97,54 +84,49 @@ public class PetSafetyEvents {
         }
         if (rootAttacker instanceof Player ownerPlayer && PetHelper.isRootOwner(victim, ownerPlayer)) {
             if (!PettingServerConfig.canOwnerAttackPets()) {
-                event.setCanceled(true);
+                return false;
             }
-            return;
+            return true;
         }
 
         // 3. Configurable: friendly fire between pets/minions of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
             if ((attacker != null && PetHelper.arePetsOfSameOwner(victim, attacker))
                     || (direct != null && PetHelper.arePetsOfSameOwner(victim, direct))) {
-                event.setCanceled(true);
-                return;
+                return false;
             }
         }
 
         // 4. Passenger / vehicle relationship: prevent inadvertent collision/team damage
         if ((attacker != null && (victim.isPassengerOfSameVehicle(attacker) || victim.hasPassenger(attacker) || attacker.hasPassenger(victim)))
                 || (direct != null && (victim.isPassengerOfSameVehicle(direct) || victim.hasPassenger(direct) || direct.hasPassenger(victim)))) {
-            event.setCanceled(true);
-            return;
+            return false;
         }
 
-        // 5. Notify tamed dragons of combat events immediately
-        if (!event.isCanceled()) {
-            if (victim instanceof Player player && attacker instanceof LivingEntity threat) {
-                PetHelper.alertTamedDragonsOfThreat(player, threat);
-            }
-            if (attacker instanceof Player ownerPlayer && victim != ownerPlayer) {
-                PetHelper.alertTamedDragonsOfTarget(ownerPlayer, victim);
-            }
+        return true;
+    }
+
+    public static void afterDamage(LivingEntity victim, DamageSource source, float baseDamageTaken, float damageTaken, boolean blocked) {
+        Entity attacker = source.getEntity();
+        if (victim instanceof Player player && attacker instanceof LivingEntity threat) {
+            PetHelper.alertTamedDragonsOfThreat(player, threat);
+        }
+        if (attacker instanceof Player ownerPlayer && victim != ownerPlayer) {
+            PetHelper.alertTamedDragonsOfTarget(ownerPlayer, victim);
         }
     }
 
-    @SubscribeEvent
-    public static void onChangeTarget(LivingChangeTargetEvent event) {
-        LivingEntity pet = event.getEntity();
-        LivingEntity newTarget = event.getNewAboutToBeSetTarget();
+    public static boolean shouldCancelTarget(Mob pet, LivingEntity newTarget) {
         if (newTarget == null) {
-            return;
+            return false;
         }
 
         // 1. Always: pets and minions can never target their owner
         if (newTarget instanceof Player player && PetHelper.isRootOwner(pet, player)) {
-            event.setCanceled(true);
-            event.setNewAboutToBeSetTarget(null);
             if (pet instanceof NeutralMob neutralMob) {
                 neutralMob.stopBeingAngry();
             }
-            return;
+            return true;
         }
 
         // 2. Untamed entity with root owner targeting owner or fellow pet
@@ -152,49 +134,40 @@ public class PetSafetyEvents {
             LivingEntity rootOwner = PetHelper.getRootOwner(pet);
             if (rootOwner instanceof Player player) {
                 if (newTarget == player || (!PettingServerConfig.canPetsAttackPets() && PetHelper.arePetsOfSameOwner(pet, newTarget))) {
-                    event.setCanceled(true);
-                    event.setNewAboutToBeSetTarget(null);
                     if (pet instanceof NeutralMob neutralMob) {
                         neutralMob.stopBeingAngry();
                     }
-                    if (pet instanceof Mob mob) {
-                        PetHelper.setTamed(mob, player);
-                    }
+                    PetHelper.setTamed(pet, player);
+                    return true;
                 }
             }
-            return;
+            return false;
         }
 
         // 3. Prevent built-in hostile behaviors: pets only attack valid targets
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
             if (!PetHelper.isValidPetTarget(pet, newTarget)) {
-                event.setCanceled(true);
-                event.setNewAboutToBeSetTarget(null);
                 if (pet instanceof NeutralMob neutralMob) {
                     neutralMob.stopBeingAngry();
                 }
-                return;
+                return true;
             }
         }
 
         // 4. Configurable: pets targeting fellow pets of the same owner
         if (!PettingServerConfig.canPetsAttackPets()) {
             if (PetHelper.arePetsOfSameOwner(pet, newTarget)) {
-                event.setCanceled(true);
-                event.setNewAboutToBeSetTarget(null);
                 if (pet instanceof NeutralMob neutralMob) {
                     neutralMob.stopBeingAngry();
                 }
+                return true;
             }
         }
+
+        return false;
     }
 
-    @SubscribeEvent
-    public static void onEntityTick(EntityTickEvent.Pre event) {
-        if (!(event.getEntity() instanceof Mob mob)) {
-            return;
-        }
-
+    public static void onEntityTick(Mob mob) {
         if (mob.level().isClientSide()) {
             return;
         }

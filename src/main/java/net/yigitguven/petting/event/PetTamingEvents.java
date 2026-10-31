@@ -5,85 +5,60 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.entity.living.AnimalTameEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.yigitguven.petting.Petting;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.util.PetEggHelper;
 import net.yigitguven.petting.util.PetHelper;
+import org.jetbrains.annotations.Nullable;
 
-@EventBusSubscriber(modid = Petting.MODID)
 public class PetTamingEvents {
 
-    @SubscribeEvent
-    public static void onAnimalTame(AnimalTameEvent event) {
-        if (PetHelper.isTamed(event.getAnimal())) {
-            event.setCanceled(true);
-        }
-    }
+    public static InteractionResult onEntityInteract(Player player, net.minecraft.world.level.Level level, InteractionHand hand, Entity rawTarget, @Nullable EntityHitResult hitResult) {
+        ItemStack stack = player.getItemInHand(hand);
 
-
-    @SubscribeEvent
-    public static void onExplosionDetonate(net.neoforged.neoforge.event.level.ExplosionEvent.Detonate event) {
-        if (PetHelper.isGoldenDragonRitualActive(event.getLevel())) {
-            event.getAffectedEntities().clear();
-            event.getAffectedBlocks().clear();
-        }
-    }
-
-    @SubscribeEvent
-    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
-        Player player = event.getEntity();
-        ItemStack stack = event.getItemStack();
-
-        net.minecraft.world.entity.Entity rawTarget = event.getTarget();
         if (rawTarget instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragonPart part && part.parentMob != null) {
             rawTarget = part.parentMob;
         }
 
         if (PetHelper.isCushionEntity(rawTarget)) {
-            if (handleCushionBinding(player, rawTarget, stack, event.getLevel(), event.getHand())) {
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-                return;
+            if (handleCushionBinding(player, rawTarget, stack, level, hand)) {
+                return InteractionResult.SUCCESS;
             }
         }
 
-        if (event.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND) {
-            return;
+        if (hand != InteractionHand.MAIN_HAND) {
+            return InteractionResult.PASS;
         }
 
-        boolean isClient = event.getLevel().isClientSide();
+        boolean isClient = level.isClientSide();
 
         if (rawTarget instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon) {
             if (PetHelper.isTamed(dragon)) {
-                InteractionResult result = PetHelper.handleTamedDragonInteract(dragon, player, event.getHand());
+                InteractionResult result = PetHelper.handleTamedDragonInteract(dragon, player, hand);
                 if (result.consumesAction()) {
-                    event.setCancellationResult(result);
-                    event.setCanceled(true);
+                    return result;
                 }
-                return;
+                return InteractionResult.PASS;
             } else {
                 if (!isClient && stack.is(PettingModItems.GOLDEN_STAR.get())) {
                     player.sendSystemMessage(Component.translatable("petting.action.dragon_cannot_be_tamed_directly"));
                 }
-                event.setCancellationResult(InteractionResult.PASS);
-                event.setCanceled(true);
-                return;
+                return InteractionResult.PASS;
             }
         }
 
         if (!(rawTarget instanceof Mob mob)) {
-            return;
+            return InteractionResult.PASS;
         }
 
         if (PetHelper.isTamed(mob)) {
@@ -98,13 +73,11 @@ public class PetTamingEvents {
                                 }
                                 mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.ARMOR_EQUIP_LEATHER, SoundSource.PLAYERS, 1.0F, 1.0F);
                             }
-                            event.setCancellationResult(InteractionResult.SUCCESS);
-                            event.setCanceled(true);
-                            return;
+                            return InteractionResult.SUCCESS;
                         }
                     }
 
-                    DyeColor dyeColor = DyeColor.getColor(stack);
+                    DyeColor dyeColor = stack.get(net.minecraft.core.component.DataComponents.DYE);
                     if (dyeColor != null) {
                         ItemStack currentCollar = PetHelper.getCollar(mob);
                         if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
@@ -119,9 +92,7 @@ public class PetTamingEvents {
                                     }
                                     mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.DYE_USE, SoundSource.PLAYERS, 1.0F, 1.0F);
                                 }
-                                event.setCancellationResult(InteractionResult.SUCCESS);
-                                event.setCanceled(true);
-                                return;
+                                return InteractionResult.SUCCESS;
                             }
                         }
                     }
@@ -139,44 +110,37 @@ public class PetTamingEvents {
                             mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.GENERIC_EAT, SoundSource.PLAYERS, 1.0F, 1.0F);
                             player.sendSystemMessage(Component.translatable("petting.action.pet_healed", mob.getName()));
                         }
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                        event.setCanceled(true);
-                        return;
+                        return InteractionResult.SUCCESS;
                     } else {
                         if (!isClient) {
                             player.sendSystemMessage(Component.translatable("petting.action.pet_full_health", mob.getName()));
                         }
-                        event.setCancellationResult(InteractionResult.SUCCESS);
-                        event.setCanceled(true);
-                        return;
+                        return InteractionResult.SUCCESS;
                     }
                 }
                 if (PetHelper.isInteractionItem(mob, stack)) {
                     PetHelper.syncEntityTameStatus(mob);
-                    return;
+                    return InteractionResult.PASS;
                 }
                 boolean isRidingThisMob = mob.hasPassenger(player) || player.getVehicle() == mob;
                 if (isRidingThisMob) {
-                    return;
+                    return InteractionResult.PASS;
                 }
                 PetHelper.syncEntityTameStatus(mob);
                 if (PettingServerConfig.isPetSittingEnabled()) {
-                    event.setCancellationResult(InteractionResult.SUCCESS);
-                    event.setCanceled(true);
+                    return InteractionResult.SUCCESS;
                 }
-                return;
+                return InteractionResult.PASS;
             } else {
                 if (!isClient) {
                     player.sendSystemMessage(Component.translatable("petting.action.already_tamed_other"));
                 }
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-                return;
+                return InteractionResult.SUCCESS;
             }
         }
 
         if (!PetEggHelper.canTame(mob, stack.getItem())) {
-            return;
+            return InteractionResult.PASS;
         }
 
         if (PetHelper.isVanillaTamed(mob)) {
@@ -186,9 +150,7 @@ public class PetTamingEvents {
                 mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0F, 1.0F);
                 player.sendSystemMessage(Component.translatable("petting.action.already_vanilla_tamed"));
             }
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            event.setCanceled(true);
-            return;
+            return InteractionResult.SUCCESS;
         }
 
         if (!isClient && mob.level() instanceof ServerLevel serverLevel) {
@@ -196,9 +158,7 @@ public class PetTamingEvents {
                 serverLevel.sendParticles(ParticleTypes.ANGRY_VILLAGER, mob.getX(), mob.getY() + mob.getBbHeight() / 2.0D, mob.getZ(), 8, 0.4D, 0.4D, 0.4D, 0.0D);
                 mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0F, 1.0F);
                 player.sendSystemMessage(Component.translatable("petting.action.pet_limit_reached", PettingServerConfig.getMaxPetCount()));
-                event.setCancellationResult(InteractionResult.SUCCESS);
-                event.setCanceled(true);
-                return;
+                return InteractionResult.SUCCESS;
             }
         }
 
@@ -211,9 +171,7 @@ public class PetTamingEvents {
                 mob.level().playSound(null, mob.getX(), mob.getY(), mob.getZ(), SoundEvents.VILLAGER_NO, SoundSource.PLAYERS, 1.0F, 1.0F);
                 player.sendSystemMessage(Component.translatable("petting.action.too_healthy", (int) Math.round(PettingServerConfig.getMaxHealthPercentage())));
             }
-            event.setCancellationResult(InteractionResult.SUCCESS);
-            event.setCanceled(true);
-            return;
+            return InteractionResult.SUCCESS;
         }
 
         if (!isClient) {
@@ -237,23 +195,16 @@ public class PetTamingEvents {
             }
         }
 
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
+        return InteractionResult.SUCCESS;
     }
 
-    @SubscribeEvent
-    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        net.minecraft.core.BlockPos pos = event.getPos();
-        net.minecraft.world.level.Level level = event.getLevel();
+    public static InteractionResult onRightClickBlock(Player player, net.minecraft.world.level.Level level, InteractionHand hand, BlockHitResult hitResult) {
+        net.minecraft.core.BlockPos pos = hitResult.getBlockPos();
         net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
-        ItemStack stack = event.getItemStack();
-        Player player = event.getEntity();
+        ItemStack stack = player.getItemInHand(hand);
 
         // 1. Convert Dragon Egg with Golden Star
         if (state.is(net.minecraft.world.level.block.Blocks.DRAGON_EGG) && stack.is(PettingModItems.GOLDEN_STAR.get())) {
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.SUCCESS);
-
             if (!level.isClientSide()) {
                 if (!player.getAbilities().instabuild) {
                     stack.shrink(1);
@@ -274,23 +225,23 @@ public class PetTamingEvents {
                     player.sendSystemMessage(Component.translatable("petting.action.egg_converted_to_golden"));
                 }
             }
-            player.swing(event.getHand(), net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
-            return;
+            player.swing(hand, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
+            return InteractionResult.SUCCESS;
         }
 
         if (!PettingServerConfig.isCollarRespawnEnabled() || !PettingServerConfig.isPetInventoryEnabled()) {
-            return;
+            return InteractionResult.PASS;
         }
 
         if (!(stack.getItem() instanceof net.yigitguven.petting.item.CollarItem)) {
-            return;
+            return InteractionResult.PASS;
         }
 
         boolean isBed = PetHelper.isBedBlock(state);
         boolean isCushion = PetHelper.isCushionBlock(state);
 
         if (!isBed && !isCushion) {
-            return;
+            return InteractionResult.PASS;
         }
 
         if (!level.isClientSide()) {
@@ -308,9 +259,8 @@ public class PetTamingEvents {
             player.sendSystemMessage(Component.translatable("petting.action.collar_bound", targetType, pos.getX(), pos.getY(), pos.getZ()));
         }
 
-        player.swing(event.getHand(), net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
-        event.setCancellationResult(InteractionResult.SUCCESS);
-        event.setCanceled(true);
+        player.swing(hand, net.minecraft.world.item.component.SwingAnimation.DEFAULT, true);
+        return InteractionResult.SUCCESS;
     }
 
     private static boolean handleCushionBinding(Player player, net.minecraft.world.entity.Entity target, ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.world.InteractionHand hand) {

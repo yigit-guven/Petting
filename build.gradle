@@ -1,109 +1,101 @@
 plugins {
-    id 'java-library'
+    id 'net.fabricmc.fabric-loom' version '1.19.3'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.148'
-    id 'idea'
 }
 
 tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
 }
 
-version = mod_version
-group = mod_group_id
+version = project.mod_version
+group = project.mod_group_id
 
-sourceSets.main.resources {
-    srcDir('src/generated/resources')
-
-    exclude("src/generated/**/.cache")
+base {
+    archivesName = project.archives_base_name
 }
 
 repositories {
     maven {
+        name = "Fabric"
+        url = "https://maven.fabricmc.net/"
+    }
+    maven {
         name = "Jared's maven"
         url = "https://maven.blamejared.com/"
     }
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/releases/"
+    }
 }
 
-base {
-    archivesName = mod_id
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // JEI
+    compileOnly "mezz.jei:jei-26.3-common-api:${project.jei_version}"
+    compileOnly "mezz.jei:jei-26.3-fabric-api:${project.jei_version}"
+    runtimeOnly "mezz.jei:jei-26.3-fabric:${project.jei_version}"
+
+    // Mod Menu
+    compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+    runtimeOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
 }
 
 tasks.named('jar', Jar).configure {
     archiveFileName = "${base.archivesName.get()}-${project.version}-${project.mod_loader}-${project.minecraft_version}.jar"
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(25)
-
-neoForge {
-    version = project.neo_version
-
+loom {
     runs {
         client {
             client()
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            name "Fabric Client"
         }
-
         server {
             server()
-            programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        gameTestServer {
-            type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        data {
-            clientData()
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
-        }
-
-        configureEach {
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-            systemProperty 'neoforge.warnings.logofile.hide', 'true'
-            systemProperty 'neoforge.warnings.onlyin.hide', 'true'
-            systemProperty 'neoforge.warnings.mods.info.description.hide', 'true'
-
-            logLevel = org.slf4j.event.Level.DEBUG
-        }
-    }
-
-    mods {
-        "${mod_id}" {
-            sourceSet(sourceSets.main)
+            name "Fabric Server"
         }
     }
 }
 
-configurations {
-    runtimeClasspath.extendsFrom localRuntime
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+    withSourcesJar()
 }
 
-dependencies {
-    compileOnly "mezz.jei:jei-26.3-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-26.3-neoforge-api:${jei_version}"
-    localRuntime "mezz.jei:jei-26.3-neoforge:${jei_version}"
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
 }
 
-tasks.withType(ProcessResources).configureEach {
-    var replaceProperties = [
-            minecraft_version      : minecraft_version,
-            minecraft_version_range: minecraft_version_range,
-            neo_version            : neo_version,
-            mod_loader             : mod_loader,
-            mod_id                 : mod_id,
-            mod_name               : mod_name,
-            mod_license            : mod_license,
-            mod_version            : mod_version,
-            mod_authors            : mod_authors,
-            mod_description        : mod_description,
-    ]
-    inputs.properties replaceProperties
+processResources {
+    inputs.property "version", project.version
+    inputs.property "mod_version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "minecraft_version_range", project.minecraft_version_range
+    inputs.property "loader_version", project.loader_version
+    inputs.property "mod_id", project.mod_id
+    inputs.property "mod_name", project.mod_name
+    inputs.property "mod_license", project.mod_license
+    inputs.property "mod_authors", project.mod_authors
+    inputs.property "mod_description", project.mod_description
 
-    filesMatching(['META-INF/neoforge.mods.toml', 'pack.mcmeta']) {
-        expand replaceProperties
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version,
+                "mod_version": project.version,
+                "minecraft_version": project.minecraft_version,
+                "minecraft_version_range": project.minecraft_version_range,
+                "loader_version": project.loader_version,
+                "mod_id": project.mod_id,
+                "mod_name": project.mod_name,
+                "mod_license": project.mod_license,
+                "mod_authors": project.mod_authors,
+                "mod_description": project.mod_description
     }
 }
 
@@ -117,16 +109,5 @@ publishing {
         maven {
             url "file://${project.projectDir}/repo"
         }
-    }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' 
-}
-
-idea {
-    module {
-        downloadSources = true
-        downloadJavadoc = true
     }
 }

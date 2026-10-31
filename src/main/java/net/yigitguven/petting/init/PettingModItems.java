@@ -1,105 +1,108 @@
 package net.yigitguven.petting.init;
 
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
-import net.neoforged.neoforge.registries.DeferredItem;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import net.minecraft.world.item.Rarity;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.item.CollarItem;
+import net.yigitguven.petting.item.GoldenDragonEggItem;
 import net.yigitguven.petting.item.GoldenPawItem;
 import net.yigitguven.petting.item.GoldenTreatItem;
 
 import java.util.Map;
+import java.util.function.Function;
 
 public class PettingModItems {
-    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Petting.MODID);
 
-    public static final DeferredItem<Item> GOLDEN_PAW =
-            ITEMS.registerItem("golden_paw", GoldenPawItem::new);
+    public static final ItemSupplier<Item> GOLDEN_PAW =
+            registerItem("golden_paw", GoldenPawItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_WHEAT =
-            ITEMS.registerItem("golden_wheat", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_WHEAT =
+            registerItem("golden_wheat", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_STAR =
-            ITEMS.registerItem("golden_star", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_STAR =
+            registerItem("golden_star", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_FLESH =
-            ITEMS.registerItem("golden_flesh", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_FLESH =
+            registerItem("golden_flesh", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_BONE =
-            ITEMS.registerItem("golden_bone", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_BONE =
+            registerItem("golden_bone", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_FISH =
-            ITEMS.registerItem("golden_fish", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_FISH =
+            registerItem("golden_fish", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_KELP =
-            ITEMS.registerItem("golden_kelp", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_KELP =
+            registerItem("golden_kelp", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_FUNGUS =
-            ITEMS.registerItem("golden_fungus", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_FUNGUS =
+            registerItem("golden_fungus", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_EYE =
-            ITEMS.registerItem("golden_eye", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_EYE =
+            registerItem("golden_eye", GoldenTreatItem::new);
 
-    public static final DeferredItem<Item> GOLDEN_SLIME =
-            ITEMS.registerItem("golden_slime", GoldenTreatItem::new);
+    public static final ItemSupplier<Item> GOLDEN_SLIME =
+            registerItem("golden_slime", GoldenTreatItem::new);
 
-    public static final DeferredItem<net.yigitguven.petting.item.GoldenDragonEggItem> GOLDEN_DRAGON_EGG =
-            ITEMS.registerItem("golden_dragon_egg",
-                    props -> new net.yigitguven.petting.item.GoldenDragonEggItem(PettingModBlocks.GOLDEN_DRAGON_EGG.get(),
-                            props.rarity(net.minecraft.world.item.Rarity.EPIC)));
+    public static final ItemSupplier<GoldenDragonEggItem> GOLDEN_DRAGON_EGG =
+            registerItem("golden_dragon_egg",
+                    props -> new GoldenDragonEggItem(PettingModBlocks.GOLDEN_DRAGON_EGG.get(),
+                            props.rarity(Rarity.EPIC)));
 
     // Default Collar (Red)
-    public static final DeferredItem<CollarItem> COLLAR =
-            ITEMS.registerItem("collar", CollarItem::new);
+    public static final ItemSupplier<CollarItem> COLLAR =
+            registerItem("collar", CollarItem::new);
 
     // Dye Color Variants
-    public static final DeferredItem<CollarItem> WHITE_COLLAR =
-            ITEMS.registerItem("white_collar", props -> new CollarItem(DyeColor.WHITE, props));
+    public static final ItemSupplier<CollarItem> WHITE_COLLAR =
+            registerItem("white_collar", props -> new CollarItem(DyeColor.WHITE, props));
 
-    public static final DeferredItem<CollarItem> ORANGE_COLLAR =
-            ITEMS.registerItem("orange_collar", props -> new CollarItem(DyeColor.ORANGE, props));
+    public static final ItemSupplier<CollarItem> ORANGE_COLLAR =
+            registerItem("orange_collar", props -> new CollarItem(DyeColor.ORANGE, props));
 
-    public static final DeferredItem<CollarItem> MAGENTA_COLLAR =
-            ITEMS.registerItem("magenta_collar", props -> new CollarItem(DyeColor.MAGENTA, props));
+    public static final ItemSupplier<CollarItem> MAGENTA_COLLAR =
+            registerItem("magenta_collar", props -> new CollarItem(DyeColor.MAGENTA, props));
 
-    public static final DeferredItem<CollarItem> LIGHT_BLUE_COLLAR =
-            ITEMS.registerItem("light_blue_collar", props -> new CollarItem(DyeColor.LIGHT_BLUE, props));
+    public static final ItemSupplier<CollarItem> LIGHT_BLUE_COLLAR =
+            registerItem("light_blue_collar", props -> new CollarItem(DyeColor.LIGHT_BLUE, props));
 
-    public static final DeferredItem<CollarItem> YELLOW_COLLAR =
-            ITEMS.registerItem("yellow_collar", props -> new CollarItem(DyeColor.YELLOW, props));
+    public static final ItemSupplier<CollarItem> YELLOW_COLLAR =
+            registerItem("yellow_collar", props -> new CollarItem(DyeColor.YELLOW, props));
 
-    public static final DeferredItem<CollarItem> LIME_COLLAR =
-            ITEMS.registerItem("lime_collar", props -> new CollarItem(DyeColor.LIME, props));
+    public static final ItemSupplier<CollarItem> LIME_COLLAR =
+            registerItem("lime_collar", props -> new CollarItem(DyeColor.LIME, props));
 
-    public static final DeferredItem<CollarItem> PINK_COLLAR =
-            ITEMS.registerItem("pink_collar", props -> new CollarItem(DyeColor.PINK, props));
+    public static final ItemSupplier<CollarItem> PINK_COLLAR =
+            registerItem("pink_collar", props -> new CollarItem(DyeColor.PINK, props));
 
-    public static final DeferredItem<CollarItem> GRAY_COLLAR =
-            ITEMS.registerItem("gray_collar", props -> new CollarItem(DyeColor.GRAY, props));
+    public static final ItemSupplier<CollarItem> GRAY_COLLAR =
+            registerItem("gray_collar", props -> new CollarItem(DyeColor.GRAY, props));
 
-    public static final DeferredItem<CollarItem> LIGHT_GRAY_COLLAR =
-            ITEMS.registerItem("light_gray_collar", props -> new CollarItem(DyeColor.LIGHT_GRAY, props));
+    public static final ItemSupplier<CollarItem> LIGHT_GRAY_COLLAR =
+            registerItem("light_gray_collar", props -> new CollarItem(DyeColor.LIGHT_GRAY, props));
 
-    public static final DeferredItem<CollarItem> CYAN_COLLAR =
-            ITEMS.registerItem("cyan_collar", props -> new CollarItem(DyeColor.CYAN, props));
+    public static final ItemSupplier<CollarItem> CYAN_COLLAR =
+            registerItem("cyan_collar", props -> new CollarItem(DyeColor.CYAN, props));
 
-    public static final DeferredItem<CollarItem> PURPLE_COLLAR =
-            ITEMS.registerItem("purple_collar", props -> new CollarItem(DyeColor.PURPLE, props));
+    public static final ItemSupplier<CollarItem> PURPLE_COLLAR =
+            registerItem("purple_collar", props -> new CollarItem(DyeColor.PURPLE, props));
 
-    public static final DeferredItem<CollarItem> BLUE_COLLAR =
-            ITEMS.registerItem("blue_collar", props -> new CollarItem(DyeColor.BLUE, props));
+    public static final ItemSupplier<CollarItem> BLUE_COLLAR =
+            registerItem("blue_collar", props -> new CollarItem(DyeColor.BLUE, props));
 
-    public static final DeferredItem<CollarItem> BROWN_COLLAR =
-            ITEMS.registerItem("brown_collar", props -> new CollarItem(DyeColor.BROWN, props));
+    public static final ItemSupplier<CollarItem> BROWN_COLLAR =
+            registerItem("brown_collar", props -> new CollarItem(DyeColor.BROWN, props));
 
-    public static final DeferredItem<CollarItem> GREEN_COLLAR =
-            ITEMS.registerItem("green_collar", props -> new CollarItem(DyeColor.GREEN, props));
+    public static final ItemSupplier<CollarItem> GREEN_COLLAR =
+            registerItem("green_collar", props -> new CollarItem(DyeColor.GREEN, props));
 
-    public static final DeferredItem<CollarItem> BLACK_COLLAR =
-            ITEMS.registerItem("black_collar", props -> new CollarItem(DyeColor.BLACK, props));
+    public static final ItemSupplier<CollarItem> BLACK_COLLAR =
+            registerItem("black_collar", props -> new CollarItem(DyeColor.BLACK, props));
 
-    public static final Map<DyeColor, DeferredItem<CollarItem>> COLLARS = Map.ofEntries(
+    public static final Map<DyeColor, ItemSupplier<CollarItem>> COLLARS = Map.ofEntries(
             Map.entry(DyeColor.RED, COLLAR),
             Map.entry(DyeColor.WHITE, WHITE_COLLAR),
             Map.entry(DyeColor.ORANGE, ORANGE_COLLAR),
@@ -118,7 +121,16 @@ public class PettingModItems {
             Map.entry(DyeColor.BLACK, BLACK_COLLAR)
     );
 
-    public static DeferredItem<CollarItem> getCollar(DyeColor color) {
+    public static ItemSupplier<CollarItem> getCollar(DyeColor color) {
         return COLLARS.getOrDefault(color, COLLAR);
+    }
+
+    private static <T extends Item> ItemSupplier<T> registerItem(String name, Function<Item.Properties, T> factory) {
+        T item = factory.apply(new Item.Properties());
+        Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(Petting.MODID, name), item);
+        return new ItemSupplier<>(item);
+    }
+
+    public static void register() {
     }
 }

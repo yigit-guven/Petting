@@ -1,42 +1,43 @@
 package net.yigitguven.petting;
 
-import org.slf4j.Logger;
-import com.mojang.logging.LogUtils;
-
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.loading.FMLEnvironment;
-import net.yigitguven.petting.client.PettingClient;
-import net.yigitguven.petting.config.PettingClientConfig;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.yigitguven.petting.command.SummonPetCommand;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.yigitguven.petting.event.PetEvents;
+import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModAttachments;
+import net.yigitguven.petting.init.PettingModBlockEntities;
+import net.yigitguven.petting.init.PettingModBlocks;
 import net.yigitguven.petting.init.PettingModItems;
 import net.yigitguven.petting.init.PettingModMenus;
 import net.yigitguven.petting.init.PettingModTabs;
+import net.yigitguven.petting.network.PettingNetwork;
+import org.slf4j.Logger;
+import com.mojang.logging.LogUtils;
 
-@Mod(Petting.MODID)
-public class Petting {
+public class Petting implements ModInitializer {
     public static final String MODID = "petting";
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public Petting(IEventBus modEventBus, ModContainer modContainer) {
-        PettingModAttachments.ATTACHMENT_TYPES.register(modEventBus);
-        net.yigitguven.petting.init.PettingModBlocks.BLOCKS.register(modEventBus);
-        net.yigitguven.petting.init.PettingModBlockEntities.BLOCK_ENTITY_TYPES.register(modEventBus);
-        PettingModItems.ITEMS.register(modEventBus);
-        net.yigitguven.petting.init.PettingDataComponents.DATA_COMPONENTS.register(modEventBus);
-        PettingModMenus.MENUS.register(modEventBus);
-        PettingModTabs.CREATIVE_MODE_TABS.register(modEventBus);
+    @Override
+    public void onInitialize() {
+        PettingServerConfig.load();
 
-        modEventBus.addListener(net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent.class, net.yigitguven.petting.network.PettingNetwork::registerPayloads);
+        PettingModAttachments.register();
+        PettingModBlocks.register();
+        PettingModBlockEntities.register();
+        PettingModItems.register();
+        PettingDataComponents.register();
+        PettingModMenus.register();
+        PettingModTabs.register();
 
-        modContainer.registerConfig(ModConfig.Type.SYNCED, PettingServerConfig.SPEC);
-        modContainer.registerConfig(ModConfig.Type.CLIENT, PettingClientConfig.SPEC);
+        PettingNetwork.registerPayloads();
 
-        if (FMLEnvironment.getDist().isClient()) {
-            PettingClient.registerClientExtensions(modContainer, modEventBus);
-        }
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
+                SummonPetCommand.register(dispatcher, registryAccess)
+        );
+
+        PetEvents.register();
     }
 }

@@ -38,7 +38,8 @@ public class PetSavedData extends SavedData {
     public static final SavedDataType<PetSavedData> TYPE = new SavedDataType<>(
             Identifier.fromNamespaceAndPath(Petting.MODID, "pets"),
             PetSavedData::new,
-            CODEC
+            CODEC,
+            null
     );
 
     private final Map<UUID, Set<UUID>> playerPets = new HashMap<>();

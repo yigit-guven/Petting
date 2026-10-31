@@ -21,22 +21,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.RegisterCommandsEvent;
-import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.util.PetHelper;
-
-@EventBusSubscriber(modid = Petting.MODID)
 public class SummonPetCommand {
 
     private static final SimpleCommandExceptionType ERROR_NOT_A_MOB =
             new SimpleCommandExceptionType(Component.translatable("commands.petting.summon.error.not_a_mob"));
-
-    @SubscribeEvent
-    public static void onRegisterCommands(RegisterCommandsEvent event) {
-        register(event.getDispatcher(), event.getBuildContext());
-    }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
         dispatcher.register(

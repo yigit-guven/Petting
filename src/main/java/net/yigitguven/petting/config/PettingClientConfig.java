@@ -1,216 +1,160 @@
 package net.yigitguven.petting.config;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+import net.yigitguven.petting.Petting;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.nio.file.Path;
 
 public class PettingClientConfig {
-    public static final ModConfigSpec SPEC;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("petting-client.json");
 
-    // Detailed positive feedback toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_TAMED_SUCCESS_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_HEALED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_SITTING_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_STANDING_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_BOUND_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_MOUNT_CONTROLLED_FEEDBACK;
+    public static class Data {
+        // Detailed positive feedback toggles
+        public boolean enableTamedSuccessFeedback = false;
+        public boolean enablePetHealedFeedback = false;
+        public boolean enablePetSittingFeedback = false;
+        public boolean enablePetStandingFeedback = false;
+        public boolean enableCollarBoundFeedback = false;
+        public boolean enableMountControlledFeedback = false;
 
-    // Detailed negative feedback toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_TAMING_FAILED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_TOO_HEALTHY_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_ALREADY_VANILLA_TAMED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_ALREADY_TAMED_OTHER_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_FULL_HEALTH_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_LIMIT_REACHED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_SADDLE_REQUIRED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_MOUNT_UNCONTROLLED_FEEDBACK;
+        // Detailed negative feedback toggles
+        public boolean enableTamingFailedFeedback = false;
+        public boolean enableTooHealthyFeedback = false;
+        public boolean enableAlreadyVanillaTamedFeedback = false;
+        public boolean enableAlreadyTamedOtherFeedback = false;
+        public boolean enablePetFullHealthFeedback = false;
+        public boolean enablePetLimitReachedFeedback = false;
+        public boolean enableSaddleRequiredFeedback = false;
+        public boolean enableMountUncontrolledFeedback = false;
 
-    // Pet death feedback toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_DEATH_MESSAGES;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_DIED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_RESPAWNED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_PET_RESPAWN_FAILED_FEEDBACK;
-    public static final ModConfigSpec.BooleanValue ENABLE_EGG_CONVERTED_FEEDBACK;
+        // Pet death feedback toggles
+        public boolean enablePetDeathMessages = false;
+        public boolean enablePetDiedFeedback = false;
+        public boolean enablePetRespawnedFeedback = false;
+        public boolean enablePetRespawnFailedFeedback = false;
+        public boolean enableEggConvertedFeedback = false;
 
-    // Visual toggles
-    public static final ModConfigSpec.BooleanValue ENABLE_COLLAR_MODELS;
+        // Visual toggles
+        public boolean enableCollarModels = true;
+    }
 
-    static {
-        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
+    private static Data data = new Data();
 
-        builder.push("feedback");
+    public static void load() {
+        File configFile = CONFIG_PATH.toFile();
+        if (configFile.exists()) {
+            try (FileReader reader = new FileReader(configFile)) {
+                Data loaded = GSON.fromJson(reader, Data.class);
+                if (loaded != null) {
+                    data = loaded;
+                    return;
+                }
+            } catch (Exception e) {
+                Petting.LOGGER.error("Failed to load client config, using defaults", e);
+            }
+        }
+        save();
+    }
 
-        ENABLE_TAMED_SUCCESS_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableTamedSuccessFeedback")
-                .define("enableTamedSuccessFeedback", false);
-
-        ENABLE_PET_HEALED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetHealedFeedback")
-                .define("enablePetHealedFeedback", false);
-
-        ENABLE_PET_SITTING_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetSittingFeedback")
-                .define("enablePetSittingFeedback", false);
-
-        ENABLE_PET_STANDING_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetStandingFeedback")
-                .define("enablePetStandingFeedback", false);
-
-        ENABLE_COLLAR_BOUND_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableCollarBoundFeedback")
-                .define("enableCollarBoundFeedback", false);
-
-        ENABLE_MOUNT_CONTROLLED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableMountControlledFeedback")
-                .define("enableMountControlledFeedback", false);
-
-        ENABLE_TAMING_FAILED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableTamingFailedFeedback")
-                .define("enableTamingFailedFeedback", false);
-
-        ENABLE_TOO_HEALTHY_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableTooHealthyFeedback")
-                .define("enableTooHealthyFeedback", false);
-
-        ENABLE_ALREADY_VANILLA_TAMED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableAlreadyVanillaTamedFeedback")
-                .define("enableAlreadyVanillaTamedFeedback", false);
-
-        ENABLE_ALREADY_TAMED_OTHER_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableAlreadyTamedOtherFeedback")
-                .define("enableAlreadyTamedOtherFeedback", false);
-
-        ENABLE_PET_FULL_HEALTH_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetFullHealthFeedback")
-                .define("enablePetFullHealthFeedback", false);
-
-        ENABLE_PET_LIMIT_REACHED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetLimitReachedFeedback")
-                .define("enablePetLimitReachedFeedback", false);
-
-        ENABLE_SADDLE_REQUIRED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableSaddleRequiredFeedback")
-                .define("enableSaddleRequiredFeedback", false);
-
-        ENABLE_MOUNT_UNCONTROLLED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableMountUncontrolledFeedback")
-                .define("enableMountUncontrolledFeedback", false);
-
-        ENABLE_PET_DEATH_MESSAGES = builder
-                .translation("petting.configuration.feedback.enablePetDeathMessages")
-                .define("enablePetDeathMessages", false);
-
-        ENABLE_PET_DIED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetDiedFeedback")
-                .define("enablePetDiedFeedback", false);
-
-        ENABLE_PET_RESPAWNED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetRespawnedFeedback")
-                .define("enablePetRespawnedFeedback", false);
-
-        ENABLE_PET_RESPAWN_FAILED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enablePetRespawnFailedFeedback")
-                .define("enablePetRespawnFailedFeedback", false);
-
-        ENABLE_EGG_CONVERTED_FEEDBACK = builder
-                .translation("petting.configuration.feedback.enableEggConvertedFeedback")
-                .define("enableEggConvertedFeedback", false);
-
-        builder.pop();
-
-        builder.push("visuals");
-
-        ENABLE_COLLAR_MODELS = builder
-                .translation("petting.configuration.visuals.enableCollarModels")
-                .define("enableCollarModels", true);
-
-        builder.pop();
-
-        SPEC = builder.build();
+    public static void save() {
+        try {
+            File configFile = CONFIG_PATH.toFile();
+            configFile.getParentFile().mkdirs();
+            try (FileWriter writer = new FileWriter(configFile)) {
+                GSON.toJson(data, writer);
+            }
+        } catch (Exception e) {
+            Petting.LOGGER.error("Failed to save client config", e);
+        }
     }
 
     public static boolean isCollarModelsEnabled() {
-        return SPEC.isLoaded() ? ENABLE_COLLAR_MODELS.get() : true;
+        return data.enableCollarModels;
     }
 
     public static boolean isTamedSuccessFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_TAMED_SUCCESS_FEEDBACK.get() : false;
+        return data.enableTamedSuccessFeedback;
     }
 
     public static boolean isPetHealedFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_PET_HEALED_FEEDBACK.get() : false;
+        return data.enablePetHealedFeedback;
     }
 
     public static boolean isPetSittingFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_PET_SITTING_FEEDBACK.get() : false;
+        return data.enablePetSittingFeedback;
     }
 
     public static boolean isPetStandingFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_PET_STANDING_FEEDBACK.get() : false;
+        return data.enablePetStandingFeedback;
     }
 
     public static boolean isCollarBoundFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_COLLAR_BOUND_FEEDBACK.get() : false;
+        return data.enableCollarBoundFeedback;
     }
 
     public static boolean isMountControlledFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_MOUNT_CONTROLLED_FEEDBACK.get() : false;
+        return data.enableMountControlledFeedback;
     }
 
     public static boolean isTamingFailedFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_TAMING_FAILED_FEEDBACK.get() : false;
+        return data.enableTamingFailedFeedback;
     }
 
     public static boolean isTooHealthyFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_TOO_HEALTHY_FEEDBACK.get() : false;
+        return data.enableTooHealthyFeedback;
     }
 
     public static boolean isAlreadyVanillaTamedFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_ALREADY_VANILLA_TAMED_FEEDBACK.get() : false;
+        return data.enableAlreadyVanillaTamedFeedback;
     }
 
     public static boolean isAlreadyTamedOtherFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_ALREADY_TAMED_OTHER_FEEDBACK.get() : false;
+        return data.enableAlreadyTamedOtherFeedback;
     }
 
     public static boolean isPetFullHealthFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_PET_FULL_HEALTH_FEEDBACK.get() : false;
+        return data.enablePetFullHealthFeedback;
     }
 
     public static boolean isPetLimitReachedFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_PET_LIMIT_REACHED_FEEDBACK.get() : false;
+        return data.enablePetLimitReachedFeedback;
     }
 
     public static boolean isSaddleRequiredFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_SADDLE_REQUIRED_FEEDBACK.get() : false;
+        return data.enableSaddleRequiredFeedback;
     }
 
     public static boolean isMountUncontrolledFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_MOUNT_UNCONTROLLED_FEEDBACK.get() : false;
+        return data.enableMountUncontrolledFeedback;
     }
 
     public static boolean isPetDeathMessagesEnabled() {
-        return SPEC.isLoaded() ? ENABLE_PET_DEATH_MESSAGES.get() : false;
+        return data.enablePetDeathMessages;
     }
 
     public static boolean isPetDiedFeedbackEnabled() {
-        return SPEC.isLoaded() ? (ENABLE_PET_DEATH_MESSAGES.get() || ENABLE_PET_DIED_FEEDBACK.get()) : false;
+        return data.enablePetDeathMessages || data.enablePetDiedFeedback;
     }
 
     public static boolean isPetRespawnedFeedbackEnabled() {
-        return SPEC.isLoaded() ? (ENABLE_PET_DEATH_MESSAGES.get() || ENABLE_PET_RESPAWNED_FEEDBACK.get()) : false;
+        return data.enablePetDeathMessages || data.enablePetRespawnedFeedback;
     }
 
     public static boolean isPetRespawnFailedFeedbackEnabled() {
-        return SPEC.isLoaded() ? (ENABLE_PET_DEATH_MESSAGES.get() || ENABLE_PET_RESPAWN_FAILED_FEEDBACK.get()) : false;
+        return data.enablePetDeathMessages || data.enablePetRespawnFailedFeedback;
     }
 
     public static boolean isEggConvertedFeedbackEnabled() {
-        return SPEC.isLoaded() ? ENABLE_EGG_CONVERTED_FEEDBACK.get() : false;
+        return data.enableEggConvertedFeedback;
     }
 
     public static boolean isFeedbackMessageEnabled(String key) {
-        if (!SPEC.isLoaded()) {
-            return false;
-        }
         return switch (key) {
             case "petting.action.tamed_success" -> isTamedSuccessFeedbackEnabled();
             case "petting.action.pet_healed" -> isPetHealedFeedbackEnabled();

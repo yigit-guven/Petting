@@ -29,7 +29,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.yigitguven.petting.block.entity.GoldenDragonEggBlockEntity;
 import net.yigitguven.petting.init.PettingDataComponents;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class GoldenDragonEggBlock extends FallingBlock implements EntityBlock {

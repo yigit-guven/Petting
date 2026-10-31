@@ -23,6 +23,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.skeleton.AbstractSkeleton;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.entity.projectile.hurtingprojectile.DragonFireball;
 import net.minecraft.world.entity.projectile.hurtingprojectile.LargeFireball;
@@ -33,8 +34,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.network.DismountPetPayload;
 import net.yigitguven.petting.util.PetHelper;
@@ -105,15 +105,27 @@ public class PetRidingHandler {
         }
     }
 
+    public static void mountPlayer(Player player, LivingEntity mob) {
+        player.startRiding(mob, true, false);
+        onMount(mob, player);
+    }
+
+    public static void dismountPlayer(Player player, LivingEntity mob) {
+        allowForcedDismount(player);
+        player.stopRiding();
+        onDismount(mob);
+    }
+
     public static void suppressMobAi(LivingEntity mob, Player player) {
         if (mob instanceof Mob m) {
             m.getNavigation().stop();
             m.setTarget(null);
             m.setLastHurtByMob(null);
-            m.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
-            m.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
-            m.goalSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
-            m.targetSelector.disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
+            net.yigitguven.petting.mixin.MobAccessor accessor = (net.yigitguven.petting.mixin.MobAccessor) m;
+            accessor.petting$getGoalSelector().disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
+            accessor.petting$getGoalSelector().disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
+            accessor.petting$getGoalSelector().disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
+            accessor.petting$getTargetSelector().disableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
             m.getMoveControl().setWait();
             m.getMoveControl().strafe(0.0F, 0.0F);
         }
@@ -129,10 +141,11 @@ public class PetRidingHandler {
 
     public static void restoreMobAi(LivingEntity mob) {
         if (mob instanceof Mob m) {
-            m.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
-            m.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
-            m.goalSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
-            m.targetSelector.enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
+            net.yigitguven.petting.mixin.MobAccessor accessor = (net.yigitguven.petting.mixin.MobAccessor) m;
+            accessor.petting$getGoalSelector().enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.MOVE);
+            accessor.petting$getGoalSelector().enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.JUMP);
+            accessor.petting$getGoalSelector().enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.LOOK);
+            accessor.petting$getTargetSelector().enableControlFlag(net.minecraft.world.entity.ai.goal.Goal.Flag.TARGET);
         }
     }
 
@@ -240,7 +253,7 @@ public class PetRidingHandler {
 
     public static void dismountPlayer(ServerPlayer player, LivingEntity mob) {
         allowForcedDismount(player);
-        PacketDistributor.sendToPlayer(player, new DismountPetPayload(mob.getId()));
+        ServerPlayNetworking.send(player, new DismountPetPayload(mob.getId()));
 
         player.stopRiding();
         mob.ejectPassengers();

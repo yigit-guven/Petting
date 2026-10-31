@@ -31,12 +31,11 @@ public class PetInventoryMenu extends AbstractContainerMenu {
     private boolean isRidingTab = false;
     private boolean isCollarTab = false;
 
-    public PetInventoryMenu(int windowId, Inventory playerInv, RegistryFriendlyByteBuf extraData) {
-        this(windowId, playerInv, getPetFromBuf(playerInv.player, extraData));
+    public PetInventoryMenu(int windowId, Inventory playerInv, int entityId) {
+        this(windowId, playerInv, getPetFromId(playerInv.player, entityId));
     }
 
-    private static @Nullable LivingEntity getPetFromBuf(Player player, RegistryFriendlyByteBuf extraData) {
-        int entityId = extraData.readVarInt();
+    private static @Nullable LivingEntity getPetFromId(Player player, int entityId) {
         Entity entity = player.level().getEntity(entityId);
         return entity instanceof LivingEntity living ? living : null;
     }
@@ -92,10 +91,22 @@ public class PetInventoryMenu extends AbstractContainerMenu {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return;
         }
-        player.openMenu(new SimpleMenuProvider(
-                (windowId, playerInv, p) -> new PetInventoryMenu(windowId, playerInv, pet),
-                pet.getDisplayName()
-        ), buf -> buf.writeVarInt(pet.getId()));
+        player.openMenu(new net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider<Integer>() {
+            @Override
+            public Integer getScreenOpeningData(ServerPlayer p) {
+                return pet.getId();
+            }
+
+            @Override
+            public net.minecraft.network.chat.Component getDisplayName() {
+                return pet.getDisplayName();
+            }
+
+            @Override
+            public AbstractContainerMenu createMenu(int syncId, Inventory playerInv, Player p) {
+                return new PetInventoryMenu(syncId, playerInv, pet);
+            }
+        });
     }
 
     public @Nullable LivingEntity getPet() {

@@ -18,7 +18,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.config.PettingServerConfig;
 import net.yigitguven.petting.data.CollarSettings;
@@ -233,7 +233,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                     if (p != null) {
                         boolean next = !PetHelper.isRideAttackOnClick(p);
                         PetHelper.setRideAttackOnClick(p, next);
-                        ClientPacketDistributor.sendToServer(new UpdateRidingSettingsPayload(p.getId(), next, PetHelper.isRideAutoAttackHostiles(p)));
+                        ClientPlayNetworking.send(new UpdateRidingSettingsPayload(p.getId(), next, PetHelper.isRideAutoAttackHostiles(p)));
                         this.refreshRidingWidgetStates();
                     }
                 }
@@ -248,7 +248,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                     if (p != null) {
                         boolean next = !PetHelper.isRideAutoAttackHostiles(p);
                         PetHelper.setRideAutoAttackHostiles(p, next);
-                        ClientPacketDistributor.sendToServer(new UpdateRidingSettingsPayload(p.getId(), PetHelper.isRideAttackOnClick(p), next));
+                        ClientPlayNetworking.send(new UpdateRidingSettingsPayload(p.getId(), PetHelper.isRideAttackOnClick(p), next));
                         this.refreshRidingWidgetStates();
                     }
                 }
@@ -301,7 +301,7 @@ public class PetInventoryScreen extends AbstractContainerScreen<PetInventoryMenu
                 collar.set(PettingDataComponents.COLLAR_SETTINGS, newSettings);
                 PetHelper.setCollarSettings(pet, newSettings);
             }
-            ClientPacketDistributor.sendToServer(new UpdateCollarSettingsPayload(pet.getId(), newSettings));
+            ClientPlayNetworking.send(new UpdateCollarSettingsPayload(pet.getId(), newSettings));
         }
         this.refreshCollarWidgetStates(newSettings);
     }

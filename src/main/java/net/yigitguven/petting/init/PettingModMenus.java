@@ -1,17 +1,25 @@
 package net.yigitguven.petting.init;
 
-import net.minecraft.core.registries.Registries;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.inventory.MenuType;
-import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.yigitguven.petting.Petting;
 import net.yigitguven.petting.inventory.PetInventoryMenu;
 
 public class PettingModMenus {
-    public static final DeferredRegister<MenuType<?>> MENUS =
-            DeferredRegister.create(Registries.MENU, Petting.MODID);
+    public static final RegistrySupplier<MenuType<PetInventoryMenu>> PET_MENU = register(
+            "pet_inventory",
+            new ExtendedMenuType<>(PetInventoryMenu::new, ByteBufCodecs.VAR_INT)
+    );
 
-    public static final DeferredHolder<MenuType<?>, MenuType<PetInventoryMenu>> PET_MENU =
-            MENUS.register("pet_inventory", () -> IMenuTypeExtension.create(PetInventoryMenu::new));
+    private static <T extends MenuType<?>> RegistrySupplier<T> register(String name, T menu) {
+        Registry.register(BuiltInRegistries.MENU, Identifier.fromNamespaceAndPath(Petting.MODID, name), menu);
+        return new RegistrySupplier<>(menu);
+    }
+
+    public static void register() {
+    }
 }

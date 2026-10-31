@@ -29,7 +29,7 @@ import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModAttachments;
 
 import net.minecraft.world.entity.ai.goal.RunAroundLikeCrazyGoal;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,9 +37,26 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.yigitguven.petting.config.PettingServerConfig;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.item.DyeColor;
 import net.yigitguven.petting.data.PetSavedData;
+import net.yigitguven.petting.mixin.MobAccessor;
 
 public class PetHelper {
+
+    public static GoalSelector getGoalSelector(Mob mob) {
+        return ((MobAccessor) mob).petting$getGoalSelector();
+    }
+
+    public static GoalSelector getTargetSelector(Mob mob) {
+        return ((MobAccessor) mob).petting$getTargetSelector();
+    }
+
+    @Nullable
+    public static DyeColor getDyeColor(ItemStack stack) {
+        return stack.get(DataComponents.DYE);
+    }
 
     public static boolean isVanillaTamed(LivingEntity entity) {
         if (entity instanceof TamableAnimal tamable && tamable.isTame()) {
@@ -60,7 +77,7 @@ public class PetHelper {
     }
 
     public static boolean isTamed(LivingEntity entity) {
-        if (entity.hasData(PettingModAttachments.PET_DATA) && entity.getData(PettingModAttachments.PET_DATA).isTamed()) {
+        if (entity.hasAttached(PettingModAttachments.PET_DATA) && entity.getAttached(PettingModAttachments.PET_DATA).isTamed()) {
             return true;
         }
         return isVanillaTamed(entity);
@@ -107,8 +124,8 @@ public class PetHelper {
             }
 
             // 1. Direct Petting Data Attachment
-            if (current instanceof LivingEntity living && living.hasData(PettingModAttachments.PET_DATA)) {
-                PetData data = living.getData(PettingModAttachments.PET_DATA);
+            if (current instanceof LivingEntity living && living.hasAttached(PettingModAttachments.PET_DATA)) {
+                PetData data = living.getAttached(PettingModAttachments.PET_DATA);
                 if (data.isTamed() && data.getOwnerUUID() != null) {
                     Player player = current.level().getPlayerByUUID(data.getOwnerUUID());
                     if (player != null) {
@@ -220,8 +237,8 @@ public class PetHelper {
     }
 
     public static Optional<UUID> getOwnerUUID(LivingEntity entity) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
             if (data.isTamed() && data.getOwnerUUID() != null) {
                 return Optional.of(data.getOwnerUUID());
             }
@@ -270,15 +287,15 @@ public class PetHelper {
     }
 
     public static PetOrder getOrder(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        if (!entity.hasAttached(PettingModAttachments.PET_DATA)) {
             return PetOrder.FOLLOW;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).getOrder();
+        return entity.getAttached(PettingModAttachments.PET_DATA).getOrder();
     }
 
     public static boolean isSitting(LivingEntity entity) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)
-                && entity.getData(PettingModAttachments.PET_DATA).getOrder() == PetOrder.SIT) {
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)
+                && entity.getAttached(PettingModAttachments.PET_DATA).getOrder() == PetOrder.SIT) {
             return true;
         }
         if (entity instanceof TamableAnimal tamable && tamable.isInSittingPose()) {
@@ -288,10 +305,10 @@ public class PetHelper {
     }
 
     public static void setOrder(LivingEntity entity, PetOrder order) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
             data.setOrder(order);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            entity.setAttached(PettingModAttachments.PET_DATA, data);
         }
         if (entity instanceof TamableAnimal tamable) {
             boolean sit = (order == PetOrder.SIT);
@@ -315,17 +332,17 @@ public class PetHelper {
         if (!collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
             return collar.get(PettingDataComponents.COLLAR_SETTINGS).combatMode();
         }
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        if (!entity.hasAttached(PettingModAttachments.PET_DATA)) {
             return PettingServerConfig.getDefaultCombatMode();
         }
-        return entity.getData(PettingModAttachments.PET_DATA).getCombatMode();
+        return entity.getAttached(PettingModAttachments.PET_DATA).getCombatMode();
     }
 
     public static void setCombatMode(LivingEntity entity, CombatMode mode) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
             data.setCombatMode(mode);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            entity.setAttached(PettingModAttachments.PET_DATA, data);
         }
         ItemStack collar = getCollar(entity);
         if (!collar.isEmpty()) {
@@ -342,22 +359,22 @@ public class PetHelper {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return ItemStack.EMPTY;
         }
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        if (!entity.hasAttached(PettingModAttachments.PET_DATA)) {
             return ItemStack.EMPTY;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).getCollar();
+        return entity.getAttached(PettingModAttachments.PET_DATA).getCollar();
     }
 
     public static void setCollar(LivingEntity entity, ItemStack collar) {
         if (!PettingServerConfig.isPetInventoryEnabled()) {
             return;
         }
-        PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
         data.setCollar(collar != null ? collar : ItemStack.EMPTY);
         if (collar != null && !collar.isEmpty() && collar.has(PettingDataComponents.COLLAR_SETTINGS)) {
             data.setCombatMode(collar.get(PettingDataComponents.COLLAR_SETTINGS).combatMode());
         }
-        entity.setData(PettingModAttachments.PET_DATA, data);
+        entity.setAttached(PettingModAttachments.PET_DATA, data);
     }
 
     public static ItemStack getSaddle(LivingEntity entity) {
@@ -370,8 +387,8 @@ public class PetHelper {
                 return horseSaddle;
             }
         }
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            return entity.getData(PettingModAttachments.PET_DATA).getSaddle();
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+            return entity.getAttached(PettingModAttachments.PET_DATA).getSaddle();
         }
         return ItemStack.EMPTY;
     }
@@ -385,10 +402,10 @@ public class PetHelper {
             horse.setItemSlot(EquipmentSlot.SADDLE, item);
             horse.setDropChance(EquipmentSlot.SADDLE, 1.0F);
         }
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
             data.setSaddle(item);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            entity.setAttached(PettingModAttachments.PET_DATA, data);
         }
     }
 
@@ -397,32 +414,32 @@ public class PetHelper {
     }
 
     public static boolean isRideAttackOnClick(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        if (!entity.hasAttached(PettingModAttachments.PET_DATA)) {
             return true;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).isRideAttackOnClick();
+        return entity.getAttached(PettingModAttachments.PET_DATA).isRideAttackOnClick();
     }
 
     public static void setRideAttackOnClick(LivingEntity entity, boolean enabled) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
             data.setRideAttackOnClick(enabled);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            entity.setAttached(PettingModAttachments.PET_DATA, data);
         }
     }
 
     public static boolean isRideAutoAttackHostiles(LivingEntity entity) {
-        if (!entity.hasData(PettingModAttachments.PET_DATA)) {
+        if (!entity.hasAttached(PettingModAttachments.PET_DATA)) {
             return false;
         }
-        return entity.getData(PettingModAttachments.PET_DATA).isRideAutoAttackHostiles();
+        return entity.getAttached(PettingModAttachments.PET_DATA).isRideAutoAttackHostiles();
     }
 
     public static void setRideAutoAttackHostiles(LivingEntity entity, boolean enabled) {
-        if (entity.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+            PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
             data.setRideAutoAttackHostiles(enabled);
-            entity.setData(PettingModAttachments.PET_DATA, data);
+            entity.setAttached(PettingModAttachments.PET_DATA, data);
         }
     }
 
@@ -436,8 +453,8 @@ public class PetHelper {
                 return collar.get(PettingDataComponents.COLLAR_SETTINGS);
             }
             CollarSettings defaults = CollarSettings.fromConfig();
-            if (entity.hasData(PettingModAttachments.PET_DATA)) {
-                defaults = defaults.withCombatMode(entity.getData(PettingModAttachments.PET_DATA).getCombatMode());
+            if (entity.hasAttached(PettingModAttachments.PET_DATA)) {
+                defaults = defaults.withCombatMode(entity.getAttached(PettingModAttachments.PET_DATA).getCombatMode());
             }
             collar.set(PettingDataComponents.COLLAR_SETTINGS, defaults);
             setCollar(entity, collar);
@@ -505,7 +522,7 @@ public class PetHelper {
     }
 
     public static void setTamed(LivingEntity entity, UUID ownerUUID, @Nullable Player owner) {
-        PetData data = entity.getData(PettingModAttachments.PET_DATA);
+        PetData data = entity.getAttached(PettingModAttachments.PET_DATA);
         data.setTamed(true);
         data.setOwnerUUID(ownerUUID);
         data.setOrder(PetOrder.FOLLOW);
@@ -514,7 +531,7 @@ public class PetHelper {
             data.setCollar(ItemStack.EMPTY);
             data.setSaddle(ItemStack.EMPTY);
         }
-        entity.setData(PettingModAttachments.PET_DATA, data);
+        entity.setAttached(PettingModAttachments.PET_DATA, data);
 
         if (entity instanceof Mob mob) {
             mob.setPersistenceRequired();
@@ -526,7 +543,7 @@ public class PetHelper {
             if (mob instanceof NeutralMob neutralMob) {
                 neutralMob.stopBeingAngry();
             }
-            mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
+            getTargetSelector(mob).getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
 
             syncEntityTameStatus(mob);
             injectGoals(mob);
@@ -562,7 +579,7 @@ public class PetHelper {
                 horse.setOwner(owner);
             }
             horse.setTemper(horse.getMaxTemper());
-            horse.goalSelector.getAvailableGoals().removeIf(wrapped -> wrapped.getGoal() instanceof RunAroundLikeCrazyGoal);
+            getGoalSelector(horse).getAvailableGoals().removeIf(wrapped -> wrapped.getGoal() instanceof RunAroundLikeCrazyGoal);
         }
 
         if (mob instanceof TamableAnimal tamable) {
@@ -624,8 +641,8 @@ public class PetHelper {
         if (mob.hasHome()) {
             mob.clearHome();
         }
-        if (mob.hasData(PettingModAttachments.PET_DATA)) {
-            PetData data = mob.getData(PettingModAttachments.PET_DATA);
+        if (mob.hasAttached(PettingModAttachments.PET_DATA)) {
+            PetData data = mob.getAttached(PettingModAttachments.PET_DATA);
             ItemStack collar = data.getCollar();
             if (!collar.isEmpty()) {
                 if (mob.level() instanceof ServerLevel serverLevel) {
@@ -644,7 +661,7 @@ public class PetHelper {
             data.setOwnerUUID(null);
             data.setOrder(PetOrder.FOLLOW);
             data.setCombatMode(PettingServerConfig.getDefaultCombatMode());
-            mob.setData(PettingModAttachments.PET_DATA, data);
+            mob.setAttached(PettingModAttachments.PET_DATA, data);
         }
         if (mob instanceof AbstractHorse horse) {
             horse.setTamed(false);
@@ -676,7 +693,7 @@ public class PetHelper {
             return;
         }
         if (PettingServerConfig.shouldDisableBuiltInHostility()) {
-            mob.targetSelector.removeAllGoals(goal -> !(goal instanceof PetDefendOwnerTargetGoal)
+            getTargetSelector(mob).removeAllGoals(goal -> !(goal instanceof PetDefendOwnerTargetGoal)
                     && !(goal instanceof PetAttackOwnerTargetGoal)
                     && !(goal instanceof PetGuardTargetGoal));
         }
@@ -841,8 +858,8 @@ public class PetHelper {
                 wither.setAlternativeTarget(1, 0);
                 wither.setAlternativeTarget(2, 0);
             }
-            mob.targetSelector.getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
-            mob.goalSelector.getAvailableGoals().stream()
+            getTargetSelector(mob).getAvailableGoals().stream().filter(WrappedGoal::isRunning).forEach(WrappedGoal::stop);
+            getGoalSelector(mob).getAvailableGoals().stream()
                     .filter(w -> w.getGoal() instanceof PetMeleeAttackGoal || w.getGoal() instanceof PetRangedAttackGoal)
                     .filter(WrappedGoal::isRunning)
                     .forEach(WrappedGoal::stop);
@@ -850,7 +867,7 @@ public class PetHelper {
     }
 
     public static void injectGoals(Mob mob) {
-        mob.goalSelector.getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal
+        getGoalSelector(mob).getAvailableGoals().removeIf(wrappedGoal -> wrappedGoal.getGoal() instanceof RunAroundLikeCrazyGoal
                 || wrappedGoal.getGoal() instanceof PetSitGoal
                 || wrappedGoal.getGoal() instanceof net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal
                 || wrappedGoal.getGoal() instanceof net.minecraft.world.entity.ai.goal.FollowOwnerGoal
@@ -860,32 +877,32 @@ public class PetHelper {
                 || wrappedGoal.getGoal() instanceof PetWanderGoal);
         purgeBuiltInTargetGoals(mob);
 
-        mob.goalSelector.addGoal(1, new PetSitGoal(mob));
+        getGoalSelector(mob).addGoal(1, new PetSitGoal(mob));
         if (mob instanceof PathfinderMob pathfinderMob) {
-            mob.goalSelector.addGoal(2, new PetRangedAttackGoal(pathfinderMob, 1.25D, 20, 16.0F));
-            mob.goalSelector.addGoal(3, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
-            mob.goalSelector.addGoal(4, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
-            mob.goalSelector.addGoal(5, new PetWanderGoal(pathfinderMob, 1.0D));
+            getGoalSelector(mob).addGoal(2, new PetRangedAttackGoal(pathfinderMob, 1.25D, 20, 16.0F));
+            getGoalSelector(mob).addGoal(3, new PetMeleeAttackGoal(pathfinderMob, 1.2D, true));
+            getGoalSelector(mob).addGoal(4, new PetFollowOwnerGoal(pathfinderMob, 1.25D, 4.0F, 2.0F, 20.0F));
+            getGoalSelector(mob).addGoal(5, new PetWanderGoal(pathfinderMob, 1.0D));
         } else {
-            mob.goalSelector.addGoal(5, new PetWanderGoal(mob, 1.0D));
+            getGoalSelector(mob).addGoal(5, new PetWanderGoal(mob, 1.0D));
         }
 
-        boolean hasDefendGoal = mob.targetSelector.getAvailableGoals().stream()
+        boolean hasDefendGoal = getTargetSelector(mob).getAvailableGoals().stream()
                 .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetDefendOwnerTargetGoal);
         if (!hasDefendGoal) {
-            mob.targetSelector.addGoal(1, new PetDefendOwnerTargetGoal(mob));
+            getTargetSelector(mob).addGoal(1, new PetDefendOwnerTargetGoal(mob));
         }
 
-        boolean hasAttackGoal = mob.targetSelector.getAvailableGoals().stream()
+        boolean hasAttackGoal = getTargetSelector(mob).getAvailableGoals().stream()
                 .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetAttackOwnerTargetGoal);
         if (!hasAttackGoal) {
-            mob.targetSelector.addGoal(2, new PetAttackOwnerTargetGoal(mob));
+            getTargetSelector(mob).addGoal(2, new PetAttackOwnerTargetGoal(mob));
         }
 
-        boolean hasGuardGoal = mob.targetSelector.getAvailableGoals().stream()
+        boolean hasGuardGoal = getTargetSelector(mob).getAvailableGoals().stream()
                 .anyMatch(wrappedGoal -> wrappedGoal.getGoal() instanceof PetGuardTargetGoal);
         if (!hasGuardGoal) {
-            mob.targetSelector.addGoal(3, new PetGuardTargetGoal(mob));
+            getTargetSelector(mob).addGoal(3, new PetGuardTargetGoal(mob));
         }
     }
 
@@ -897,10 +914,10 @@ public class PetHelper {
             if (stack.getItem() instanceof net.yigitguven.petting.item.CollarItem && getCollar(mob).isEmpty()) {
                 return true;
             }
-            if (net.minecraft.world.item.DyeColor.getColor(stack) != null) {
+            if (getDyeColor(stack) != null) {
                 ItemStack currentCollar = getCollar(mob);
                 if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {
-                    if (currentItem.getColor() != net.minecraft.world.item.DyeColor.getColor(stack)) {
+                    if (currentItem.getColor() != getDyeColor(stack)) {
                         return true;
                     }
                 }
@@ -1447,7 +1464,7 @@ public class PetHelper {
         }
 
         // Dye Collar
-        net.minecraft.world.item.DyeColor dyeColor = net.minecraft.world.item.DyeColor.getColor(stack);
+        net.minecraft.world.item.DyeColor dyeColor = getDyeColor(stack);
         if (dyeColor != null) {
             ItemStack currentCollar = getCollar(dragon);
             if (!currentCollar.isEmpty() && currentCollar.getItem() instanceof net.yigitguven.petting.item.CollarItem currentItem) {

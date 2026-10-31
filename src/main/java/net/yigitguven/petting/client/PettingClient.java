@@ -1,29 +1,27 @@
 package net.yigitguven.petting.client;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.minecraft.client.KeyMapping;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.ModContainer;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
-import net.neoforged.neoforge.client.settings.KeyConflictContext;
-import net.neoforged.neoforge.client.settings.KeyModifier;
-
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.Identifier;
 import net.yigitguven.petting.Petting;
-
-import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.yigitguven.petting.client.gui.PetInventoryScreen;
+import net.yigitguven.petting.client.render.PetCollarLayer;
+import net.yigitguven.petting.config.PettingClientConfig;
 import net.yigitguven.petting.init.PettingModMenus;
+import net.yigitguven.petting.network.DismountPetPayload;
 
-public class PettingClient {
+public class PettingClient implements ClientModInitializer {
     public static final KeyMapping.Category PETTING_CATEGORY = new KeyMapping.Category(Identifier.fromNamespaceAndPath(Petting.MODID, "petting"));
 
     public static final KeyMapping OPEN_PET_INVENTORY = new KeyMapping(
             "key.petting.open_pet_inventory",
-            KeyConflictContext.IN_GAME,
-            KeyModifier.SHIFT,
             InputConstants.Type.MOUSE,
             InputConstants.MOUSE_BUTTON_RIGHT,
             PETTING_CATEGORY
@@ -31,8 +29,6 @@ public class PettingClient {
 
     public static final KeyMapping TOGGLE_PET_SIT = new KeyMapping(
             "key.petting.toggle_pet_sit",
-            KeyConflictContext.IN_GAME,
-            KeyModifier.NONE,
             InputConstants.Type.MOUSE,
             InputConstants.MOUSE_BUTTON_RIGHT,
             PETTING_CATEGORY
@@ -40,31 +36,34 @@ public class PettingClient {
 
     public static final KeyMapping RIDE_PET = new KeyMapping(
             "key.petting.ride_pet",
-            KeyConflictContext.IN_GAME,
-            KeyModifier.NONE,
             InputConstants.Type.KEYBOARD,
             InputConstants.KEY_R,
             PETTING_CATEGORY
     );
 
-    public static void registerClientExtensions(ModContainer modContainer, IEventBus modEventBus) {
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, PettingConfigurationScreen::new);
-        modEventBus.addListener(RegisterKeyMappingsEvent.class, PettingClient::onRegisterKeyMappings);
-        modEventBus.addListener(RegisterMenuScreensEvent.class, PettingClient::onRegisterMenuScreens);
-        modEventBus.addListener(net.neoforged.neoforge.client.renderstate.RegisterRenderStateModifiersEvent.class,
-                net.yigitguven.petting.client.render.PettingClientRender::onRegisterRenderStateModifiers);
-        modEventBus.addListener(net.neoforged.neoforge.client.event.EntityRenderersEvent.AddLayers.class,
-                net.yigitguven.petting.client.render.PettingClientRender::onAddLayers);
+    @Override
+    public void onInitializeClient() {
+        PettingClientConfig.load();
+
+        KeyMappingHelper.registerKeyMapping(OPEN_PET_INVENTORY);
+        KeyMappingHelper.registerKeyMapping(TOGGLE_PET_SIT);
+        KeyMappingHelper.registerKeyMapping(RIDE_PET);
+
+        MenuScreens.register(PettingModMenus.PET_MENU.get(), PetInventoryScreen::new);
+
+        LivingEntityRenderLayerRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
+            registerCollarLayer(registrationHelper, entityRenderer);
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(DismountPetPayload.TYPE, DismountPetPayload::handle);
+
+        ClientTickEvents.END_CLIENT_TICK.register(PettingClientEvents::onClientTick);
+
+        ClientReceiveMessageEvents.ALLOW_GAME.register((message, overlay) -> PettingClientEvents.onClientChatReceived(message));
     }
 
-    private static void onRegisterKeyMappings(RegisterKeyMappingsEvent event) {
-        event.registerCategory(PETTING_CATEGORY);
-        event.register(OPEN_PET_INVENTORY);
-        event.register(TOGGLE_PET_SIT);
-        event.register(RIDE_PET);
-    }
-
-    private static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
-        event.register(PettingModMenus.PET_MENU.get(), PetInventoryScreen::new);
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void registerCollarLayer(LivingEntityRenderLayerRegistrationCallback.RegistrationHelper registrationHelper, net.minecraft.client.renderer.entity.LivingEntityRenderer<?, ?, ?> entityRenderer) {
+        registrationHelper.register(new PetCollarLayer(entityRenderer));
     }
 }

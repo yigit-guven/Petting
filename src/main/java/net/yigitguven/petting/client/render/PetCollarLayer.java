@@ -42,7 +42,7 @@ public class PetCollarLayer<S extends LivingEntityRenderState, M extends EntityM
             return;
         }
 
-        DyeColor collarColor = state.getRenderData(PettingClientRender.COLLAR_COLOR_KEY);
+        DyeColor collarColor = (state instanceof PetRenderStateExtension ext) ? ext.petting$getCollarColor() : null;
         if (collarColor == null) {
             return;
         }
@@ -143,7 +143,7 @@ public class PetCollarLayer<S extends LivingEntityRenderState, M extends EntityM
 
         PoseStack.Pose capturedPose = candidate.pose;
 
-        boolean isEnchanted = Boolean.TRUE.equals(state.getRenderData(PettingClientRender.COLLAR_ENCHANTED_KEY));
+        boolean isEnchanted = (state instanceof PetRenderStateExtension ext) && ext.petting$isCollarEnchanted();
         net.minecraft.client.renderer.rendertype.RenderType renderType = isEnchanted
                 ? RenderTypes.armorCutoutNoCullGlint(COLLAR_TEXTURE)
                 : RenderTypes.armorCutoutNoCull(COLLAR_TEXTURE);

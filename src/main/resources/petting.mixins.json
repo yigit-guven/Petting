@@ -8,10 +8,15 @@
     "EnderDragonMixin",
     "EntityMixin",
     "LivingEntityMixin",
-    "MonsterMixin"
+    "MobAccessor",
+    "MobMixin",
+    "MonsterMixin",
+    "TamableAnimalMixin"
   ],
   "client": [
-    "EnderDragonRendererMixin"
+    "EnderDragonRendererMixin",
+    "LivingEntityRendererMixin",
+    "LivingEntityRenderStateMixin"
   ],
   "injectors": {
     "defaultRequire": 1

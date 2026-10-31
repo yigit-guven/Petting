@@ -14,7 +14,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.yigitguven.petting.init.PettingDataComponents;
 import net.yigitguven.petting.init.PettingModBlockEntities;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class GoldenDragonEggBlockEntity extends BlockEntity {
@@ -62,11 +62,13 @@ public class GoldenDragonEggBlockEntity extends BlockEntity {
     @Override
     protected void applyImplicitComponents(DataComponentGetter components) {
         super.applyImplicitComponents(components);
-        if (components.has(PettingDataComponents.DRAGON_EGG_OWNER.get())) {
-            this.ownerUUID = components.get(PettingDataComponents.DRAGON_EGG_OWNER.get());
+        UUID owner = components.get(PettingDataComponents.DRAGON_EGG_OWNER.get());
+        if (owner != null) {
+            this.ownerUUID = owner;
         }
-        if (components.has(PettingDataComponents.DRAGON_EGG_OWNER_NAME.get())) {
-            this.ownerName = components.get(PettingDataComponents.DRAGON_EGG_OWNER_NAME.get());
+        String name = components.get(PettingDataComponents.DRAGON_EGG_OWNER_NAME.get());
+        if (name != null) {
+            this.ownerName = name;
         }
     }
 

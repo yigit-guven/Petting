@@ -1,19 +1,17 @@
 package net.yigitguven.petting.init;
 
-import net.minecraft.core.registries.Registries;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
 import net.yigitguven.petting.Petting;
 
 public class PettingModTabs {
-    public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
-            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Petting.MODID);
-
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> PETTING_TAB =
-            CREATIVE_MODE_TABS.register("petting", () -> CreativeModeTab.builder()
+    public static final RegistrySupplier<CreativeModeTab> PETTING_TAB = register("petting",
+            FabricCreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.petting"))
                     .icon(() -> new ItemStack(PettingModItems.GOLDEN_PAW.get()))
                     .displayItems((parameters, output) -> {
@@ -44,4 +42,12 @@ public class PettingModTabs {
                         output.accept(PettingModItems.BLACK_COLLAR.get());
                     })
                     .build());
+
+    private static RegistrySupplier<CreativeModeTab> register(String name, CreativeModeTab tab) {
+        Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, Identifier.fromNamespaceAndPath(Petting.MODID, name), tab);
+        return new RegistrySupplier<>(tab);
+    }
+
+    public static void register() {
+    }
 }
